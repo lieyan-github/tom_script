@@ -1,0 +1,33 @@
+{
+    "searchers": [
+        {
+            "name": "Everything",
+            "cmd": "D:/_home_/tom/program/green_program/应用软件/文件管理/Everything/Everything.exe  -search \"%s\"",
+            "tag": ["local"]
+        },
+        {
+            "name": "google",
+            "cmd": "https://www.google.com/search?q=%s",
+            "tag": ["web"]
+        },
+        {
+            "name": "baidu",
+            "cmd": "https://www.baidu.com/s?wd=%s",
+            "tag": ["web"]
+        },
+        {
+            "name": "javmoo",
+            "cmd": "https://avmoo.xyz/tw/search/%s",
+            "tag": ["av"]
+        },
+        {
+            "name": "btso",
+            "cmd": "https://btsow.pw/search/%s",
+            "tag": ["bt"]
+        }
+    ],
+    "localSearcher": {
+        "name": "Everything",
+        "cmd": "D:/_home_/tom/program/green_program/应用软件/文件管理/Everything/Everything.exe"
+    }
+}

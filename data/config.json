@@ -1,0 +1,23 @@
+{
+    "资源管理器": [
+        "CabinetWClass",
+        "WorkerW",
+        "Progman",
+        "ThunderRT6FormDC",
+        "EVERYTHING"
+    ],
+    "data": {
+       "searchersFile": "searchers.json"
+    },
+    "data_user":{
+        "allowResizeWinsFile": "allowResizeWins.json",
+        "clipboardFile": "tmpClip.clip",
+        "autorunsFile": "autoruns.csv",
+        "logFile": "tom的Ahk日志.ini",
+        "CodeSnippetFile": "user_编程快捷键_CodeSnippets.ini",
+        "searchHistoryFile": "searchHistory.csv"
+    },
+    "commentSymbol": ";",
+    "wrapBorderLine1": "----------------------------------------------------------",
+    "wrapBorderLine2": "=========================================================="
+}
