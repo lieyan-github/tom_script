@@ -19,7 +19,7 @@
         ; 如果不存在 则提示添加, 设置窗口名称
         _winName := _wininfo["win"]["class"]
         if(用户修改变量(_winName
-            , "输入窗口名称, `n当前窗口类"
+            , "窗口名称"
             , _wininfo["win"]["exe"])=true){
             ;修改json对象, 并保存到文件
             _allowResizeWins["allowResizeWins"].push({(_winName) : _wininfo["win"]["class"]})

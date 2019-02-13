@@ -16,7 +16,7 @@ strWrap(_instr, _wrapStart:="""", _wrapEnd:=""""){
 }
 
 ; 清洗字符串
-strClean(_string, _clean_str_list:="(\s|\?|\/|\[|\]|""|,)+"){
+strClean(_string, _clean_str_list:="(\s|\?|\/|\[|\]|""|　|,)+"){
     result:= _string
     ; 先用空格替代
     result := RegExReplace(result, _clean_str_list, " ")

@@ -195,39 +195,34 @@ arrayPrint(_array, _w:=800, _h:=600){
     WinWaitClose
 }
 
-; arrayMap(_funcName, ByRef _list, _params*)
+; arrayMap(_array, _funcName, _params*)
 ; 根据提供的函数对指定列表每个元素做处理
-; _funcName:    函数名字符串, 函数的第一值参数必须是数组value
-; _list:        数组(引用调用), 修改原数组
+; _array:       数组, 不修改原数组
+; _funcName:    函数名字符串, 函数格式Call(v, ..)
 ; _params*:     函数其他参数
 ; return:       返回处理过的数组引用
-arrayMap(_funcName, ByRef _list, _params*){
+arrayMap(_arrayIn, _funcName, _params*){
+    _array := _arrayIn.Clone()
     _func := Func(_funcName)        ; 获得函数对象
-    for k, v in _list
-        _list[k] := _func.Call(v, _params*)
-    return _list                    ;返回处理过的数组引用
+    for k, v in _array
+        _array[k] := _func.Call(v, _params*)
+    return _array                    ;返回处理过的数组引用
 }
 
 ; public static reduce() 函数会对参数序列中元素进行累积, 比如累加, 阶乘..
-; _funcName:    函数名字符串, 函数的前两个参数必须是数组value
-; _list:        数组(值调用), 不修改原数组
+; _array:       数组(值调用), 不修改原数组
+; _initValue    初始累计值
+; _funcName:    函数名字符串, 函数格式Call(_total, v, ..)
 ; _params*:     函数其他参数
 ; return:       返回处理过的累积值
-arrayReduce(_funcName, _list, _params*){
-    _func := Func(_funcName)        ; 获得函数对象
-    _result =                       ; 存储中间值和结果
-    _count  := 1                    ; 循环计数器
+arrayReduce(_array, _initValue, _funcName, _params*){
+    _func   := Func(_funcName)        ; 获得函数对象
+    _total  := _initValue             ; 存储累计值
     ; produce
-    for k, v in _list {
-        if(_count == 1){
-            _result := v
-            _count++
-        }
-        else{
-            _result := _func.Call(_result, v, _params*)
-        }
+    for _index, v in _array {
+        _total := _func.Call(_total, v, _params*)
     }
-    return _result                 ;返回处理过的累积值
+    return _total                     ;返回处理过的累积值
 }
 
 ; arrayUnique(_array)
@@ -340,6 +335,10 @@ arrayAssociate(_arrayTag, _arrayInfo, _keyField, _valueField:="_self"){
 ; ----------------------------------------------------------
 ; test 单元测试
 ; ----------------------------------------------------------
+
+; ----------------------------------------------------------
+; 数组打印和关联数组测试
+; ----------------------------------------------------------
 ; _arrayInfo := [{"姓名": "周星驰", "tag": ["导演", "演员", "制片人", "男性", "香港人"]}
 ;               ,{"姓名": "陈道明", "tag": ["演员", "制片人", "男性", "60后"]}
 ;               ,{"姓名": "孙俪", "tag": ["演员", "女性", "江苏人"]}
@@ -366,3 +365,24 @@ arrayAssociate(_arrayTag, _arrayInfo, _keyField, _valueField:="_self"){
 ;                                         ,{"MetaTrader4": "MetaQuotes::MetaTrader::4.00"}
 ;                                         ,{"sublime text": "PX_WINDOW_CLASS"}]}
 ; msgbox % dictHasValue(allowResizeWins, "GomPlayer1.x")
+
+; ----------------------------------------------------------
+; arrayMap arrayReduce 数组批处理测试
+; ----------------------------------------------------------
+; ; arrayReduce test
+; array1 := [1, 2, 3]
+; array2 := []
+
+; maptest(_v){
+;     return _v*2
+; }
+
+; reducetest(_total, _v){
+;     return _total + _v
+; }
+
+; msgbox % arrayReduce(array1, 0, "reducetest")
+
+; array2 := arrayMap(array1, "maptest")
+; arrayPrint(array1)
+; arrayPrint(array2)

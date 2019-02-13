@@ -8,6 +8,19 @@
 ; 关联文件: json.class.ahk
 ; ==========================================================
 
+
+文件存在(_path){
+    if(FileExist(_path))
+        return True
+    else
+        return False
+}
+
+文件错误检测(_path){
+    if(! 文件存在(_path))
+        Throw Exception("指定文件不存在! `n文件路径: " . _path)
+}
+
 ; ----------------------------------------------------------
 ; class File
 ; ----------------------------------------------------------
@@ -48,6 +61,7 @@ class JsonFile extends File{
     ; static 读文件
     ; 返回json对象
     read(_jsonPath){
+        文件错误检测(_jsonPath)
         _fileIn:= FileOpen(_jsonPath, "r", "utf-8")
         _json_str:= _fileIn.read()
         fileIn.close()
