@@ -25,6 +25,7 @@
 #include scripts\packages\File.class.ahk
 #include scripts\packages\Path.class.ahk
 #include scripts\packages\Timer.class.ahk
+#include scripts\packages\Color.class.ahk
 ; ----------------------------------------------------------
 #include scripts\libs\Array.ahk
 #include scripts\libs\lib_正则表达式.ahk
@@ -37,6 +38,7 @@
 #include scripts\libs\lib_用户交互GUI.ahk
 #include scripts\libs\lib_编程快捷操作.ahk
 #include scripts\libs\lib_网络通信和数据采集.ahk
+#include scripts\libs\lib_其他内容.ahk
 ; 自定义的用户功能
 #include scripts\packages\Av.class.ahk
 ; 单元测试

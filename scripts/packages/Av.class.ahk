@@ -161,13 +161,11 @@ class Av {
                 if(RegExMatch(clipboard, "(?:(\d{2,4})[-年\.](\d{1,2})[-月\.](\d{1,2})日?)", _date)>0)
                 {
                     ;如果剪贴板里存有日期, 则当成是已存储的生日
-                    avAnalysis := new AvActorInfoAnalysis()
-                    avgirl := avAnalysis.analysis(clipboard)
-                    _生日 := avgirl.data.birthday
-                    _罩杯 := avgirl.data.bra
+                    _生日 := AvGirlInfo.提取生日(clipboard)
+                    _罩杯 := AvGirlInfo.提取bra(clipboard)
                     if(_罩杯 != "")
-                        _罩杯 := "_" . _罩杯
-                    重命名.replaceStr := "#av女优# " . "★" . " $1 " . _生日 . " (美颜" . _罩杯 . ") " . Sys.date() . "$2"
+                        _罩杯 := "_乳" . _罩杯
+                    重命名.replaceStr := "#av女优# " . "★" . " $1 " . _生日 . " tags(美颜" . _罩杯 . ") " . Sys.date() . "$2"
                     _result := 重命名.do()
                 }
                 else
@@ -382,37 +380,766 @@ class Av搜索重命名_收藏夹 extends Renamer {
 ; av资料结构类, 其对象用于av数据采集
 ; ----------------------------------------------------------
 class AvInfo {
-    ; public data : {}
-    data := ""
     ; public new
     __new(){
-
+        this.info := {}
     }
-    ; public get()
-    get(){
-        return this.data
+
+    ; ----------------------------------------------------------
+    ; public static 类别判断是女优资料/作品/导演/制作商/发行商资料
+    ; ----------------------------------------------------------
+    is女优(in_avStr){
+        _特征库 := ["^(#av女优#)"
+                    , "(演員)"]
+        _结果 := false
+        if(匹配特征库(in_avStr, _特征库))
+            _结果 := True
+        return _结果
+    }
+
+    is作品(in_avStr){
+        _特征库 := ["^(#av作品#)"
+                    , "識別碼.\s?[A-Za-z]+"]
+        _结果 := false
+        if(匹配特征库(in_avStr, _特征库))
+            _结果 := True
+        return _结果
     }
 }
 
 ; ----------------------------------------------------------
 ; av演员资料结构类
 ; ----------------------------------------------------------
-class AvActorInfo extends AvInfo {
+class AvGirlInfo extends AvInfo {
     ; public new
-    __new(){
-        ; av演员资料: 类别, 评级, 女优名, 生日, 乳罩杯, 备注, 登记时间
-        this.data := {type:"", level:"", name:"", birthday:"", bra:"", note:"", regtime:""}
+    __new(in_avStr := ""){
+        ; av演员资料: 类别, 评级, 女优名(因为女优多名所以用数组), 生日, 乳罩杯(存放在tags中), 备注(存放无法解析的部分), 登记时间
+        this.info := {id: strId()   ; key
+                    , 类型: "#av女优#"
+                    , 地区: "日本"
+                    , 评级: 1
+                    , 名字: []
+                    , 生日: ""
+                    , bra: ""
+                    , tags: []
+                    , 备注: ""
+                    , 登记时间: Sys.date()}
+        if(in_avStr!=""){
+            this.提取全部(in_avStr)
+        }
+    }
+
+    ; public 提取全部(in_avStr)
+    提取全部(in_avStr){
+        _avStr:= in_avStr
+        this.info.名字 := this.提取女优名(_avStr)
+        this.info.评级 := this.提取评级(_avStr)
+        this.info.生日 := this.提取生日(_avStr)
+        this.info.地区 := this.提取地区(_avStr)
+        this.info.tags := this.提取tags(_avStr)
+        this.info.bra := this.提取bra(_avStr)
+        this.info.备注 := this.提取备注(_avStr)
+    }
+
+    ; public toStr()
+    ; [输出格式化]
+    ; #av女优# ★★★ 女优名 2000-03-05 地区(日本) tags(美颜_乳c_风骚_诱惑) 备注(备注内容...)
+    toStr(){
+        _str := Format("{1} {2} {3} {4} 地区({5}) tags({6}) 备注({7})"
+                        , this.info["类型"]
+                        , strN("★", this.info["评级"])
+                        , arrayJoin(this.info["名字"], "_")
+                        , this.info["生日"]
+                        , this.info["地区"]
+                        , arrayJoin(this.info["tags"], "_")
+                        , this.info["备注"])
+        return _str
+    }
+
+    ; ----------------------------------------------------------
+    ; public 提取女优的相关信息, 第一个特征都设置为标准模式
+    ; ----------------------------------------------------------
+    提取女优名(in_avStr){
+        _特征库 := ["^#av女优#\s★*\s(\S+?)\s"
+                    , "^(\S+)\s-\s演員"
+                    , "演员\((.*?)\)"
+                    , "(?:類別 正體中文 |類別 )(\S+)"]
+        _女优名列表 := []
+        ; 匹配特征
+        _女优名列表 := str_Split(strTrim(匹配特征库提取字符串(in_avStr, _特征库), "_"), "_")
+        ; 返回结果
+        return _女优名列表
+    }
+
+    提取评级(in_avStr){
+        _特征库 := ["(★+)"]
+        _评级   := ""
+        ; 匹配特征
+        _评级 := StrLen(匹配特征库提取字符串(in_avStr, _特征库))
+        _评级 := _评级>0 ? _评级 : 1
+        ; 返回结果
+        return _评级
+    }
+
+    提取生日(in_avStr){
+        _特征库 := ["((\d{2,4})[-年\.](\d{1,2})[-月\.](\d{1,2})日?)"]
+        _生日   := ""
+        ; 匹配特征
+        _生日 := strFixDate(匹配特征库提取字符串(in_avStr, _特征库))
+        ; 返回结果
+        return _生日
+    }
+
+    提取地区(in_avStr){
+        _地区特征库 := {"日本":["日本"
+                            , "i)1pon"
+                            , "i)carib"
+                            , "i)paco"]
+                    , "欧美":["欧美"
+                            , "i)^([a-z-]+)\s-\s"]
+                    , "韩国":["韩国"]}
+        _地区   := "日本"
+        ; 匹配特征
+        for _地区名, _特征库 in _地区特征库 {
+            for _i, _特征 in _特征库 {
+                if(RegExMatch(in_avStr, _特征, _match)>0){
+                    _地区 := _地区名
+                    Break
+                }
+            }
+        }
+        ; 返回结果
+        return _地区
+    }
+
+    ; 匹配特征
+    ; 1. tags(...);
+    ; 2. 前期没格式化的tags特征 " (...)"
+    提取tags(in_avStr){
+        _特征库 := ["tags\((.*?)\)"
+                    , "#精品女优#\((.*?)\)"
+                    , "\s\((\S+?)\)"]
+        _tags := []
+        ; 匹配特征
+        _tags := str_Split(strTrim(匹配特征库提取字符串(in_avStr, _特征库), "_"), "_")
+        ; 返回结果
+        return _tags
+    }
+
+    提取bra(in_avStr){
+        ; 日语e罩杯 Eカップ
+        _特征库 := ["罩?\s?杯:?.?([a-lA-L])"
+                    , "([a-lA-L]).?罩?\s?杯"
+                    , "乳.?([a-lA-L])"
+                    , "([a-lA-L]).?乳"
+                    , "([a-lA-L]).?カップ"
+                    , "カップ.?([a-lA-L])"]
+        _bra   := ""
+        ; 匹配特征
+        _bra := 匹配特征库提取字符串(in_avStr, _特征库)
+        ; 转大写字母
+        StringUpper, _bra, _bra
+        ; 返回结果
+        return _bra
+    }
+
+    提取备注(in_avStr){
+        _特征库 := ["备注\((.*?)\)"]
+        _备注   := ""
+        ; 匹配特征
+        _备注 := 匹配特征库提取字符串(in_avStr, _特征库)
+        ; 返回结果
+        return _备注
     }
 }
 
 ; ----------------------------------------------------------
 ; av影片资料结构类
+; av作品日本有码
 ; ----------------------------------------------------------
-class AvMovieInfo extends AvInfo {
+class Av作品日本有码Info extends AvInfo {
     ; public new
-    __new(){
-        ; av作品资料: 类别, 评级, 作品标题, 导演, 演员, 备注, 登记时间
-        this.data := {type:"", level:"", title:"", director:"", actor:"", note:"", regtime:""}
+    ; 需要判断是
+    ; 1. 日本有码
+    ; 2. 日本无码
+    ; 3. 欧美无码
+    __new(in_avStr := ""){
+        ; av作品资料: 类别, 评级, 作品标题, 导演, 演员, 系列, 登记时间
+        this.info := {编号: ""        ; key
+                    , 类型: "#av作品#"
+                    , 地区: "日本"
+                    , 是否无码: "有码"
+                    , 评级: 1
+                    , 标题: ""
+                    , 导演: ""
+                    , 演员: []
+                    , 制作商: ""
+                    , 发行商: ""
+                    , tags: []
+                    , 系列: ""
+                    , 登记时间: Sys.date()}
+        if(in_avStr!=""){
+            this.提取全部(in_avStr)
+        }
+    }
+
+    ; public 提取全部(in_avStr)
+    提取全部(in_avStr){
+        _avStr:= in_avStr
+        this.info.评级    := this.提取评级(_avStr)
+        this.info.编号    := this.提取编号(_avStr)
+        this.info.标题    := this.提取标题(_avStr)
+        this.info.演员    := this.提取演员(_avStr)
+        this.info.tags    := this.提取tags(_avStr)
+        this.info.地区    := this.提取地区(_avStr)
+        this.info.是否无码:= this.提取是否无码(_avStr)
+        this.info.导演    := this.提取导演(_avStr)
+        this.info.制作商  := this.提取制作商(_avStr)
+        this.info.发行商  := this.提取发行商(_avStr)
+        this.info.系列    := this.提取系列(_avStr)
+    }
+
+    ; public toStr()
+    ; [收藏夹内容]
+    ; #av作品# ★★★ MIDE-255 巨乳女教師の匂い立つ汗と愛液 神咲詩織 (美乳_激情诱惑) 2016-03-07 - AVMOO
+    ; [输出格式化]
+    ; #av作品# ★★★ MIDE-255 巨乳女教師の匂い立つ汗と愛液 演员(神咲詩織) tags(美颜_乳c_风骚_诱惑) 地区(日本) 有码 导演(紋℃) 制作商(ムーディーズ) 发行商(MOODYZ DIVA) 备注(备注内容...)
+    toStr(){
+        ; debug format
+        _str := format("{1} {2} {3} {4} 演员({5}) tags({6}) 地区({7}) {8} 导演({9}) 制作商({10}) 发行商({11}) 系列({12})"
+                        , this.info["类型"]
+                        , strN("★", this.info["评级"])
+                        , this.info["编号"]
+                        , this.info["标题"]
+                        , arrayJoin(this.info["演员"], "_")
+                        , arrayJoin(this.info["tags"], "_")
+                        , this.info["地区"]
+                        , this.info["是否无码"]
+                        , this.info["导演"]
+                        , this.info["制作商"]
+                        , this.info["发行商"]
+                        , this.info["系列"])
+        return _str
+    }
+
+    ; ----------------------------------------------------------
+    ; public static 提取av作品的相关信息, 第一个特征都设置为标准模式
+    ; ----------------------------------------------------------
+    提取编号(in_avStr){
+        _特征库 := ["i)(carib[a-z]*[-_]\d{6}[-_]\d{3})"
+                    , "i)(\d{6}[-_]\d{3}[-_]carib)"
+                    , "i)(1pon[a-z]*[-_]\d{6}[-_]\d{3})"
+                    , "i)(\d{6}[-_]\d{3}[-_]1pon)"
+                    , "i)([a-z]{2,6}-\d{2,5})"]
+        _编号   := ""
+        ; 匹配特征
+        _编号 := 匹配特征库提取字符串(in_avStr, _特征库)
+        ; 修正无码作品编号格式 carib-000000-000, 1pon-000000-000
+        ; 返回结果
+        return _编号
+    }
+
+    提取评级(in_avStr){
+        _特征库 := ["(★+)"]
+        _评级   := ""
+        ; 匹配特征
+        _评级 := StrLen(匹配特征库提取字符串(in_avStr, _特征库))
+        _评级 := _评级>0 ? _评级 : 1
+        ; 返回结果
+        return _评级
+    }
+
+    提取标题(in_avStr){
+        _特征库 := ["^#av作品#\s★*\s\S+\s(\S+)"
+                    , "(?:類別 正體中文 |類別 )[a-zA-z]+-\d+ (\S+)"]
+        _标题   := ""
+        ; 匹配特征
+        _标题 := 匹配特征库提取字符串(in_avStr, _特征库)
+        ; 返回结果
+        return _标题
+    }
+
+    提取演员(in_avStr){
+        _特征库 := ["演员\((.*?)\)"
+                    , "^#av作品#\s★*\s\S+\s\S+\s(\S+)"
+                    , "^(\S+)\s-\s演員"
+                    , "推薦 演員.(.+?).(?:樣品圖像|下載)"]
+        _演员列表 := []
+        ; 匹配特征
+        _演员列表 := str_Split(strTrim(StrReplace(匹配特征库提取字符串(in_avStr
+                                                                    , _特征库)
+                                                    , " "
+                                                    , "_")
+                                        , "_")
+                                , "_")
+        ; 返回结果
+        return _演员列表
+    }
+
+    ; 匹配特征
+    ; 1. tags(...);
+    ; 2. 前期没格式化的tags特征 " (...)"
+    提取tags(in_avStr){
+        _特征库 := ["tags\((.*?)\)"
+                    , "\s\((\S+?)\)"]
+        _tags := []
+        ; 匹配特征
+        _tags := str_Split(strTrim(匹配特征库提取字符串(in_avStr, _特征库), "_"), "_")
+        ; 返回结果
+        return _tags
+    }
+
+    提取地区(in_avStr){
+        _地区特征库 := {"日本":["日本"
+                            , "i)1pon"
+                            , "i)carib"
+                            , "i)paco"]
+                    , "欧美":["欧美"
+                            , "i)^([a-z-]+)\s-\s"]
+                    , "韩国":["韩国"]}
+        _地区   := "日本"
+        ; 匹配特征
+        for _地区名, _特征库 in _地区特征库 {
+            for _i, _特征 in _特征库 {
+                if(RegExMatch(in_avStr, _特征, _match)>0){
+                    _地区 := _地区名
+                    ; 无需在avStr中删去已匹配内容
+                    ;in_avStr := strDelSub(in_avStr, _match1)
+                    Break
+                }
+            }
+        }
+        ; 返回结果
+        return _地区
+    }
+
+    提取是否无码(in_avStr){
+        _特征库 := ["无码"
+                    , "i)1pon"
+                    , "i)carib"
+                    , "i)paco"
+                    , "i)^([a-z-]+)\s-\s"]
+        _是否无码   := "有码"
+        ; 匹配特征
+        for _i, _特征 in _特征库 {
+            if(RegExMatch(in_avStr, _特征, _match)>0){
+                _是否无码 := "无码"
+                ; 无需在avStr中删去已匹配内容
+                ;in_avStr := strDelSub(in_avStr, _match1)
+                Break
+            }
+        }
+        ; 返回结果
+        return _是否无码
+    }
+
+    提取导演(in_avStr){
+        _特征库 := ["导演\((.*?)\)"
+                    , "導演.(\S+)"]
+        _导演   := ""
+        ; 匹配特征
+        _导演  := 匹配特征库提取字符串(in_avStr, _特征库)
+        ; 返回结果
+        return _导演
+    }
+
+    提取制作商(in_avStr){
+        _特征库 := ["制作商\((.*?)\)"
+                    , "製作商.(\S+)"]
+        _制作商 := ""
+        ; 匹配特征
+        _制作商 := 匹配特征库提取字符串(in_avStr, _特征库)
+        ; 返回结果
+        return _制作商
+    }
+
+    提取发行商(in_avStr){
+        _特征库 := ["发行商\((.*?)\)"
+                    , "發行商.(\S+)"]
+        _发行商 := ""
+        ; 匹配特征
+        _发行商 := 匹配特征库提取字符串(in_avStr, _特征库)
+        ; 返回结果
+        return _发行商
+    }
+
+    提取系列(in_avStr){
+        _特征库 := ["系列\((.*?)\)"
+                    , "系列.(\S+)"]
+        _系列   := ""
+        ; 匹配特征
+        _系列 := 匹配特征库提取字符串(in_avStr, _特征库)
+        ; 返回结果
+        return _系列
+    }
+}
+
+; ----------------------------------------------------------
+; av影片资料结构类
+; av作品日本无码
+; ----------------------------------------------------------
+class Av作品日本无码Info extends AvInfo {
+    ; public new
+    ; 需要判断是
+    ; 1. 日本有码
+    ; 2. 日本无码
+    ; 3. 欧美无码
+    __new(in_avStr := ""){
+        ; av作品资料: 类别, 评级, 作品标题, 导演, 演员, 系列, 登记时间
+        this.info := {编号: ""        ; key
+                    , 类型: "#av作品#"
+                    , 地区: "日本"
+                    , 是否无码: "无码"
+                    , 评级: 1
+                    , 标题: ""
+                    , 导演: ""
+                    , 演员: []
+                    , 制作商: ""
+                    , 发行商: ""
+                    , tags: []
+                    , 系列: ""
+                    , 登记时间: Sys.date()}
+        if(in_avStr!=""){
+            this.提取全部(in_avStr)
+        }
+    }
+
+    ; public 提取全部(in_avStr)
+    提取全部(in_avStr){
+        _avStr:= in_avStr
+        this.info.评级    := this.提取评级(_avStr)
+        this.info.编号    := this.提取编号(_avStr)
+        this.info.标题    := this.提取标题(_avStr)
+        this.info.演员    := this.提取演员(_avStr)
+        this.info.tags    := this.提取tags(_avStr)
+        this.info.地区    := this.提取地区(_avStr)
+        this.info.是否无码:= this.提取是否无码(_avStr)
+        this.info.导演    := this.提取导演(_avStr)
+        this.info.制作商  := this.提取制作商(_avStr)
+        this.info.发行商  := this.提取发行商(_avStr)
+        this.info.系列    := this.提取系列(_avStr)
+    }
+
+    ; public toStr()
+    ; [收藏夹内容]
+    ; #av作品# ★★★ MIDE-255 巨乳女教師の匂い立つ汗と愛液 神咲詩織 (美乳_激情诱惑) 2016-03-07 - AVMOO
+    ; [输出格式化]
+    ; #av作品# ★★★ MIDE-255 巨乳女教師の匂い立つ汗と愛液 演员(神咲詩織) tags(美颜_乳c_风骚_诱惑) 地区(日本) 有码 导演(紋℃) 制作商(ムーディーズ) 发行商(MOODYZ DIVA) 备注(备注内容...)
+    toStr(){
+        ; debug format
+        _str := format("{1} {2} {3} {4} 演员({5}) tags({6}) 地区({7}) {8} 导演({9}) 制作商({10}) 发行商({11}) 系列({12})"
+                        , this.info["类型"]
+                        , strN("★", this.info["评级"])
+                        , this.info["编号"]
+                        , this.info["标题"]
+                        , arrayJoin(this.info["演员"], "_")
+                        , arrayJoin(this.info["tags"], "_")
+                        , this.info["地区"]
+                        , this.info["是否无码"]
+                        , this.info["导演"]
+                        , this.info["制作商"]
+                        , this.info["发行商"]
+                        , this.info["系列"])
+        return _str
+    }
+
+    ; ----------------------------------------------------------
+    ; public static 提取av作品的相关信息, 第一个特征都设置为标准模式
+    ; ----------------------------------------------------------
+    提取编号(in_avStr){
+        _特征库 := ["i)(carib[a-z]*[-_]\d{6}[-_]\d{3})"
+                    , "i)(\d{6}[-_]\d{3}[-_]carib)"
+                    , "i)(1pon[a-z]*[-_]\d{6}[-_]\d{3})"
+                    , "i)(\d{6}[-_]\d{3}[-_]1pon)"
+                    , "i)([a-z]{2,6}-\d{2,5})"]
+        _编号   := ""
+        ; 匹配特征
+        _编号 := 匹配特征库提取字符串(in_avStr, _特征库)
+        ; 修正无码作品编号格式 carib-000000-000, 1pon-000000-000
+        ; 返回结果
+        return _编号
+    }
+
+    提取评级(in_avStr){
+        _特征库 := ["(★+)"]
+        _评级   := ""
+        ; 匹配特征
+        _评级 := StrLen(匹配特征库提取字符串(in_avStr, _特征库))
+        _评级 := _评级>0 ? _评级 : 1
+        ; 返回结果
+        return _评级
+    }
+
+    提取标题(in_avStr){
+        _特征库 := ["^#av作品#\s★*\s\S+\s(\S+)"
+                    , "(?:類別 正體中文 |類別 )[a-zA-z]+-\d+ (\S+)"]
+        _标题   := ""
+        ; 匹配特征
+        _标题 := 匹配特征库提取字符串(in_avStr, _特征库)
+        ; 返回结果
+        return _标题
+    }
+
+    提取演员(in_avStr){
+        _特征库 := ["演员\((.*?)\)"
+                    , "^#av作品#\s★*\s\S+\s\S+\s(\S+)"
+                    , "^(\S+)\s-\s演員"
+                    , "推薦 演員.(.+?).(?:樣品圖像|下載)"]
+        _演员列表 := []
+        ; 匹配特征
+        _演员列表 := str_Split(strTrim(StrReplace(匹配特征库提取字符串(in_avStr
+                                                                    , _特征库)
+                                                    , " "
+                                                    , "_")
+                                        , "_")
+                                , "_")
+        ; 返回结果
+        return _演员列表
+    }
+
+    ; 匹配特征
+    ; 1. tags(...);
+    ; 2. 前期没格式化的tags特征 " (...)"
+    提取tags(in_avStr){
+        _特征库 := ["tags\((.*?)\)"
+                    , "\s\((\S+?)\)"]
+        _tags := []
+        ; 匹配特征
+        _tags := str_Split(strTrim(匹配特征库提取字符串(in_avStr, _特征库), "_"), "_")
+        ; 返回结果
+        return _tags
+    }
+
+    提取地区(in_avStr){
+        _地区特征库 := {"日本":["日本"
+                            , "i)1pon"
+                            , "i)carib"
+                            , "i)paco"]
+                    , "欧美":["欧美"
+                            , "i)^([a-z-]+)\s-\s"]
+                    , "韩国":["韩国"]}
+        _地区   := "日本"
+        ; 匹配特征
+        for _地区名, _特征库 in _地区特征库 {
+            for _i, _特征 in _特征库 {
+                if(RegExMatch(in_avStr, _特征, _match)>0){
+                    _地区 := _地区名
+                    ; 无需在avStr中删去已匹配内容
+                    ;in_avStr := strDelSub(in_avStr, _match1)
+                    Break
+                }
+            }
+        }
+        ; 返回结果
+        return _地区
+    }
+
+    提取是否无码(in_avStr){
+        _特征库 := ["无码"
+                    , "i)1pon"
+                    , "i)carib"
+                    , "i)paco"
+                    , "i)^([a-z-]+)\s-\s"]
+        _是否无码   := "有码"
+        ; 匹配特征
+        for _i, _特征 in _特征库 {
+            if(RegExMatch(in_avStr, _特征, _match)>0){
+                _是否无码 := "无码"
+                ; 无需在avStr中删去已匹配内容
+                ;in_avStr := strDelSub(in_avStr, _match1)
+                Break
+            }
+        }
+        ; 返回结果
+        return _是否无码
+    }
+
+    提取导演(in_avStr){
+        _特征库 := ["导演\((.*?)\)"
+                    , "導演.(\S+)"]
+        _导演   := ""
+        ; 匹配特征
+        _导演  := 匹配特征库提取字符串(in_avStr, _特征库)
+        ; 返回结果
+        return _导演
+    }
+
+    提取制作商(in_avStr){
+        _特征库 := ["制作商\((.*?)\)"
+                    , "製作商.(\S+)"]
+        _制作商 := ""
+        ; 匹配特征
+        _制作商 := 匹配特征库提取字符串(in_avStr, _特征库)
+        ; 返回结果
+        return _制作商
+    }
+
+    提取发行商(in_avStr){
+        _特征库 := ["发行商\((.*?)\)"
+                    , "發行商.(\S+)"]
+        _发行商 := ""
+        ; 匹配特征
+        _发行商 := 匹配特征库提取字符串(in_avStr, _特征库)
+        ; 返回结果
+        return _发行商
+    }
+
+    提取系列(in_avStr){
+        _特征库 := ["系列\((.*?)\)"
+                    , "系列.(\S+)"]
+        _系列   := ""
+        ; 匹配特征
+        _系列 := 匹配特征库提取字符串(in_avStr, _特征库)
+        ; 返回结果
+        return _系列
+    }
+}
+
+; ----------------------------------------------------------
+; av影片资料结构类
+; av作品欧美无码
+; ----------------------------------------------------------
+class Av作品欧美无码Info extends AvInfo {
+    ; public new
+    ; 需要判断是
+    ; 1. 日本有码
+    ; 2. 日本无码
+    ; 3. 欧美无码
+    __new(in_avStr := ""){
+        ; av作品资料: 类别, 评级, 作品标题, 导演, 演员, 系列, 登记时间
+        this.info := {编号: ""        ; key
+                    , 类型: "#av作品#"
+                    , 地区: "欧美"
+                    , 是否无码: "无码"
+                    , 评级: 1
+                    , 标题: ""
+                    , 导演: ""
+                    , 演员: []
+                    , 制作商: ""
+                    , 发行商: ""
+                    , tags: []
+                    , 系列: ""
+                    , 登记时间: Sys.date()}
+        if(in_avStr!=""){
+            this.提取全部(in_avStr)
+        }
+    }
+
+    ; public 提取全部(in_avStr)
+    提取全部(in_avStr){
+        _avStr:= in_avStr
+        this.info.评级    := this.提取评级(_avStr)
+        ; 欧美没有编号
+        ;this.info.编号    := this.提取编号(_avStr)
+        this.info.标题    := this.提取标题(_avStr)
+        this.info.演员    := this.提取演员(_avStr)
+        this.info.tags    := this.提取tags(_avStr)
+        ; 确认是欧美, 也就确定地区是欧美, 并且是无码
+        ; 欧美没有导演和发行商, 只有制作商
+        ;this.info.导演    := this.提取导演(_avStr)
+        this.info.制作商  := this.提取制作商(_avStr)
+        ;this.info.发行商  := this.提取发行商(_avStr)
+        ;this.info.系列    := this.提取系列(_avStr)
+    }
+
+    ; public toStr()
+    ; [一般作品文件名格式]
+    ; #av作品# ★★★ DorcelClub - Anna Polina Mes Nuits En Prison (极品诱惑)
+    ; [输出格式化]
+    ; #av作品# ★★★ 制作商 - 演员(演员名) 作品标题 tags(极品诱惑_风骚_美乳) 地区(欧美) 无码
+    toStr(){
+        ; debug format
+        _str := format("{1} {2} {3} {4} 演员({5}) tags({6}) 地区({7}) {8} 导演({9}) 制作商({10}) 发行商({11}) 系列({12})"
+                        , this.info["类型"]
+                        , strN("★", this.info["评级"])
+                        , this.info["编号"]
+                        , this.info["标题"]
+                        , arrayJoin(this.info["演员"], "_")
+                        , arrayJoin(this.info["tags"], "_")
+                        , this.info["地区"]
+                        , this.info["是否无码"]
+                        , this.info["导演"]
+                        , this.info["制作商"]
+                        , this.info["发行商"]
+                        , this.info["系列"])
+        return _str
+    }
+
+    ; ----------------------------------------------------------
+    ; public static 提取av作品的相关信息, 第一个特征都设置为标准模式
+    ; ----------------------------------------------------------
+    提取编号(in_avStr){
+        _特征库 := ["i)(carib[a-z]*[-_]\d{6}[-_]\d{3})"
+                    , "i)(\d{6}[-_]\d{3}[-_]carib)"
+                    , "i)(1pon[a-z]*[-_]\d{6}[-_]\d{3})"
+                    , "i)(\d{6}[-_]\d{3}[-_]1pon)"
+                    , "i)([a-z]{2,6}-\d{2,5})"]
+        _编号   := ""
+        ; 匹配特征
+        _编号 := 匹配特征库提取字符串(in_avStr, _特征库)
+        ; 修正无码作品编号格式 carib-000000-000, 1pon-000000-000
+        ; 返回结果
+        return _编号
+    }
+
+    提取评级(in_avStr){
+        _特征库 := ["(★+)"]
+        _评级   := ""
+        ; 匹配特征
+        _评级 := StrLen(匹配特征库提取字符串(in_avStr, _特征库))
+        _评级 := _评级>0 ? _评级 : 1
+        ; 返回结果
+        return _评级
+    }
+
+    提取标题(in_avStr){
+        _特征库 := ["^#av作品#\s★*\s\S+\s(\S+)"
+                    , "(?:類別 正體中文 |類別 )[a-zA-z]+-\d+ (\S+)"]
+        _标题   := ""
+        ; 匹配特征
+        _标题 := 匹配特征库提取字符串(in_avStr, _特征库)
+        ; 返回结果
+        return _标题
+    }
+
+    提取演员(in_avStr){
+        _特征库 := ["演员\((.*?)\)"
+                    , "^#av作品#\s★*\s\S+\s\S+\s(\S+)"
+                    , "^(\S+)\s-\s演員"
+                    , "推薦 演員.(.+?).(?:樣品圖像|下載)"]
+        _演员列表 := []
+        ; 匹配特征
+        _演员列表 := str_Split(strTrim(StrReplace(匹配特征库提取字符串(in_avStr
+                                                                    , _特征库)
+                                                    , " "
+                                                    , "_")
+                                        , "_")
+                                , "_")
+        ; 返回结果
+        return _演员列表
+    }
+
+    ; 匹配特征
+    ; 1. tags(...);
+    ; 2. 前期没格式化的tags特征 " (...)"
+    提取tags(in_avStr){
+        _特征库 := ["tags\((.*?)\)"
+                    , "\s\((\S+?)\)"]
+        _tags := []
+        ; 匹配特征
+        _tags := str_Split(strTrim(匹配特征库提取字符串(in_avStr, _特征库), "_"), "_")
+        ; 返回结果
+        return _tags
+    }
+
+    提取制作商(in_avStr){
+        _特征库 := ["制作商\((.*?)\)"
+                    , "製作商.(\S+)"]
+        _制作商 := ""
+        ; 匹配特征
+        _制作商 := 匹配特征库提取字符串(in_avStr, _特征库)
+        ; 返回结果
+        return _制作商
     }
 }
 
@@ -422,44 +1149,103 @@ class AvMovieInfo extends AvInfo {
 class AvInfoAnalysis{
     ; public new
     __new(){
+        ; todo
+    }
 
+    ; public static parse(in_avStr) return AvInfoObject
+    ; 需要判断是
+    ; 1. 日本有码
+    ; 2. 日本无码
+    ; 3. 欧美无码
+    parse(in_avStr){
+        _avInfo := {}
+        _av女优_特征库   := [""]
+        _日本有码_特征库 := [""]
+        _日本无码_特征库 := [""]
+        _欧美无码_特征库 := [""]
+        if(匹配特征库(in_avStr, _av女优_特征库))
+            _avInfo := new AvGirlInfo(in_avStr)
+        else if(匹配特征库(in_avStr, _日本有码_特征库))
+            _avInfo := new Av作品日本有码Info(in_avStr)
+        else if(匹配特征库(in_avStr, _日本无码_特征库))
+            _avInfo := new Av作品日本无码Info(in_avStr)
+        else if(匹配特征库(in_avStr, _欧美无码_特征库))
+            _avInfo := new Av作品欧美无码Info(in_avStr)
+
+        return _avInfo
     }
 }
 
-; ----------------------------------------------------------
-; av资料分析采集, 返回收集的av演员资料对象
-; ----------------------------------------------------------
-class AvActorInfoAnalysis extends AvInfoAnalysis{
-    ; 数据模版
-    match_name := "^(.*)(\s-\s.*)"
-    match_birthday := "((\d{2,4})[-年\.](\d{1,2})[-月\.](\d{1,2})日?)"
-    match_bra := "(?:罩\s?杯:?\s?)([a-lA-L])|([a-lA-L])(?:\s?罩\s?杯)"
-    ; public analysis(av内容字符串) 返回演员资料货影片资料对象
-    analysis(in_avStr){
-        avinfo := new AvActorInfo()
-        if(RegExMatch(in_avStr, this.match_birthday, _match)>0){
-            avinfo.data.birthday := strFixDate(_match1)
+匹配特征库提取字符串(in_avStr, in_特征库){
+    _特征库 := in_特征库
+    _result := ""
+    ; 匹配特征
+    for _i, _特征 in _特征库 {
+        if(RegExMatch(in_avStr, _特征, _match)>0){
+            _result := _match1
+            Break
         }
-        if(RegExMatch(in_avStr, this.match_bra, _match)>0){
-            _bra := _match1!="" ? _match1 : _match2
-            StringUpper, _bra, _bra
-            if(_bra>"F")
-                avinfo.data.bra := "巨乳" . _bra
-            else if(_bra>"B")
-                avinfo.data.bra := "美丰乳" . _bra
-            else
-                avinfo.data.bra := "小乳" . _bra
-        }
-        return avinfo
     }
+    ; 返回结果
+    return _result
+}
 
-    ; static debug()
-    debug(in_avstr){
-        avAnalysis := new AvActorInfoAnalysis()
-        avgirl := avAnalysis.analysis(in_avstr)
-        _生日 := avgirl.data.birthday
-        _罩杯 := avgirl.data.bra
-        _return:= "生日: " . _生日 . " | " . "罩杯: " . _罩杯
-        return _return
+匹配特征库(in_avStr, in_特征库){
+    _特征库 := in_特征库
+    _result := false
+    ; 匹配特征
+    for _i, _特征 in _特征库 {
+        if(RegExMatch(in_avStr, _特征, _match)>0){
+            _result := true
+            Break
+        }
     }
+    ; 返回结果
+    return _result
+}
+
+; 调试保留备用
+av_测试提取女优信息(){
+    avstr_list:= ["#av作品# ★★★ MIDE-255 巨乳女教師の匂い立つ汗と愛液 神咲詩織 (美乳_激情诱惑) 2016-03-07 - AVMOO"
+                , "#av女优# ★★ 咲々原リン 1998-07-05 tags(美颜_乳E_混血) 2019-03-05 - 演員 - 影片 - AVMOO"
+                , "#av作品# ★★ carib-060215-890 FHD最新加勒比極上婦人Vol.9 逢沢はるかHaruka"
+                , "x-art - Abella Danger, Angela White, Krissy Lynn - Phone Service Skills"
+                , "#av作品# ★★ 1pon-071912_387 一本道~乳神!_南国海岸线全开 真木今日子"
+                , "#av女优# ★★★ 神咲詩織 1990-08-25 #精品女优#(美颜高_美丰乳g_丰臀_诱惑) 2016-03-07 - 演員 - 影片 - AVMOO"
+                , "BKD-208 母子交尾 【柳津路】 佐々木あき"
+                , "#av作品# ★★★ MIDE-255 巨乳女教師の匂い立つ汗と愛液 神咲詩織 (美乳_激情诱惑) 2016-03-07 - AVMOO"]
+    _list1 := []
+    for k,v in avstr_list {
+        if(AvInfo.is女优(v)){
+            _提取内容 := new AvGirlInfo(v)
+            _list1.push({"提取内容": _提取内容
+                        , "提取前": avstr_list[k]
+                        , "提取后": _提取内容.toStr()})
+        }
+        else if(AvInfo.is作品(v)){
+            _提取内容 := new Av作品日本有码Info(v)
+            _list1.push({"提取内容": _提取内容
+                        , "提取前": avstr_list[k]
+                        , "提取后": _提取内容.toStr()})
+        }
+     }
+    arrayPrint(_list1)
+}
+
+av_测试分析剪贴板(){
+    _clipStr:= strClean(Clipboarder.get("copy"))
+    _list1 := []
+    if(_clipStr ~= "識別碼.\s?[A-Za-z]+"){
+        _提取内容 := new Av作品日本有码Info(_clipStr)
+        _list1.push({"提取内容": _提取内容
+                    , "提取前": _clipStr
+                    , "提取后": _提取内容.toStr()})
+    }
+    else {
+        _提取内容 := new AvGirlInfo(_clipStr)
+        _list1.push({"提取内容": _提取内容
+                    , "提取前": _clipStr
+                    , "提取后": _提取内容.toStr()})
+    }
+    arrayPrint(_list1)
 }

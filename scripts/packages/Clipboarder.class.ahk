@@ -192,7 +192,6 @@ class Clipboarder{
 
     }
     ; ----------------------------------------------------------
-
     ; static copyToClipboard()
     copyToClipboard(){
         clipboard := ""
@@ -263,6 +262,47 @@ class Clipboarder{
         result:= strWrap(result, _wrapStart, _wrapEnd)
         Clipboarder.write(result)
     }
+
+    ; static 清洗剪贴板数组
+    clean(){
+        if(Clipboarder.length() > 0){
+            Loop % Clipboarder.length(){
+                Clipboarder.list[A_Index]:= strClean(Clipboarder.list[A_Index])
+            }
+            Clipboarder.save()
+            show_msg("剪贴板数组清洗完成!")
+        }
+        else
+            show_msg("剪贴板数组为空, 无法进行字符串清洗操作!")
+    }
+
+    ; ----------------------------------------------------------
+    ; static 剪贴板数组拼接();
+    ; return: 拼接后的字符串
+    ; ----------------------------------------------------------
+    join(_in参数:=""){
+        _result:= ""
+        if(Clipboarder.length() > 0){
+            _参数:= ""
+            if(_in参数 != "")
+                _参数:= _in参数
+            else
+                _参数:= {"包裹开始":"", "包裹结束":"", "连接符":" "}
+            ; 以逗号分割字符串
+            _split_Array:= Clipboarder.list
+            ; 以双引号包裹元素
+            Loop % _split_Array.Length(){
+                _split_Array[A_Index]:= strWrap(_split_Array[A_Index]
+                                                    , _参数["包裹开始"]
+                                                    , _参数["包裹结束"])
+            }
+            ; 重新以逗号连接字符串
+            _result:= arrayJoin(_split_Array, _参数["连接符"])
+        }
+        else
+            show_msg("剪贴板数组为空, 无法进行连接字符串操作!")
+        return _result
+    }
 }
 
 ; ----------------------------------------------------------
@@ -275,12 +315,11 @@ class Clipboarder{
 }
 
 ; ----------------------------------------------------------
-; [快捷操作]剪切到剪贴板数组()
+; [快捷操作]清空并复制到剪贴板数组()
 ; ----------------------------------------------------------
-剪切到剪贴板数组(){
-    Clipboarder.push(Clipboarder.get("cut"))
-    ; debug
-    show_msg(Clipboarder.toStr(), "剪贴板列表")
+清空并复制到剪贴板数组(){
+    Clipboarder.clear()
+    复制到剪贴板数组()
 }
 
 ; ----------------------------------------------------------
@@ -296,24 +335,10 @@ class Clipboarder{
 }
 
 ; ----------------------------------------------------------
-; [快捷操作]剪贴板快速复制和清洗()
+; [快捷操作]剪贴板数组拼接并粘贴()
 ; ----------------------------------------------------------
-剪贴板快速清洗拼接粘贴(){
-    if(Clipboarder.length() > 0){
-        _参数:= {"包裹开始":"", "包裹结束":"", "连接符":" "}
-        ; 以逗号分割字符串
-        _split_Array:= Clipboarder.list
-        ; 以双引号包裹元素
-        Loop % _split_Array.Length(){
-            _split_Array[A_Index]:= strWrap(strClean(_split_Array[A_Index])
-                                                , _参数["包裹开始"]
-                                                , _参数["包裹结束"])
-        }
-        ; 重新以逗号连接字符串
-        Clipboarder.write(arrayJoin(_split_Array, _参数["连接符"]))
-    }
-    else
-        show_msg("剪贴板数组为空, 无法进行连接字符串操作!")
+剪贴板数组拼接并粘贴(){
+    Clipboarder.write(Clipboarder.join())
 }
 
 ; ----------------------------------------------------------
@@ -326,18 +351,19 @@ class Clipboarder{
     Loop % Clipboarder.length() {
         Menu, ClipMenu
             , Add
-            , % A_Index . ". " . strLimitLen(Clipboarder.list[A_Index], 1, 50, "...")
+            , % A_Index . ". " . strLimitLen(Clipboarder.list[A_Index], 1, 50, "...") . Format(" - [{1}]字符", StrLen(Clipboarder.list[A_Index]))
             , Lab_ClipMenuSelected
     }
-    Menu, ClipMenu, Add, [按住Shift删除 | 按住Ctrl置顶], Lab_End
-    menu, ClipMenu, Disable, [按住Shift删除 | 按住Ctrl置顶]
+    Menu, ClipMenu, Add, [Shift删除 | Ctrl清洗], Lab_End
+    menu, ClipMenu, Disable, [Shift删除 | Ctrl清洗]
     ; 选项设置部分菜单
     Menu, ClipMenu, Add
-    Menu, ClipMenu, Add, % "&v. 当前剪贴板 : " . strLimitLen(Clipboard, 1, 50, "..."), Lab_Clipboard
-    Menu, ClipMenu, Add, [按住Ctrl正则分析剪贴板内容], Lab_End
-    menu, ClipMenu, Disable, [按住Ctrl正则分析剪贴板内容]
+    Menu, ClipMenu, Add, % "&v. 当前剪贴板 : " . strLimitLen(Clipboard, 1, 50, "...") . Format(" - [{1}]字符", StrLen(Clipboarder.get())), Lab_Clipboard
+    Menu, ClipMenu, Add, [Shift正则分析 | Ctrl清洗], Lab_End
+    menu, ClipMenu, Disable, [Shift正则分析 | Ctrl清洗]
     Menu, ClipMenu, Add
     Menu, ClipMenu, Add, &x. 清空剪贴板数组和剪贴板, Lab_Clear
+    Menu, ClipMenu, Add, &c. 清洗剪贴板数组, Lab_Clean_ClipboarderList
     Menu, ClipMenu, Add
     Menu, ClipMenu, Add, &r. 反转剪贴板数组, Lab_Reverse
     Menu, ClipMenu, Add
@@ -363,11 +389,17 @@ class Clipboarder{
             Clipboarder.remove(A_ThisMenuItemPos)
             Return
         }
-        If GetKeyState("Ctrl")          ;[按住 Ctrl 自动置顶并粘贴]
+        If GetKeyState("Ctrl")          ;[按住 Ctrl 清洗并粘贴]
         {
             ; 最后使用过的排最前面
-            _clipTemp := Clipboarder.remove(A_ThisMenuItemPos)
-            Clipboarder.insert(1, _clipTemp)
+            ; _clipTemp := Clipboarder.remove(A_ThisMenuItemPos)
+            ; Clipboarder.insert(1, _clipTemp)
+            ; write(_clipTemp)
+
+            ; 清洗当前剪贴板数组元素
+            _clipTemp := strClean(Clipboarder.item(A_ThisMenuItemPos))
+            Clipboarder.item(A_ThisMenuItemPos, _clipTemp)
+            show_msg(Format("剪贴板数组第{1}项清洗完成!", A_ThisMenuItemPos))
             write(_clipTemp)
             Return
         }
@@ -376,9 +408,19 @@ class Clipboarder{
     Return
 
     Lab_Clipboard:
-        If GetKeyState("Ctrl")          ;[按住 Ctrl 分析选中项目并存入剪贴板数组]
+        If GetKeyState("Shift")          ;[按住 Shift 分析选中项目并存入剪贴板数组]
         {
             执行正则表达式分析(Clipboard)
+            Return
+        }
+        If GetKeyState("Ctrl")             ;[按住 Ctrl 自动清洗并粘贴]
+        {
+            ; 清洗当前剪贴板
+            _clipTemp := Clipboard
+            _clipTemp := strClean(_clipTemp)
+            Clipboard := _clipTemp
+            write(_clipTemp)
+            show_msg("剪贴板清洗完成!")
             Return
         }
         write(Clipboard)
@@ -391,6 +433,10 @@ class Clipboarder{
             show_msg("剪贴板数组清空失败!")
         else
             show_msg("剪贴板数组已清空!")
+    return
+
+    Lab_Clean_ClipboarderList:
+        Clipboarder.clean()
     return
 
     Lab_Reverse:
@@ -408,16 +454,8 @@ class Clipboarder{
             }
             _参数:= JSON.Load(_参数str)
 
-            ; 以逗号分割字符串
-            _split_Array:= Clipboarder.list
-            ; 以双引号包裹元素
-            Loop % _split_Array.Length(){
-                _split_Array[A_Index]:= strWrap(strClean(_split_Array[A_Index])
-                                                    , _参数["包裹开始"]
-                                                    , _参数["包裹结束"])
-            }
             ; 重新以逗号连接字符串
-            _clipboard_tmp:= arrayJoin(_split_Array, _参数["连接符"])
+            _clipboard_tmp:= Clipboarder.join(_参数)
             Clipboard:= _clipboard_tmp
             show_msg("拼接字符串存入剪贴板:`n" . _clipboard_tmp)
         }

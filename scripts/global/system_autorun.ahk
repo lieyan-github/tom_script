@@ -19,7 +19,7 @@ system_autorun()
     Sys.init()
     Config.init()
     ; 用户运行
-    用户_autorun()
+    ;用户_autorun()
 }
 
 ; ----------------------------------------------------------
@@ -27,11 +27,11 @@ system_autorun()
 ; ----------------------------------------------------------
 用户_autorun()
 {
-    if(A_UserName == "uu")
+    if(A_UserName = "uu")
     {
         用户uu_autorun()
     }
-    else if(A_UserName == "tom")
+    else if(A_UserName = "tom")
     {
         用户tom_autorun()
     }
@@ -87,12 +87,7 @@ system_autorun()
     记录并循环备份日志(A_UserName . "开机日志", "开机时间", 5)
     show_msg("欢迎回来, 管理员" . A_UserName)
     ; ----------------------------------------------------------
-    ;批量启动程序([["音速启动", "d:\home\lieyan\d - softwares\green_software\音速启动(VStart)V5\VStart.exe"]
-;                , ["护眼flux", "C:\Users\tom\AppData\Local\FluxSoftware\Flux\flux.exe", "", [["min", "ahk_class ytWindow"]]]
-;                , ["罗技setpoint", "C:\Program Files\Logitech\SetPointP\SetPoint.exe"]
-;                , ["蓝灯lantern", "D:\home\lieyan\d - softwares\green_software\网络工具\蓝灯翻墙lantern\lantern.exe", ""
-;                    , [["kill", "ahk_class Chrome_WidgetWin_1", "Lantern - 360极速浏览器"]]]])
-    批量启动程序(CsvFile.readCsvToList(Config.upath("autorunsFile"), [",", "|||", "||"]))
+    批量启动程序(JsonFile.read(Config.upath("批量启动程序")))
     ;--- 如果没有打开浏览器, 则将蓝灯打开的浏览器关闭
     ;--- 将mt4最小化
     sleep 5000

@@ -148,7 +148,7 @@ class Menus {
       return
       ; ----------------------------------------------------------
       编辑白名单_允许鼠标调大小的窗口_func:
-         _tmp := arrayJoin(Config.get("allowResizeWins"), ",", false)
+         _tmp := arrayJoin(Config.get("allowResizeWins"), ",")
          if(用户修改对象变量(_tmp
             , "白名单_允许鼠标调大小的窗口"
             , _tmp)=true)

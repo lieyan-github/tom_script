@@ -8,21 +8,80 @@
 ; ----------------------------------------------------------
 ; ==========================================================
 
+; debugtest 测试使用, 仅在非#include, 单独启动时可用,
+; #If !(A_IsCompiled or A_LineFile!=A_ScriptFullPath)
+;     F1::
+;         MouseGetPos, x, y, wid, cid, 2
+;         wid2:=windowFromPoint(x, y, cid2)
+;         ;wid2:=windowFromPoint(cid2, 66, 88)
+;         MsgBox,4096,, %wid% -- %cid%`n%wid2% -- %cid2%
+;     return
+; #If
+
+; 获取屏幕指定位置的窗口id和控件id
+windowFromPoint(x, y, ByRef cid){
+    CoordMode_bak:=A_CoordModeMouse
+    CoordMode, Mouse, Screen
+    blockinput, on
+    MouseGetPos, x_bak, y_bak,
+    MouseMove, x, y, 0
+    MouseGetPos, , , _wid, _cid, 2
+    cid:= _cid
+    MouseMove, x_bak, y_bak, 0
+    blockinput, off
+    CoordMode, Mouse, %CoordMode_bak%
+    return _wid
+}
+
+; inWinList(_winList, _winTitle_type)
+; 判断是否指定窗体
+; static method
+; _winList :=  [
+;                  "ie.exe",
+;                  "GomPlayer.exe"
+;              ]
+inWinList(_winList, _winTitle_type:="exe"){
+    _bool := false
+    ;---
+    if(_winTitle_type == "exe"){
+        WinGet, _exe, ProcessName, A
+        _bool := arrayIndex(_winList, _exe) > 0
+    }
+    else if(_winTitle_type == "class"){
+        WinGetClass, _class, A
+        _bool := arrayIndex(_winList, _class) > 0
+    }
+    else if(_winTitle_type == "id"){
+        WinGet, _hwnd, ID, A
+        _bool := arrayIndex(_winList, _hwnd) > 0
+    }
+    else if(_winTitle_type == "pid"){
+        WinGet, _pid, PID, A
+        _bool := arrayIndex(_winList, _pid) > 0
+    }
+    else{
+        WinGetTitle, _title, A
+        _bool := arrayIndex(_winList, _title) > 0
+    }
+    ;---
+    return _bool
+}
+
 ; 窗口白名单Config.upath("allowResizeWinsFile")
 添加窗口到白名单(){
     ; 获取当前窗口
     _wininfo:= 获取窗口信息()
     ; 检测当前窗口是否已在白名单
     _allowResizeWins := 允许调整窗口白名单()
-    _exist := dictHasValue(_allowResizeWins, _wininfo["win"]["class"])!=""
+    _winName := _wininfo["window"]["exe"]
+    _exist := arrayIndex(_allowResizeWins, _winName) > 0
     if(! _exist){
         ; 如果不存在 则提示添加, 设置窗口名称
-        _winName := _wininfo["win"]["class"]
         if(用户修改变量(_winName
             , "窗口名称"
-            , _wininfo["win"]["exe"])=true){
+            , _wininfo["window"]["exe"])=true){
             ;修改json对象, 并保存到文件
-            _allowResizeWins["allowResizeWins"].push({(_winName) : _wininfo["win"]["class"]})
+            _allowResizeWins.push(_winName)
             JsonFile.write(_allowResizeWins, Config.upath("allowResizeWinsFile"))
             show_msg("当前窗口已添加到白名单")
         }
@@ -41,13 +100,13 @@
 
     ; 检测当前窗口是否已在白名单
     _allowResizeWins := 允许调整窗口白名单()
-    _pathKey := dictHasValue(_allowResizeWins, _wininfo["win"]["class"])
-    if(_pathKey == "")
+    _winName := _wininfo["window"]["exe"]
+    _exist := arrayIndex(_allowResizeWins, _winName) > 0
+    if(! _exist)
         show_msg("当前窗口不在白名单")
     else{
         ; 如果存在 则提准备删除, 先获取索引
-        _index := (str_Split(_pathKey, "/"))[2]
-        arrayRemove(_allowResizeWins["allowResizeWins"], _index)
+        arrayRemoveByValue(_allowResizeWins, _winName)
         JsonFile.write(_allowResizeWins, Config.upath("allowResizeWinsFile"))
         show_msg("当前窗口已从白名单删除")
     }
@@ -76,7 +135,7 @@
     WinGetClass, this_class, ahk_id %this_id%
     WinGetTitle, this_title, ahk_id %this_id%
     WinGetPos , winX, winY, winW, winH, ahk_id %this_id%
-    _wininfo["win"] := {"id": this_id
+    _wininfo.window := {"id": this_id
                       , "pid": this_pid
                       , "exe": this_exe
                       , "class": this_class
@@ -89,11 +148,11 @@
     CoordMode, Mouse, Window
     MouseGetPos, mouseX, mouseY, mouseUnderwinId, mouseUnderControlClass
     PixelGetColor, pixColor, mouseX, mouseY, RGB
-    _wininfo["mouse"] := {"x_screen": mouseX_screen
+    _wininfo.mouse := {"x_screen": mouseX_screen
                       , "y_screen": mouseY_screen
                       , "x": mouseX
                       , "y": mouseY
-                      , "pixColor": pixColor
+                      , "pixColor": new Color(pixColor)
                       , "UnderwinId": mouseUnderwinId
                       , "UnderControlClass": mouseUnderControlClass}
 
@@ -106,7 +165,7 @@
     ;--- 虚拟屏幕的宽度和高度, 单位为像素. 虚拟屏幕是所有监视器的边框
     SysGet, VirtualScreenWidth, 78
     SysGet, VirtualScreenHeight, 79
-    _wininfo["monitor"] := {"count": monitorCount
+    _wininfo.monitor := {"count": monitorCount
                             , "primary": monitorPrimary
                             , "monitor": {"l": monitorLeft
                                             , "r": monitorRight
@@ -126,7 +185,7 @@
     {
         arrayAppend(controlList_name, A_LoopField)
     }
-    _wininfo["controls"] := controlList_name
+    _wininfo.controls := controlList_name
 
     ; ;--- 输出
     ; _returns .= "; ==========================================================`n"
@@ -190,7 +249,7 @@
 {
     run %_filepath%
     sleep 1000
-    if(Sys.ifWin(["CabinetWClass"])){
+    if(inWinList(["explorer.exe"])) {
         ; 资源管理器窗口
         快捷操作_移动当前窗口_并调整大小(_position, _总列数, _总行数)
     }

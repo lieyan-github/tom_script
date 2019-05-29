@@ -62,18 +62,15 @@ class Sys{
     }
     ; static method 获取"日期时间字符串"
     now(){
-        FormatTime, _result,, yyyy-MM-dd HH:mm:ss
-        return _result
+        return strTime("yyyy-MM-dd HH:mm:ss")
     }
     ; static method 获取"日期字符串"
     date(){
-        FormatTime, _result,, yyyy-MM-dd
-        return _result
+        return strTime("yyyy-MM-dd")
     }
     ; static method 获取"时间字符串"
     time(){
-        FormatTime, _result,, HH:mm:ss
-        return _result
+        return strTime("HH:mm:ss")
     }
 
     ; static method 获取"星期字符串" 修正系统的星期天数, 周一_周日从1-7
@@ -85,35 +82,6 @@ class Sys{
             _result -= 1
         return _result
     }
-
-    ; ifWin(_winList, _winTitle_type)
-    ; 判断是否指定窗体
-    ; static method
-    ; _MatchList :=  [
-    ;                     {"ie":"IEFrame"},
-    ;                     {"GomPlayer":"GomPlayer1.x"}
-    ;                 ]
-    ifWin(_winList, _winTitle_type:="class"){
-        _bool := false
-        if(_winTitle_type == "class"){
-            WinGetClass, _class, A
-            _bool := dictHasValue(_winList, _class)!=""
-        }
-        else if(_winTitle_type == "id"){
-            WinGet, _hwnd, ID, A
-            _bool := dictHasValue(_winList, _hwnd)!=""
-        }
-        else if(_winTitle_type == "pid"){
-            WinGet, _pid, PID, A
-            _bool := dictHasValue(_winList, _pid)!=""
-        }
-        else{
-            WinGetTitle, _title, A
-            _bool := dictHasValue(_winList, _title)!=""
-        }
-        return _bool
-    }
-
 }
 
 ; ----------------------------------------------------------
@@ -122,12 +90,7 @@ class Sys{
 tom手动批量启动常用工具()
 {
     ;--- 先启动音速启动, 以便使用程序菜单
-    _自动启动列表:= [["音速启动", "d:\home\lieyan\d - softwares\green_software\音速启动(VStart)V5\VStart.exe"]
-                    , ["F.lux", "C:\Users\tom\AppData\Local\FluxSoftware\Flux\flux.exe", "/noshow"]
-                    , ["cFosSpeed", "C:\Program Files\cFosSpeed\cfosspeed.exe"]
-                    , ["setPoint", "c:\Program Files\Logitech\SetPointP\SetPoint.exe"]
-                    , ["蓝灯翻墙lantern", "D:\home\lieyan\d - softwares\green_software\网络工具\蓝灯翻墙lantern\lantern.exe"]
-                    , ["有道笔记", "C:\Program Files (x86)\Youdao\YoudaoNote\YoudaoNote.exe"]]
+    _自动启动列表:= JsonFile.read(Config.upath("批量启动程序"))
     批量启动程序(_自动启动列表, true)
     sleep 10000
 }
@@ -168,8 +131,8 @@ tom手动批量启动常用工具()
     程序路径        := ""
     程序参数        := ""
     ; ----------------------------
-    options         := []
-    启动后的状态调整:= ""
+    options        := []
+    启动后的状态调整 := ""
     窗口标题        := ""
     附加条件参数    := ""
     ; ----------------------------
@@ -267,7 +230,7 @@ tom手动批量启动常用工具()
             }
             arrayAppend(_处理日志, 提示信息)
             ; 操作处理结果提示信息
-            show_msg(提示信息)
+            ; show_msg(提示信息)
             sleep %_程序启动间隔时间%
         }
         else

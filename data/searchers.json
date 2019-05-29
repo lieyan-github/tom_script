@@ -3,7 +3,7 @@
         {
             "name": "Everything",
             "cmd": "D:/_home_/tom/program/green_program/应用软件/文件管理/Everything/Everything.exe  -search \"%s\"",
-            "tag": ["local"]
+            "tag": ["Everything"]
         },
         {
             "name": "google",
@@ -17,7 +17,7 @@
         },
         {
             "name": "javmoo",
-            "cmd": "https://avmoo.xyz/tw/search/%s",
+            "cmd": "https://javzoo.com/tw/search/%s",
             "tag": ["av"]
         },
         {

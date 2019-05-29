@@ -113,6 +113,16 @@ arrayRemove(_array, _index)
     return _array.RemoveAt(_index)
 }
 
+; arrayRemoveByValue(_array, _key)  ; 返回 _key 对应的值
+arrayRemoveByValue(_array, _value)
+{
+    _result := ""
+    _index := arrayIndex(_array, _value)
+    if(_index>0)
+        _result:= _array.RemoveAt(_index)
+    return _result
+}
+
 ; arrayReverse(_array)  反转数组函数
 arrayReverse(_array){
     _i := 1
@@ -134,17 +144,10 @@ arrayReverse(_array){
 
 ; arrayJoin(_array)   拼接数组元素输出字符串
 ; _separator 拼接间隔字符
-; _cleanSeparator, 清洗原字符串中包含的间隔符, 默认清洗
-; _replaceSeparator, 清洗时, 用指定字符替换间隔符
-arrayJoin(_array, _separator:=" ", _cleanSeparator:=true, _replaceSeparator:="_"){
+arrayJoin(_array, _separator:=" "){
     _result := ""
     for k, v in _array {
-        if(_cleanSeparator){
-            _result .= StrReplace(trim(v, " `t"), _separator, _replaceSeparator) . _separator
-        }
-        else{
-             _result .= v . _separator
-        }
+        _result .= v . _separator
     }
     return SubStr(_result, 1, -StrLen(_separator))
 }
@@ -170,16 +173,44 @@ arrayToStr(_array, _indent:=true, _level:=0, _indentStr:="    ", _endStr:="`n")
     if(_indent)
         loop %_level%
             _indent_str .= _indentStr
+    _maxKeyWidth := arrayMaxKeyWidth(_array)                ; 统计数组键字符的最大宽度, 等宽格式化用
     for k, v in _array {
-        if(IsObject(v)){
-            _result .= _indent_str . k . ": " . _endStr
-            _result .= arrayToStr(v, _indent, _level+1, _indentStr, _endStr)
+        if(!IsObject(v)){
+            _result .= Format("{1} : {2}"
+                        , _indent_str . strFill(k, _maxKeyWidth, " ", "right")
+                        , v . _endStr)
         }
         else{
-            _result .= _indent_str . k . ": " . v . _endStr
+            if(isArray(v)){ ; 如果是数组
+                _result .= Format("{1} : {2}{3}{4}"
+                            , _indent_str . strFill(k, _maxKeyWidth, " ", "right")
+                            , "[" . _endStr
+                            , arrayToStr(v, _indent, _level+1, _indentStr, _endStr)
+                            , _indent_str . "]" . _endStr)
+            }
+            else{           ; 如果是字典
+                _result .= Format("{1} : {2}{3}{4}"
+                            , _indent_str . strFill(k, _maxKeyWidth, " ", "right")
+                            , "{" . _endStr
+                            , arrayToStr(v, _indent, _level+1, _indentStr, _endStr)
+                            , _indent_str . "}" . _endStr)
+            }
         }
     }
     return _result
+}
+
+; 检测是否简单数组, 而非字典
+isArray(_array){
+    _是数组:= false
+    _是字典:= false
+    if(IsObject(_array)){
+        if(_array.MaxIndex()!="")
+            _是数组:= true
+        else
+            _是字典:= true
+    }
+    return _是数组
 }
 
 ; arrayPrint(_array, _w:=800, _h:=600)
@@ -198,31 +229,31 @@ arrayPrint(_array, _w:=800, _h:=600){
 ; arrayMap(_array, _funcName, _params*)
 ; 根据提供的函数对指定列表每个元素做处理
 ; _array:       数组, 不修改原数组
-; _funcName:    函数名字符串, 函数格式Call(v, ..)
+; _funcName:    函数名字符串, 函数格式Call({"k":k, "v":v}, ..)
 ; _params*:     函数其他参数
 ; return:       返回处理过的数组引用
 arrayMap(_arrayIn, _funcName, _params*){
     _array := _arrayIn.Clone()
     _func := Func(_funcName)        ; 获得函数对象
     for k, v in _array
-        _array[k] := _func.Call(v, _params*)
+        _array[k] := _func.Call({"k":k, "v":v}, _params*)
     return _array                    ;返回处理过的数组引用
 }
 
 ; public static reduce() 函数会对参数序列中元素进行累积, 比如累加, 阶乘..
 ; _array:       数组(值调用), 不修改原数组
 ; _initValue    初始累计值
-; _funcName:    函数名字符串, 函数格式Call(_total, v, ..)
+; _funcName:    函数名字符串, 函数格式Call({"k":_index, "v":v, "cache":_cache}, ..)
 ; _params*:     函数其他参数
 ; return:       返回处理过的累积值
 arrayReduce(_array, _initValue, _funcName, _params*){
     _func   := Func(_funcName)        ; 获得函数对象
-    _total  := _initValue             ; 存储累计值
+    _cache  := _initValue             ; 存储累计值
     ; produce
     for _index, v in _array {
-        _total := _func.Call(_total, v, _params*)
+        _cache := _func.Call({"k":_index, "v":v, "cache":_cache}, _params*)
     }
-    return _total                     ;返回处理过的累积值
+    return _cache                     ;返回处理过的累积值
 }
 
 ; arrayUnique(_array)
@@ -238,6 +269,20 @@ arrayUnique(_array){
             _newArray.push(_valueCheck)
     }
     return _newArray
+}
+
+; arrayMaxKeyWidth(_array)
+; 找出一维数组中最大的键字符宽度
+; 统计数组键字符的最大宽度, 等宽格式化用
+arrayMaxKeyWidth(_array){
+    _MaxKeyWidth:= 0
+    _keyWidth   :=0
+    for k,v in _array{
+        _keyWidth := StrLen(k)
+        if(_keyWidth>_MaxKeyWidth)
+            _MaxKeyWidth := _keyWidth
+    }
+    return _MaxKeyWidth
 }
 
 ; arrayFindMinIndex(_array)
@@ -369,20 +414,20 @@ arrayAssociate(_arrayTag, _arrayInfo, _keyField, _valueField:="_self"){
 ; ----------------------------------------------------------
 ; arrayMap arrayReduce 数组批处理测试
 ; ----------------------------------------------------------
-; ; arrayReduce test
+; ;arrayReduce test
 ; array1 := [1, 2, 3]
 ; array2 := []
 
-; maptest(_v){
-;     return _v*2
+; _test_乘测试(x){
+;     return x["v"]*2
 ; }
 
-; reducetest(_total, _v){
-;     return _total + _v
+; _test_累加测试(x){
+;     return x["cache"] + x["v"]
 ; }
 
-; msgbox % arrayReduce(array1, 0, "reducetest")
+; msgbox % arrayReduce(array1, 0, "_test_累加测试")
 
-; array2 := arrayMap(array1, "maptest")
+; array2 := arrayMap(array1, "_test_乘测试")
 ; arrayPrint(array1)
 ; arrayPrint(array2)

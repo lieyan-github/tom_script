@@ -98,7 +98,7 @@ class List {
     {
         this._list := _array
     }
-    
+
     ; ----------------------------------------------------------
     ; public 修改数组的相关函数
     ; ----------------------------------------------------------
@@ -111,33 +111,33 @@ class List {
         ; get
         return this._list[_index]
     }
-    
+
     ; [数组函数]public insert(_index, _values1, _values2, ...)
-    ; 追加新元素在指定索引位置; 
+    ; 追加新元素在指定索引位置;
     insert(_index, _values*)
     {
         this._list.InsertAt(_index, _values*)
     }
-    
-    ; [数组函数]public push(_values1, _values2, ...) 
-    ; 默认加入元素在末尾; 
+
+    ; [数组函数]public push(_values1, _values2, ...)
+    ; 默认加入元素在末尾;
     push(_values*)
     {
         return this._list.Push(_values*)
     }
-    
-    ; 加入元素在首位; 
+
+    ; 加入元素在首位;
     pushFirst(_values*){
         return this.insert(1, _values*)
     }
-    
+
     ; [数组函数]public append(_values1, _values2, ...)
-    ; 追加新元素在最后; 
+    ; 追加新元素在最后;
     append(_values*)
     {
         this.Push(_values*)
     }
-    
+
     ; [数组函数]static pop()
     ; 默认弹出最后一项
     pop()
@@ -149,7 +149,7 @@ class List {
         }
         return this._list.Pop()
     }
-    
+
     ; 弹出第一项
     popFirst(){
         ; 数组空异常处理
@@ -159,7 +159,7 @@ class List {
         }
         return this._list.RemoveAt(1)
     }
-    
+
     ; [数组函数]public object popIndex(_index)
     ; 默认弹出指定项
     popIndex(_index)
@@ -172,21 +172,21 @@ class List {
         this._list.remove(_index)
         return _result
     }
-    
+
     ; [数组函数]public object remove(_index)
     ; 返回 _index 对应的值
     remove(_index, _length:=1)
     {
         return this._list.RemoveAt(_index, _length)
     }
-    
+
     ; [数组函数]public clear()
-    ; 清空数组 
+    ; 清空数组
     clear()
     {
         this._list := []
     }
-    
+
     ; [反转数组函数]public reverse()
     reverse(){
         _i := 1
@@ -205,7 +205,7 @@ class List {
             }
         }
     }
-    
+
     ; ----------------------------------------------------------
     ; public 非修改数组的相关函数
     ; ----------------------------------------------------------
@@ -213,7 +213,7 @@ class List {
     length(){
         return this._list.Length()
     }
-    
+
     ; [拼接数组元素输出字符串] static string join()
     ; _separator 拼接间隔字符
     ; _cleanSeparator, 清洗原字符串中包含的间隔符, 默认清洗
@@ -230,9 +230,9 @@ class List {
         }
         return SubStr(_result, 1, -StrLen(_separator))
     }
-    
+
     ; [数组函数]public toStr()
-    ; 将指定数组格式化, 返回字符串, 
+    ; 将指定数组格式化, 返回字符串,
     ; 遍历内部的所有成员数组和字典
     ; _indent: 是否缩进, 默认缩进;
     ; _level: 递推的层数;
@@ -246,17 +246,17 @@ class List {
             loop %_level%
                 _indent_str .= _indentStr
         for k, v in this._list {
-            if(IsObject(v)){
-                _result .= _indent_str . k . ": " . _endStr
-                _result .= this.toStr(v, _indent, _level+1, _indentStr, _endStr)
+            if(!IsObject(v)){
+                _result .= _indent_str . k . ": " . v . _endStr
             }
             else{
-                _result .= _indent_str . k . ": " . v . _endStr
+                _result .= _indent_str . k . ": " . _endStr
+                _result .= this.toStr(v, _indent, _level+1, _indentStr, _endStr)
             }
         }
         return _result
     }
-    
+
     ; public public map(_funcName, _params*)
     ; 根据提供的函数对指定列表每个元素做处理
     ; _funcName:    函数名字符串, 函数的第一值参数必须是数组value
@@ -268,7 +268,7 @@ class List {
             _list[k] := _func.Call(v, _params*)
         return _list                                    ;返回处理过的数组引用
     }
-    
+
     ; public public reduce() 函数会对参数序列中元素进行累积, 比如累加, 阶乘..
     ; _funcName:    函数名字符串, 函数的前两个参数必须是数组value
     ; _params*:     函数其他参数
@@ -289,7 +289,7 @@ class List {
         }
         return _result                                  ;返回处理过的累积值
     }
-    
+
     ; 从指定数组中收集所有唯一项, 返回收集结果数组
     collectOnlyItem(){
         _resultlist := []
@@ -312,7 +312,7 @@ class List {
         }
         return _resultlist
     }
-    
+
     ; public int minIndex()
     ; 找出数组中最小值的索引
     ; 为sortByAsc()专用的函数
@@ -332,7 +332,7 @@ class List {
         ;-----------------
         return _min_index
     }
-    
+
     ; public sortByAsc() 对数组进行升序排序
     ; 依赖popIndex
     sortByAsc(){
@@ -346,7 +346,7 @@ class List {
         _result := true
         return _result
     }
-    
+
     ; ----------------------------------------------------------
     ; 静态函数 - 特殊需求
     ; ----------------------------------------------------------

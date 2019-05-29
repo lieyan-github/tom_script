@@ -8,41 +8,42 @@
 ;
 ; ==========================================================
 
-;^!f5::
-;    测试代码()
-;    return
+;debug 临时测试
+^#f9::
+   测试代码()
+   return
+
++#f9::
+    av_测试分析剪贴板()
+    return
 
 测试代码(){
-    write(format("{}`n{}`",
-        , strRandom(1, 10000, 6)
-        , strId()))
+    av_测试提取女优信息()
 }
 
 ; ----------------------------------------------------------
-; [ 重复用到的小功能 ]
+; [ 热键用到的快捷操作 ]
 ; ----------------------------------------------------------
 打开帮助(){
     run "https://wyagd001.github.io/zh-cn/docs/AutoHotkey.htm"
 }
 打开编辑器(){
-    run "D:\_home_\tom\program\green_program\应用软件\编辑工具\EmEditor\EmEditor.exe"
+    运行程序("D:\_home_\tom\program\green_program\应用软件\编辑工具\EmEditor\EmEditor.exe")
 }
 
 打开计算器(){
-    run "D:\_home_\tom\program\green_program\开发工具\辅助工具\SpeQ Mathematics┊计算任意定义变量、复杂数学公式┊多国语言绿色免费版\SpeQ Mathematics.exe"
+    运行程序("D:\_home_\tom\program\green_program\开发工具\辅助工具\SpeQ Mathematics┊计算任意定义变量、复杂数学公式┊多国语言绿色免费版\SpeQ Mathematics.exe")
 }
 打开截图(){
-    run "D:\_home_\tom\program\green_program\图形图像\FastStone Capture\FSCapture.exe"
+    运行程序("D:\_home_\tom\program\green_program\图形图像\FastStone Capture\FSCapture.exe")
 }
 打开文件比较(){
-    run "D:\_home_\tom\program\green_program\应用软件\文件管理\Beyond Compare┊专业级文件及文件夹比较工具\Beyond Compare\BCompare.exe"
+    运行程序("D:\_home_\tom\program\green_program\应用软件\文件管理\Beyond Compare┊专业级文件及文件夹比较工具\Beyond Compare\BCompare.exe")
 }
 打开路由器(){
     run "http://10.0.0.1"
 }
 web网购(){
-    run "https://buyertrade.taobao.com/trade/itemlist/list_bought_items.htm?spm=a21bo.7724922.1997525045.2.cLEOYg"
-    sleep 200
     run "http://www.taobao.com"
 }
 web下载软件(){
@@ -62,9 +63,16 @@ web财经(){
     run "https://wallstreetcn.com/markets/home"
 }
 打开正则表达式编辑器(){
-    run "D:\_home_\tom\program\green_program\开发工具\[正则表达式]RegexBuddy\RegexBuddy.exe"
+    运行程序("D:\_home_\tom\program\green_program\开发工具\[正则表达式]RegexBuddy\RegexBuddy.exe")
 }
-
+打开音速启动(){
+    if WinExist("ahk_exe VStart.exe")
+        send !``
+    else{
+        show_msg("启动->音速启动")
+        运行程序("D:\_home_\tom\program\green_program\音速启动(VStart)V5\VStart.exe")
+    }
+}
 
 ; ----------------------------------------------------------
 ; 全局快捷键
@@ -82,6 +90,8 @@ $Capslock::show_msg("键屏蔽, 用ctrl + Capslock代替.")        ; 屏蔽Capsl
 #RButton::                                                  ;打开主菜单
 AppsKey::Menus.main_menu()
 
+$!`::打开音速启动()
+
 ; ----------------------------------------------------------
 ; [全局]win & F1-F12        打开软件
 ; ----------------------------------------------------------
@@ -91,26 +101,20 @@ AppsKey::Menus.main_menu()
 #f2::打开计算器()
 #f3::打开截图()
 #f4::打开文件比较()
-#f5::提示热键无操作()
+#f5::script_reload()
 #f6::提示热键无操作()
 #f7::提示热键无操作()
 #f8::打开窗口("D:\_home_data_\同步备份清单")
 #f9::arrayPrint(获取窗口信息(), 1024, 768)                   ; 调试: 设置断点调试
 #f10::打开正则表达式编辑器()                                  ; 调试: 调试保留备用    - 打开正则表达式
 #f11::run "D:\_home_\tom\program\green_program\辅助工具\AutoHotkey\tom工具包\WindowSpy.ahk"    ; 调试: 单步调试        - 打开spy探针
-#f12::script_reload()                                       ; 调试: 重新加载脚本
-#del::批量关闭进程(["xigua.exe"
-                 , "xgengine.exe"
-                 , "MiniThunderPlatform.exe"
-                 , "JJPlayer.exe"
-                 , "hdacc.exe"
-                 , "YodaoDict.exe"
-                 , "YoudaoIE.exe"
-                 , "MiPhoneHelper.exe"])
+#f12::Menus.main_menu()                                     ; 调试: 打开配置文件
+^+#del::批量关闭进程(JsonFile.read(Config.upath("批量关闭程序")))
+
 ; ----------------------------------------------------------
 ; [全局]win & 数字          打开web
 ; ----------------------------------------------------------
-#`::web网购()
+#`::web财经()
 #1::web网购()
 #2::web下载软件()
 #3::web查报价()
@@ -211,15 +215,21 @@ Launch_App2::提示热键无操作()
 ; [lib_搜索]快捷搜索
 ; ----------------------------------------------------------
 #q::search_menu()                   ;搜索菜单
+^#q::运行程序("D:\Program Files\Listary\Listary.exe")
 
 ; ----------------------------------------------------------
 ; 剪贴板数组
 ; ----------------------------------------------------------
+#z::
+    Clipboarder.clean()
+    剪贴板数组拼接并粘贴()
+return
+#x::清空并复制到剪贴板数组()
 #c::复制到剪贴板数组()
-#x::剪切到剪贴板数组()
-#v::粘贴来自剪贴板数组()
+#v::剪贴板数组拼接并粘贴()
+^#v::粘贴来自剪贴板数组()
 #space::打开剪贴板菜单()
-#z::剪贴板快速清洗拼接粘贴()
+
 ; ----------------------------------------------------------
 ; [字符串类]加密/解密字符串
 ; ----------------------------------------------------------
@@ -231,7 +241,7 @@ Launch_App2::提示热键无操作()
 ; 资源管理器窗口
 ; ---------------------------------------
 $!f8::
-    if(Sys.ifWin(Config.get("资源管理器"))){
+    if(inWinList(Config.get("资源管理器"))){
         ; 资源管理器窗口
         ; [可多选]显示所选文件的md5
         showFileHash("md5")
@@ -242,7 +252,7 @@ $!f8::
 return
 
 $^!f8::
-    if(Sys.ifWin(Config.get("资源管理器"))){
+    if(inWinList(Config.get("资源管理器"))){
         ; 资源管理器窗口
         ; [可多选]显示所选文件的md5和hash
         showFileHash("")
@@ -257,15 +267,15 @@ return
 ; 资源管理器窗口
 ; ---------------------------------------
 $^r::
-    if(Sys.ifWin(Config.get("资源管理器"))){
+    if(inWinList(Config.get("资源管理器"))){
         ; 资源管理器窗口, 按ctrl+r, 自动将当前文件更名为id;
         自动重命名(3)
     }
-    else if(Sys.ifWin(["#32770"])){
+    else if(inWinList(["#32770"])){
         ; 另存为窗口, ctrl+r, 将处于选中状态的文件名字符串, 重命名为 "id.源扩展名"
         自动重命名(2)
     }
-    else if(Sys.ifWin(["Chrome_WidgetWin_2"])){
+    else if(inWinList(["360chrome.exe"])){
         ; 360浏览器自定义修改av收藏
         WinGetTitle, _winTitle, A
         if(_winTitle ~= "[收藏|书签]$")
@@ -283,7 +293,7 @@ $^r::
 return
 
 $^!r::
-    if(Sys.ifWin(Config.get("资源管理器"))){
+    if(inWinList(Config.get("资源管理器"))){
         ; 资源管理器窗口, 按ctrl+alt+r, 自动将当前文件更名并包含原文件名;
         自动重命名(4)
     }
@@ -294,7 +304,7 @@ $^!r::
 return
 
 $^+r::
-    if(Sys.ifWin(Config.get("资源管理器"))){
+    if(inWinList(Config.get("资源管理器"))){
         ; 资源管理器窗口, undo撤销操作;
         自动重命名(0)
     }
@@ -306,7 +316,7 @@ return
 
 ; 自定义重命名操作
 $!f2::
-    if(Sys.ifWin(Config.get("资源管理器"))){
+    if(inWinList(Config.get("资源管理器"))){
         ; 资源管理器窗口, 用剪贴板内容重命名, 如果相同则做av分析并重命名;
         f2自动重命名(1)
     }
@@ -317,7 +327,7 @@ return
 
 ; undo撤销操作
 $+f2::
-    if(Sys.ifWin(Config.get("资源管理器"))){
+    if(inWinList(Config.get("资源管理器"))){
         ; 资源管理器窗口, undo撤销操作f2
         f2自动重命名(0)
     }
@@ -338,7 +348,7 @@ return
 
 ; 鼠标快速向左调整窗口()
 $Wheelleft::
-    if(Sys.ifWin(允许调整窗口白名单())){
+    if(inWinList(允许调整窗口白名单())){
         鼠标快速向左调整窗口()                                ; 资源管理器窗口
     }
     else{
@@ -348,7 +358,7 @@ return
 
 ; 鼠标快速向右调整窗口()
 $Wheelright::
-    if(Sys.ifWin(允许调整窗口白名单())){
+    if(inWinList(允许调整窗口白名单())){
         鼠标快速向右调整窗口()                                ; 资源管理器窗口
     }
     else{
@@ -358,7 +368,7 @@ return
 
 ; 鼠标快速向左调整窗口()
 $XButton1::
-    if(Sys.ifWin(允许调整窗口白名单())){
+    if(inWinList(允许调整窗口白名单())){
         鼠标快速向左调整窗口()                                ; 资源管理器窗口
     }
     else{
@@ -368,7 +378,7 @@ return
 
 ;鼠标快速向右调整窗口()
 $XButton2::
-    if(Sys.ifWin(允许调整窗口白名单())){
+    if(inWinList(允许调整窗口白名单())){
         鼠标快速向右调整窗口()                                ; 资源管理器窗口
     }
     else{
@@ -378,7 +388,7 @@ return
 
 ; 按ctrl+鼠标中键, 窗口纵向最大化
 $MButton::
-    if(Sys.ifWin(允许调整窗口白名单())){
+    if(inWinList(允许调整窗口白名单())){
         鼠标单键切换窗口y轴大小()                             ; 资源管理器窗口
     }
     else{
@@ -388,7 +398,7 @@ return
 
 ; 按shift+鼠标中键, 窗口横向向最大化
 $+MButton::
-    if(Sys.ifWin(允许调整窗口白名单())){
+    if(inWinList(允许调整窗口白名单())){
         鼠标单键切换窗口x轴大小()                             ; 资源管理器窗口
     }
     else{

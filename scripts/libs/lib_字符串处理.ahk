@@ -4,10 +4,22 @@
 ;
 ; 文档作者: tom
 ;
-; 修改时间: 2019-02-08 22:25:15
+; 修改时间: 2019-02-25 03:37:23
 ;
 ; ==========================================================
 
+; 移除字符串的开始和/或末尾的某些字符, 例如, " abc " => "abc"
+; _type in ["", "r", "l"]; ""首尾都清理
+strTrim(_instr, _OmitChars:=" `t", _type:=""){
+    _result := ""
+    if(_type="")
+        _result := Trim(_instr, _OmitChars)
+    else if(_type="r")
+        _result := RTrim(_instr, _OmitChars)
+    else if(_type="l")
+        _result := LTrim(_instr, _OmitChars)
+    return _result
+}
 
 ; 包裹字符串, 例如, abc => "abc"
 strWrap(_instr, _wrapStart:="""", _wrapEnd:=""""){
@@ -15,14 +27,22 @@ strWrap(_instr, _wrapStart:="""", _wrapEnd:=""""){
     return result
 }
 
+; 从_instr中删除所有_subStr, 返回删除后的剩余字符串
+strDelSub(_instr, _subStr){
+    return StrReplace(_instr, _subStr, "")
+}
+
 ; 清洗字符串
-strClean(_string, _clean_str_list:="(\s|\?|\/|\[|\]|""|　|,)+"){
+; 测试清洗
+; [2019.12.12]    [韩国]    [剧情]    [BT下载][妹妹不是你][HD-MP4/1.2G][独家韩语.中字][720P][妻子姐姐.教我姿势]
+; TransAngels.18.07.02.Domino.Presley.Independent.Woman..480p.MP4-XxX
+strClean(_string, _clean_str_list:="(\s|\?|\/|\[|\]|＋|\+|""|　|,|:|(?<!\d)\.|\.(?!\d))+"){
     result:= _string
     ; 先用空格替代
     result := RegExReplace(result, _clean_str_list, " ")
     ; 替代完再把连续重复的空格替代成单独空格
     ; result := RegExReplace(result, "\s+", " ")
-    return result
+    return trim(result, " `t")
 }
 
 ; 把字符串分解成多个子字符串, 返回字符串数组
@@ -95,7 +115,7 @@ strLimitLen(_string, _start, _length, _postfix:="")
 ; ----------------------------------------------------------
 ; 填充字符串(填充对象, 填充结果总长度, 填充字符)
 ; ----------------------------------------------------------
-strFill(_inFillTarget, _inTotalLen, _inFillChar:="0")
+strFill(_inFillTarget, _inTotalLen, _inFillChar:="0", _inFillLeft:="left")
 {
     _result         := ""
     _fillString     := ""
@@ -108,7 +128,7 @@ strFill(_inFillTarget, _inTotalLen, _inFillChar:="0")
     ;--- 对于填充字符大于一个时, 进行修正截取有效长度
     _fillString:= SubStr(_fillString, 1, _fillCharLen)
     ;--- 开始填充字符
-    if(_inTotalLen>0)           ; 长度为正, 左侧填充, 否则右侧填充
+    if(_inFillLeft=="left")           ; 左侧填充, 否则右侧填充
         _result := _fillString . _inFillTarget
     else
         _result := _inFillTarget . _fillString
