@@ -13,28 +13,7 @@ class Sys{
     static mouse := {x:0, y:0
                     , x_screen:0, y_screen:0
                     , color:0}
-    static testTag := "Sys"
-; ----------------------------------------------------------
-; 单元测试 public static test()
-; ----------------------------------------------------------
-    test(){
-        Test.match("Sys.now() == dddd-dd-dd dd:dd:dd"
-            , "(?:\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})"
-            , Sys.now()
-            , Sys.testTag)
-        Test.match("Sys.date() == dddd-dd-dd"
-            , "(?:\d{4}-\d{2}-\d{2})"
-            , Sys.date()
-            , Sys.testTag)
-        Test.match("Sys.time() == dd:dd:dd"
-            , "(?:\d{2}:\d{2}:\d{2})"
-            , Sys.time()
-            , Sys.testTag)
-        Test.match("Sys.week() == d[1-7]"
-            , "(?:[1-7])"
-            , Sys.week()
-            , Sys.testTag)
-    }
+
     ; static method
     init(){
         Sys.monitor_init()

@@ -43,6 +43,7 @@
 #include scripts\packages\Av.class.ahk
 ; 单元测试
 #include scripts\packages\TestUnit.class.ahk
+#include scripts\testUnit\单元测试.ahk
 
 ; --- end
 

@@ -1,38 +1,50 @@
 ﻿; ==========================================================
 ; Test.class.ahk 单元测试类
 ;
-; 文档作者: 烈焰
+; 文档作者: tom
 ;
-; 修改时间: 2016-06-05 01:02:50
+; 修改时间: 2019-06-30 20:21:24
 ; ==========================================================
+; 使用说明:
+; 0. 单元测试初始化:     test_init()
+; 1. 加入单元测试:       test_add(_测试描述, _测试表达式)
+; 2. 运行单元测试:       test_run()
+; 3. 显示批量测试结果
+
+
+; 简化操作
+; ----------------------------------------------------------
+test_init(){
+    Test.me().init()
+}
+
+test_add(_测试描述, _测试表达式){
+    Test.me().add(_测试描述, _测试表达式)
+}
+
+test_run(){
+    Test.me().run()
+}
+; 与test_add一样
+assert(_测试描述, _测试表达式){
+    Test.me().add(_测试表达式, _测试描述)
+}
+; ----------------------------------------------------------
 
 ; public class Test
 class Test {
-    ; public 测试清单
-    testList := []
     ; public 测试结果
-    testResultList := []
+    validList := []
+    errorList := []
     ; static instance var 单件模式
     static uniqueInstance := "null"
 ; ----------------------------------------------------------
 ; Test 单元测试主程序
 ; ----------------------------------------------------------
     ; public void test() 单元测试主程序
-    test(){
-        ; init()
-        this.clear()
-        ; add test
-        ; ----------------------------------------------------------
-        this.add(TestTemplate.test())
-        this.add(Path.test())
-        this.add(Av.test())
-        this.add(Sys.test())
-        ; ----------------------------------------------------------
-        ; start test
-        this.runTestList()
+    run(){
         ; end 显示测试单元结果
         this.showResult()
-        this.saveResult()
         this.clear()
     }
 
@@ -54,116 +66,48 @@ class Test {
         return Test.getInstance()
     }
 
-    ; public static void assertEquals
-    eq(_testName, _trueResult, _execResult, _tag:="分组1"){
-        boolResult := false
-        if(_trueResult == _execResult)
-            boolResult := true
-        Test.me().recordResult(Test.commentResult(boolResult), _tag, _testName)
-    }
-
-    ; public static void match
-    match(_testName, _trueRegexp, _execResult, _tag:="分组1"){
-        boolResult := false
-        if(RegExMatch(_execResult, _trueRegexp) >0 )
-            boolResult := true
-        Test.me().recordResult(Test.commentResult(boolResult), _tag, _testName)
-    }
-
 ; ----------------------------------------------------------
 ; Test 对象辅助操作
 ; ----------------------------------------------------------
-    ; public void add(_func)
-    add(_func){
-        arrayPush(this.testList, _func)
+    init(){
+        this.clear()
     }
 
-    ; public void runTestList()
-    runTestList(){
-        Loop % this.testList.MaxIndex(){
-            this.testList[A_Index].call()
-        }
-    }
-
-    ; public void recordResult() 记录测试结果
-    recordResult(_testResult*){
-        arrayPush(this.testResultList, _testResult)
+    ; 记录测试结果
+    add(_测试表达式结果, _测试描述){
+        if(_测试表达式结果)
+            arrayPush(this.validList, _测试描述)
+        else
+            arrayPush(this.errorList, _测试描述)
     }
 
     ; public string toStr()
     toStr(){
         _str:= ""
-        Loop % this.testResultList.MaxIndex()
-            _str .= this.testResultList[A_Index][1] . "[" . this.testResultList[A_Index][2] . "] " . this.testResultList[A_Index][3] . "`n"
+        _str.= "; ==========================================================`n"
+        _str.= "; 单元测试`n"
+        _str.= "; ==========================================================`n"
+        _str.= "; error list -- [" . this.errorList.MaxIndex() . "]`n"
+        _str.= "; ==========================================================`n"
+        Loop % this.errorList.MaxIndex()
+            _str .= A_Index . ". " this.errorList[A_Index] . "`n"
+        _str.= "`n`n`n`n`n`n"
+        _str.= "; valid list -- [" . this.validList.MaxIndex() . "]`n"
+        _str.= "; ==========================================================`n"
+        Loop % this.validList.MaxIndex()
+            _str .= A_Index . ". " this.validList[A_Index] . "`n"
         return _str
     }
 
     ; public void clear()
     clear(){
-        arrayClear(this.testList)
-        arrayClear(this.testResultList)
+        arrayClear(this.validList)
+        arrayClear(this.errorList)
     }
 
     ; public void show()
     showResult(){
-        show_text(this.toStr(), "单元测试结果", 800, 600)
-    }
-
-    ; public void saveResult()
-    saveResult(){
-        Clipboarder.push(this.toStr())
-    }
-
-    ; public string commentResult 对布尔结果进行描述转换
-    commentResult(_boolResult){
-        if(_boolResult)
-            return "   Ok - "
-        else
-            return "***Er - "
+        show_debug(this.toStr())
     }
 }
-
-; ----------------------------------------------------------
-; 测试实例 1
-; ----------------------------------------------------------
-; public class TestTemplate
-class TestTemplate {
-    ; static test
-    test(){
-        TestTemplate.oneVariable()
-        TestTemplate.differentValue()
-    }
-
-    ; static oneVariable
-    oneVariable(){
-        template := new Template("Hello, ${name}")
-        template.set("name", "Reader")
-        Test.eq(A_ThisFunc, "Hello, Reader", template.evaluate())
-    }
-
-    ; static differentValue
-    differentValue(){
-        template := new Template("Hello, ${name}")
-        template.set("name", "someone else")
-        Test.eq(A_ThisFunc, "Hello, someone else", template.evaluate())
-    }
-}
-
-; public class Template
-class Template {
-    ; public new
-    __new(_templateText){
-        this.templateText := _templateText
-    }
-    ; public set()
-    set(_variable, _value){
-        this.variableValue := _value
-    }
-    ; public string evaluate()
-    evaluate(){
-        return "Hello, " . this.variableValue
-    }
-}
-
-
 

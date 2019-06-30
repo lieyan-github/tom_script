@@ -10,16 +10,19 @@
 
 ;debug 临时测试
 ^#f9::
-   测试代码()
-   return
-
-+#f9::
     av_测试分析剪贴板()
     return
 
-测试代码(){
-    av_测试提取女优信息()
+^#f12::
+    单元测试()
+    return
+
+单元测试(){
+    test_init()
+    testContent.test()
+    test_run()
 }
+
 
 ; ----------------------------------------------------------
 ; [ 热键用到的快捷操作 ]
@@ -268,14 +271,16 @@ return
 ; ---------------------------------------
 $^r::
     if(inWinList(Config.get("资源管理器"))){
-        ; 资源管理器窗口, 按ctrl+r, 自动将当前文件更名为id;
-        自动重命名(3)
+        ; 资源管理器窗口, 按ctrl+r,
+        ; 结果: 剪贴板 + 扩展名;
+        f2自动重命名("clip")
     }
-    else if(inWinList(["#32770"])){
-        ; 另存为窗口, ctrl+r, 将处于选中状态的文件名字符串, 重命名为 "id.源扩展名"
-        自动重命名(2)
+    else if(inWinList(["#32770"], "class")){
+        ; 另存为窗口, ctrl+r
+        ; 结果: 剪贴板 + 扩展名;
+        自动重命名("clip")
     }
-    else if(inWinList(["360chrome.exe"])){
+    else if(inWinList(["Chrome_WidgetWin_2"], "class")){
         ; 360浏览器自定义修改av收藏
         WinGetTitle, _winTitle, A
         if(_winTitle ~= "[收藏|书签]$")
@@ -294,8 +299,14 @@ return
 
 $^!r::
     if(inWinList(Config.get("资源管理器"))){
-        ; 资源管理器窗口, 按ctrl+alt+r, 自动将当前文件更名并包含原文件名;
-        自动重命名(4)
+        ; 资源管理器窗口, 按ctrl+alt+r
+        ; 结果: id + 扩展名
+        f2自动重命名("id")
+    }
+    else if(inWinList(["#32770"], "class")){
+        ; 另存为窗口, 按ctrl+alt+r
+        ; 结果: id + 扩展名"
+        自动重命名("id")
     }
     else{
         send ^!r
@@ -305,8 +316,9 @@ return
 
 $^+r::
     if(inWinList(Config.get("资源管理器"))){
-        ; 资源管理器窗口, undo撤销操作;
-        自动重命名(0)
+        ; 资源管理器窗口, ctrl + shift + r
+        ; undo撤销操作;
+        自动重命名("undo")
     }
     else{
         send ^+r
@@ -317,8 +329,9 @@ return
 ; 自定义重命名操作
 $!f2::
     if(inWinList(Config.get("资源管理器"))){
-        ; 资源管理器窗口, 用剪贴板内容重命名, 如果相同则做av分析并重命名;
-        f2自动重命名(1)
+        ; 资源管理器窗口,
+        ; 结果: 剪贴板 + 扩展名;
+        f2自动重命名("av")
     }
     else{
         send !{f2}
@@ -328,8 +341,9 @@ return
 ; undo撤销操作
 $+f2::
     if(inWinList(Config.get("资源管理器"))){
-        ; 资源管理器窗口, undo撤销操作f2
-        f2自动重命名(0)
+        ; 资源管理器窗口,
+        ; undo撤销操作
+        f2自动重命名("undo")
     }
     else{
         send +{f2}
@@ -388,7 +402,10 @@ return
 
 ; 按ctrl+鼠标中键, 窗口纵向最大化
 $MButton::
-    if(inWinList(允许调整窗口白名单())){
+    if(inWinList(["PotPlayerMini64.exe"])){                 ;视频播放器自动居中1440*720
+        快捷操作_移动当前窗口(5, {"w":1440, "h":720})
+    }
+    else if(inWinList(允许调整窗口白名单())){
         鼠标单键切换窗口y轴大小()                             ; 资源管理器窗口
     }
     else{
@@ -400,6 +417,16 @@ return
 $+MButton::
     if(inWinList(允许调整窗口白名单())){
         鼠标单键切换窗口x轴大小()                             ; 资源管理器窗口
+    }
+    else{
+        提示热键无操作()
+    }
+return
+
+; 按ctrl+鼠标中键, 窗口屏幕居中, 1440*720
+$^MButton::
+    if(inWinList(允许调整窗口白名单())){
+        快捷操作_移动当前窗口(5, {"w":1440, "h":720})                             ; 资源管理器窗口
     }
     else{
         提示热键无操作()
@@ -466,3 +493,4 @@ return
 #[::Clipboarder.wrap("[", "]")                              ; 中括号包裹
 #+[::Clipboarder.wrap("{", "}")                             ; 大括号包裹
 #+,::Clipboarder.wrap("<", ">")                             ; <>包裹
+#+3::Clipboarder.wrap("#", "#")                             ; #...#包裹

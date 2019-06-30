@@ -16,14 +16,19 @@
             "tag": ["web"]
         },
         {
-            "name": "javmoo",
-            "cmd": "https://javzoo.com/tw/search/%s",
+            "name": "AVMOO",
+            "cmd": "https://avmoo.asia/tw/search/%s",
             "tag": ["av"]
         },
         {
             "name": "btso",
             "cmd": "https://btsow.pw/search/%s",
             "tag": ["bt"]
+        },
+        {
+            "name": "github",
+            "cmd": "https://github.com/search?q=%s&ref=opensearch",
+            "tag": ["github"]
         }
     ],
     "localSearcher": {

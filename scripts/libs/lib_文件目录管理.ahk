@@ -20,35 +20,35 @@
 ; ----------------------------------------------------------
 ; [操作]批量简化内容 - 自动重命名
 ; 需要选中图标, 限制在文件夹窗口或桌面才能起作用
-; _type=0, 则恢复修改前的内容, 进行undo操作;
+; _type="undo", 则恢复修改前的内容, 进行undo操作;
 ; ----------------------------------------------------------
-自动重命名(_type:=1)
+自动重命名(_type:="id")
 {
-    _newFileName := fileRename(Clipboarder.get("copy"), _type)
-    ;--- 输出新文件名
-    send {f2}
-    sleep 100
+    ; 获取源文件名
+    _newFileName := fileRename(Clipboarder.get("cut"), _type)
+    ; 输出新文件名
     send ^a
     sleep 100
+    ; 输出新文件名, 直接粘贴输出, 不需要再按f2
     write(_newFileName)
     sleep 100
-    send {enter}
 }
 
 ; ----------------------------------------------------------
 ; [操作]批量简化内容 - f2自动重命名
 ; 需要选中图标, 限制在文件夹窗口或桌面才能起作用
-; _type=0, 则恢复修改前的内容, 进行undo操作;
+; _type="undo", 则恢复修改前的内容, 进行undo操作;
 ; ----------------------------------------------------------
-f2自动重命名(_type:=1)
+f2自动重命名(_type:="id")
 {
-    ;--- 获取源文件名
+    ; 获取源文件名
+    _newFileName := fileRename(Clipboarder.get("cut"), _type)
+    ; 输出新文件名
     send {f2}
     sleep 100
     send ^a
     sleep 100
-    _newFileName := fileRename(Clipboarder.get("cut"), _type)
-    ;--- 输出新文件名, 直接粘贴输出, 不需要再按f2
+    ; 输出新文件名, 直接粘贴输出, 不需要再按f2
     write(_newFileName)
     sleep 100
     send {enter}
@@ -57,24 +57,24 @@ f2自动重命名(_type:=1)
 ; ----------------------------------------------------------
 ; [函数]fileRename(_oldFilePath, _type:=1)
 ; ----------------------------------------------------------
-fileRename(_oldFilePath, _type:=1)
+fileRename(_oldFilePath, _type:="clip")
 {
     ; 输出结果
     _newFileName        := ""
     ; 备份剪贴板原内容
     ; 对剪贴板中存储的文件路径, 只提取不带扩展名的文件名, 另外也用于后面的文件名对比;
-    _clipboard_backup   := Path.split(clipboard)
+    _path_backup   := Path.parse(clipboard)
     ; 准备数据, 分解数据
-    _path               := Path.split(_oldFilePath)
+    _path               := Path.parse(_oldFilePath)
     _filePath           := _path.path
     _fileName           := _path.fileNoExt
     _extFileName        := _path.ext
 
     ; ----------------------------------------------------------
     ; 备份原文件名, 通过剪贴板管理恢复历史记录
-    ; _type=0 为恢复操作, 只有非恢复操作才有必要备份
+    ; _type=0 "undo"为恢复操作, 只有非恢复操作才有必要备份
     ; ----------------------------------------------------------
-    if(_type > 0)
+    if(_type != "undo")
         if(_extFileName != "")
             Clipboarder.push(_fileName . "." . _extFileName)
         else
@@ -82,28 +82,28 @@ fileRename(_oldFilePath, _type:=1)
     ; ----------------------------------------------------------
     ; 根据type类型, 制作新的文件名, 不含扩展名
     ; ----------------------------------------------------------
-    if(_type == 0)
+    if(_type == "undo")
     {
         ; undo操作, 恢复修改前的内容;
         if(_extFileName == "")
-            _newFileName := Path.split(Clipboarder.pop()).fileNoExt
+            _newFileName := Path.parse(Clipboarder.pop()).fileNoExt
         else{
-            _newFileName := Path.split(Clipboarder.pop()).fileNoExt . "." . _extFileName
+            _newFileName := Path.parse(Clipboarder.pop()).fileNoExt . "." . _extFileName
         }
     }
-    else if(_fileName == _clipboard_backup.fileNoExt)
+    else if(_type == "av")
     {
         ; 如果当前文件名与剪贴板相同, 则进行特殊分析
         ; 分析是否是av作品名, 并进行相关格式化
         _newFileName := Av.rename(_fileName)
     }
-    else if(_type == 1){         ;使用剪贴板内容作为新文件名;
-            _newFileName := _clipboard_backup.fileNoExt
+    else if(_type == "clip"){                               ;使用剪贴板内容作为新文件名;
+            _newFileName := _path_backup.fileNoExt
     }
-    else if(_type == 2){         ;使用id文件名
+    else if(_type == "id"){                                 ;使用id文件名
         _newFileName := strId()
     }
-    else if(_type == 3){        ;[图片类]按尺寸进行特殊命名
+    else if(_type == "img_id"){                            ;[图片类] 尺寸 + id 进行特殊命名
         ;[图片类]按尺寸进行特殊命名, 仅支持 GIF JPG BMP, 不区分大小写
         if(_extFileName="jpg" or _extFileName="gif" or _extFileName="bmp"){
             _imgInfo := getImageSize(_filePath)
@@ -113,8 +113,9 @@ fileRename(_oldFilePath, _type:=1)
             _newFileName:= strId()
         }
     }
-    else if(_type == 4){        ;包含旧的文件名, [图片类]按尺寸进行特殊命名
+    else if(_type == "img"){                                ;[图片类] 尺寸 + 源文件名 进行特殊命名, 包含旧的文件名;
         ;[图片类]按尺寸进行特殊命名, 仅支持 GIF JPG BMP
+        ;[图片类] 尺寸 + 源文件名 进行特殊命名, 包含旧的文件名;
         if(_extFileName="jpg" or _extFileName="gif" or _extFileName="bmp"){
             _imgInfo:=getImageSize(_filePath)
             _newFileName:= "(" . 根据图片尺寸划分大小等级(_imgInfo.w, _imgInfo.h) . ")" . _filename . "_" . _imgInfo.w . "×" . _imgInfo.h
@@ -128,9 +129,9 @@ fileRename(_oldFilePath, _type:=1)
         _newFileName:= _fileName
     }
     ; ----------------------------------------------------------
-    ; 检查并补充新文件名的扩展名
+    ; 检查并补充新文件名的扩展名, 非undo操作
     ; ----------------------------------------------------------
-    if(_type > 0 && _extFileName != "")
+    if(_type != "undo" && _extFileName != "")
         _newFileName:= _newFileName . "." . _extFileName
     ; 输出新文件名
     return _newFileName

@@ -526,8 +526,9 @@ inWinList(_winList, _winTitle_type:="exe"){
 
 ; ----------------------------------------------------------
 ; 快捷操作 - 移动当前窗口
+; _options := {"w":1280, "h":720}
 ; ----------------------------------------------------------
-快捷操作_移动当前窗口(方向){
+快捷操作_移动当前窗口(方向, _options=""){
     if(方向=8)
     {
         WinGetPos, x, y, w, h, A
@@ -592,15 +593,35 @@ inWinList(_winList, _winTitle_type:="exe"){
     }
     if(方向=5)
     {
-        WinGetPos, x, y, w, h, A
-        SysGet, monitor, MonitorWorkArea
-        if(w<300 || h<300)
-            ;--- 为防止窗口太小, 适当进行扩大调整
-            WinMove, A, , monitorRight/4, MonitorBottom/4, monitorRight/2, MonitorBottom/2
-        else
-            WinMove, A, , (monitorRight-w)/2, (MonitorBottom-h)/2
-        tip_msg:= "[屏幕正中]`nWindow`n  x: " . (monitorRight-w)/2 . "`n  y: " . (MonitorBottom-h)/2
-        show_msg(tip_msg)
+        if(_options=""){
+            WinGetPos, x, y, w, h, A
+            SysGet, monitor, MonitorWorkArea
+            if(w<300 || h<300)
+                ;--- 为防止窗口太小, 适当进行扩大调整
+                WinMove, A, , monitorRight/4, MonitorBottom/4, monitorRight/2, MonitorBottom/2
+            else
+                WinMove, A, , (monitorRight-w)/2, (MonitorBottom-h)/2
+            tip_msg:= "[屏幕正中]`nWindow`n  x: " . (monitorRight-w)/2 . "`n  y: " . (MonitorBottom-h)/2
+            show_msg(tip_msg)
+        }
+        else{
+            WinGetPos, , , , , A
+            SysGet, monitor, MonitorWorkArea
+            w := _options.w
+            h := _options.h
+            if(w<300 || h<300)
+                ;--- 为防止窗口太小, 适当进行扩大调整
+                WinMove, A, , monitorRight/4, MonitorBottom/4, monitorRight/2, MonitorBottom/2
+            else
+                WinMove, A, , (monitorRight-w)/2, (MonitorBottom-h)/2, w, h
+            ; debug
+            ; tip_msg:= Format("[屏幕居中]`nwindow`nx: {1}`ny: {2}`nw: {3}`nh: {4}"
+            ;                 , (monitorRight-w)/2
+            ;                 , (MonitorBottom-h)/2
+            ;                 , w
+            ;                 , h)
+            ; show_msg(tip_msg)
+        }
     }
     ;移动窗口到右下角最小化
     if(方向=".")
