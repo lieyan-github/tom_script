@@ -25,7 +25,13 @@ class Clipboarder{
             Clipboarder.save()
         }
         ; get
-        return Clipboarder.list[_index]
+        if(_index>0 and _index<=Clipboarder.list.MaxIndex())
+            return Clipboarder.list[_index]
+        else{
+            show_msg("超出Clipboarder.list数组index范围!")
+            return ""
+        }
+
     }
 
     ; public static 在list指定索引插入内容

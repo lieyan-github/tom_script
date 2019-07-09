@@ -12,7 +12,7 @@
 ffmpeg视频处理gui()
 ffmpeg视频处理gui(){
     static 源文件路径, 剪切时间列表, 输出文件名
-    
+
     ; 窗体公共部分
     Gui Add, Button, x11 y242 w80 h23, &Exit
     Gui Add, Button, x409 y240 w80 h23, 剪切
@@ -42,7 +42,7 @@ ffmpeg视频处理gui(){
 
     Gui Show, w504 h277, ffmpeg剪切视频GUI - (需在path设置ffmpeg路径)
     Return
-    
+
     Button修改分辨率:
         Gui, Submit  ; 保存用户的输入到每个控件的关联变量中.
         ; 1. 检验源文件路径, 清洗两边的双引号, 检查源文件路径是否存在
@@ -74,7 +74,7 @@ ffmpeg视频处理gui(){
 ;        剪切时间列表:= "00:00:"
 ;        if(! 剪切时间列表 ~= "\d{2}:\d{2}:\d{2}(\.\d{1,3})?-\d{2}:\d{2}:\d{2}(\.\d{1,3})?(\,\s?\d{2}:\d{2}:\d{2}(\.\d{1,3})?-\d{2}:\d{2}:\d{2}(\.\d{1,3})?)*"){
 ;            Gui Restore
-;            msgbox 剪切时间列表格式错误, 应该为"00:00:41.722-00:01:56.771, ..." 
+;            msgbox 剪切时间列表格式错误, 应该为"00:00:41.722-00:01:56.771, ..."
 ;            return
 ;        }
 ;        else
@@ -92,7 +92,9 @@ ffmpeg视频处理gui(){
     ButtonExit:
     GuiEscape:
     GuiClose:
-        ExitApp
+        Gui, Destroy
+        Exit
+    return
 }
 
 ffmpeg剪切视频(_源文件路径, _输出文件名, _剪切时间列表, _输出目录:=""){
@@ -152,7 +154,7 @@ ffmpeg修改视频分辨率(_源文件路径, _分辨率:="1280x720", _输出目
                 , 分辨率
                 , 输出路径)
     ; 在cmd中执行命令
-    RunWait %comSpec% /c %strCmd%    
+    RunWait %comSpec% /c %strCmd%
     ; 对生成文件进行验证
     if(FileExist(输出路径))
         return true
