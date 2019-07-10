@@ -556,91 +556,53 @@ get_drive(_FullFileName){
     return _drive
 }
 
-;[函数--获取ini指定片段中的内容]
+; [函数--获取ini指定片段中的内容]
+; GetIniFileSection
+; 返回指定_sectionTitle 区域中的全部文本
 ;========================================================
-GetIniFileSection(_iniFilePath,_sectionTitle){
-    ;要查找的文件对象
-    _filePath := _iniFilePath
-    ;inputbox,fileFullName,输入查找目标文件
-
-    ;查找内容
-    _queryStr := _sectionTitle
-    ;inputbox,_queryStr,输入查找内容
-
-    _lineIndex := 0 ;[行号]
-    ;查找结果
-    _resultLineIndex := -1
-    _resultCount := 0
-    _hasFound := false  ;是否已找到,在找到指定的标题行后,可以开始读其内容
-    _resultContent := ""
-
-    Loop, read, % _filePath
+GetIniFileSection(_iniFilePath, _sectionTitle){
+    ; 查找结果
+    _foundSectionTitle  := false
+    _resultContent      := ""
+    Loop, read, % _iniFilePath
     {
-        _lineIndex++
         ;检查是否标题行
         if(substr(A_LoopReadLine,1,1) == "[")
         {
-            if(_hasFound)
+            ; 如果已找到区域标题, 则下一个标题为结束标志
+            if(_foundSectionTitle)
+                break
+            if(A_LoopReadLine == "[" . _sectionTitle . "]")
             {
-                _hasFound := false
-                ;如果只需要找到第一个,那么这里可以设置退出循环
-            }
-            ;检查标题行内容
-            if(substr(A_LoopReadLine,2,StrLen(A_LoopReadLine)-2) == _queryStr)
-            {
-                _resultCount ++
-                _resultLineIndex := _lineIndex
-                _hasFound := true ;设置找到标记,从下一行开始读内容
+                ;检查标题行内容
+                 _foundSectionTitle := true ;设置找到标记,从下一行开始读内容
+                 ;msgbox % A_LoopReadLine
             }
         }
         else
         {
-            if(_hasFound)
+            if(_foundSectionTitle)
             {
-                ;如果允许读行,就开始读行
-                ;带行号输出
-                ;_resultContent .= _lineIndex . ". " . A_LoopReadLine . "`n"
-                ;不带行号输出
                 _resultContent .= A_LoopReadLine . "`n"
             }
         }
     }
-    ;msgbox,% "找到结果:" . _resultCount . "条`n起始位置在第" . _resultLineIndex . "行`n`n" . _resultContent
-    return %_resultContent%
+    return _resultContent
 }
 
-;[函数--获取ini所有片段的标题]
+; [函数--获取ini所有片段的标题]
+; 返回数组: 所有SectionsTitle列表
 ;========================================================
 GetIniFileALLSectionsTitle(_iniFilePath){
-    ;要查找的文件对象
-    _filePath := _iniFilePath
-    ;inputbox,fileFullName,输入查找目标文件
-
-    ;查找内容
-    ;_queryStr := _sectionTitle
-    ;inputbox,_queryStr,输入查找内容
-
-    _lineIndex := 0 ;[行号]
-    ;查找结果
-    _resultLineIndex := -1
-    _resultCount := 0
-    _hasFound := false  ;是否已找到,在找到指定的标题行后,可以开始读其内容
-    _resultContent := ""
-
-    Loop, read, % _filePath
+    _resultList := []
+    Loop, read, % _iniFilePath
     {
-        _lineIndex++
         ;检查是否标题行
         if(substr(A_LoopReadLine,1,1)="[")
         {
-            _resultCount ++
-            ;带行号输出
-            _resultContent .= "[" . _resultCount . "]  " . substr(A_LoopReadLine,2,StrLen(A_LoopReadLine)-2) . "`n`n"
-            ;不带行号输出
-            ;_resultContent .= A_LoopReadLine . "`n"
+            _resultList.push(substr(A_LoopReadLine, 2, StrLen(A_LoopReadLine)-2))
         }
     }
-    clipboard := _resultContent
-    _resultContent := ""
+    return _resultList
 }
 

@@ -11,69 +11,75 @@
 ; ----------------------------------------------------------
 ; [针对python编码]
 ; ----------------------------------------------------------
-:*:..pyimport::
+:*:;pyimport::
     write("import numpy as np, pandas as pd, matplotlib.pyplot as plt")
     return
 ; ----------------------------------------------------------
 ; 功能帮助索引
 ; ----------------------------------------------------------
-:*:..help::
-    writeCodeSnippet()
+:*:;help::
+    ;writeCodeSnippet()
+    _list:= GetIniFileALLSectionsTitle(Config.upath("CodeSnippetFile"))
+    arrayPrint(_list)
     return
 ; ----------------------------------------------------------
 ; 编程常用代码片段
 ; ----------------------------------------------------------
-:*:..if::
+:*:;if::
     writeCodeSnippet()
     return
-:*:..while::
+:*:;while::
     writeCodeSnippet()
     return
-:*:..for::
+:*:;for::
     writeCodeSnippet()
     return
-:*:..try::
+:*:;try::
     writeCodeSnippet()
     return
-:*:..class::
+:*:;class::
     writeCodeSnippet()
     return
-:*:..case::
+:*:;case::
     writeCodeSnippet()
     return
-:*:..switch::
+:*:;switch::
     writeCodeSnippet()
     return
 ; ----------------------------------------------------------
 ; ahk常用片段
 ; ----------------------------------------------------------
-:*:..ahkclass::
+:*:;ahkclass::
+    writeCodeSnippet()
+    return
+
+:*:;ahkmenu::
     writeCodeSnippet()
     return
 ; ----------------------------------------------------------
 ; js常用片段
 ; ----------------------------------------------------------
-:*:..jsclass::
+:*:;jsclass::
     writeCodeSnippet()
     return
-:*:..jsobject::
+:*:;jsobject::
     writeCodeSnippet()
     return
-:*:..jsfunction::
+:*:;jsfunction::
     writeCodeSnippet()
     return
 ; ----------------------------------------------------------
 ; sql常用片段
 ; ----------------------------------------------------------
-:*:..select::
+:*:;select::
     writeCodeSnippet()
     return
-:*:..insert::
+:*:;insert::
     writeCodeSnippet()
     return
-:*:..delete::
+:*:;delete::
     writeCodeSnippet()
     return
-:*:..update::
+:*:;update::
     writeCodeSnippet()
     return

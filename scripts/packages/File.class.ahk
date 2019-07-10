@@ -218,7 +218,7 @@ class IniFile extends File {
     read(_file, _Section, _Key:="", _Default:="null")
     {
         IniRead, OutputVar, % _file, % _Section, % _Key, % _Default
-        return %OutputVar%
+        return OutputVar
     }
 
     ; static 删文件

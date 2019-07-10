@@ -11,8 +11,9 @@
 ; ----------------------------------------------------------
 ; 函数--输出代码片段
 ; ----------------------------------------------------------
-writeCodeSnippet(){
-    write(GetIniFileSection(Config.upath("CodeSnippetFile"), SubStr(A_ThisHotkey, 6)))
+writeCodeSnippet(_引导符号:="`;"){
+    _pos:= InStr(A_ThisHotkey, _引导符号, 0)
+    write(GetIniFileSection(Config.upath("CodeSnippetFile"), SubStr(A_ThisHotkey, _pos+1)))
 }
 
 ; ----------------------------------------------------------

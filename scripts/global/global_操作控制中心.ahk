@@ -508,3 +508,4 @@ return
 #+[::Clipboarder.wrap("{", "}")                             ; 大括号包裹
 #+,::Clipboarder.wrap("<", ">")                             ; <>包裹
 #+3::Clipboarder.wrap("#", "#")                             ; #...#包裹
+#+5::Clipboarder.wrap("%", "%")                             ; %...%包裹

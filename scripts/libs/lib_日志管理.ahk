@@ -68,7 +68,7 @@
     OutputVar := IniFile.read(Config.upath("logFile"), _Section, _Key, _Default)
     if(_showMsg)
         show_msg("[" . _Section . "]" . _Key . "=" . OutputVar . " `n--读取完成", "读取日志")
-    return %OutputVar%
+    return OutputVar
 }
 
 ; ----------------------------------------------------------
