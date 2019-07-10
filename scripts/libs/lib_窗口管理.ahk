@@ -186,58 +186,14 @@ inWinList(_winList, _winTitle_type:="exe"){
         arrayAppend(controlList_name, A_LoopField)
     }
     _wininfo.controls := controlList_name
-
-    ; ;--- 输出
-    ; _returns .= "; ==========================================================`n"
-    ; _returns .= "  [ 监视器的总数 ]`n"
-    ; _returns .= "  monitorCount" . " : " . MonitorCount . "`n"
-    ; _returns .= "  [ 主监视器的总数 ]`n"
-    ; _returns .= "  monitorPrimary" . " : " . monitorPrimary . "`n"
-    ; _returns .= "  [ 当前监视器 ]`n"
-    ; _returns .= "  currentMonitor" . " : " . "待解决" . "`n"
-    ; _returns .= "; ==========================================================`n"
-    ; _returns .= "  [ 主屏幕尺寸 ]`n"
-    ; _returns .= "  A_ScreenWidth" . " : " . A_ScreenWidth . "`n"
-    ; _returns .= "  A_ScreenHeight" . " : " . A_ScreenHeight . "`n"
-    ; _returns .= "  [ 屏幕工作区尺寸(不含任务栏) ]`n"
-    ; _returns .= "  monitorWorkAreaWidth" . " : " . monitorWorkAreaRight . "`n"
-    ; _returns .= "  monitorWorkAreaHeight" . " : " . monitorWorkAreaBottom . "`n"
-    ; _returns .= "  [ 虚拟屏幕尺寸 ]`n"
-    ; _returns .= "  VirtualScreenWidth" . " : " . VirtualScreenWidth . "`n"
-    ; _returns .= "  VirtualScreenHeight" . " : " . VirtualScreenHeight . "`n"
-    ; _returns .= "; ==========================================================`n"
-    ; _returns .= "  [ 当前鼠标信息(相对于屏幕) ]`n"
-    ; _returns .= "  mouseX_screen" . " : " . mouseX_screen . "`n"
-    ; _returns .= "  mouseY_screen" . " : " . mouseY_screen . "`n"
-    ; _returns .= "; ==========================================================`n"
-    ; _returns .= "  [ 当前鼠标信息(相对于活动窗口) ]`n"
-    ; _returns .= "  mouseX" . " : " . mouseX . "`n"
-    ; _returns .= "  mouseY" . " : " . mouseY . "`n"
-    ; _returns .= "  pixColor" . " : " . pixColor . "`n"
-    ; _returns .= "  mouseUnderwinId" . " : " . mouseUnderwinId . "`n"
-    ; _returns .= "  mouseUnderControlClass" . " : " . mouseUnderControlClass . "`n"
-    ; _returns .= "; ==========================================================`n"
-    ; _returns .= "  [ 当前窗口信息 ]`n"
-    ; _returns .= "  ahk_id" . " : " . this_id . "`n"
-    ; _returns .= "  ahk_exe" . " : " . this_exe . "`n"
-    ; _returns .= "  ahk_pid" . " : " . this_pid . "`n"
-    ; _returns .= "  ahk_class" . " : " . this_class . "`n"
-    ; _returns .= "  ahk_title" . " : " . this_title . "`n"
-    ; _returns .= "  winX" . " : " . winX . "`n"
-    ; _returns .= "  winY" . " : " . winY . "`n"
-    ; _returns .= "  winW" . " : " . winW . "`n"
-    ; _returns .= "  winH" . " : " . winH . "`n"
-    ; _returns .= "; ==========================================================`n"
-    ; _returns .= "  [ 当前窗口所有控件 ]`n"
-    ; _returns .= arrayToStr(controlList_name,"  ")
-    ;_wininfo["zlog"] := "`n" . _returns
+    ;--- ends
     return _wininfo
 }
 
 ; ----------------------------------------------------------
 ; 打开并调整窗口()
 ; ----------------------------------------------------------
-打开窗口(_filepath, _position:=6, _总列数:=3, _总行数:=2)
+打开窗口(_filepath, _position:=4, _总列数:=2, _总行数:=2)
 {
     打开并调整窗口(_filepath, _position, _总列数, _总行数)
 }

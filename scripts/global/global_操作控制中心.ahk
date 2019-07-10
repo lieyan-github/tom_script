@@ -23,15 +23,6 @@
     test_run()
 }
 
-; 临时添加功能
-^#f8::
-    show_msg("备份360收藏夹bookmarks")
-    备份文件到多目录("C:\Users\Tom\AppData\Local\360Chrome\Chrome\User Data\Default\360UID16303723_V8\Bookmarks"
-                    , ["D:\_home_data_\#tom#的文件夹\[ 6-备忘 ]\收藏夹备份"
-                        , "F:\_home_data_sync_\#tom#的文件夹_sync\[ 6-备忘 ]\收藏夹备份"])
-    return
-
-
 
 ; ----------------------------------------------------------
 ; [ 热键用到的快捷操作 ]
@@ -116,7 +107,7 @@ $!`::打开音速启动()
 #f5::script_reload()
 #f6::打开文件比较()
 #f7::提示热键无操作()
-#f8::打开窗口("D:\_home_data_\同步备份清单")
+#f8::打开文件操作菜单()
 #f9::arrayPrint(获取窗口信息(), 1024, 768)                   ; 调试: 设置断点调试
 #f10::打开正则表达式编辑器()                                  ; 调试: 调试保留备用    - 打开正则表达式
 #f11::run "D:\_home_\tom\program\green_program\辅助工具\AutoHotkey\tom工具包\WindowSpy.ahk"    ; 调试: 单步调试        - 打开spy探针

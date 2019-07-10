@@ -17,6 +17,50 @@
         show_msg("指定的程序路径不存在:`n" . _inPath)
 }
 
+打开文件操作菜单(){
+    ; ----------------------------------------------------------
+    ; 2. 菜单部分 - 单项菜单输入
+    ; ----------------------------------------------------------
+    ; 加入选项 - 不可修改
+    Menu, templateMenu, Add, [文件操作菜单], Lab_打开文件操作菜单_End
+    menu, templateMenu, Disable, [文件操作菜单]
+    ; 加入横线
+    Menu, templateMenu, Add
+    ; 加入选项
+    Menu, templateMenu, Add, &0. 打开同步文件夹, Lab_打开同步文件夹
+    Menu, templateMenu, Add, &1. 备份360收藏夹bookmarks, Lab_备份360收藏夹bookmarks
+    Menu, templateMenu, Add
+    ; 显示菜单
+    Menu, templateMenu, Show, %A_CaretX%, %A_CaretY%
+    ;<……>此时转入选择的标签运行，结束后返回
+    Menu, templateMenu, DeleteAll
+    return          ;菜单结束, 不再往下执行
+
+    ; ----------------------------------------------------------
+    ; 单项菜单执行部分
+    ; ----------------------------------------------------------
+    Lab_打开同步文件夹:
+        ;[仅点击选中Item]
+        打开窗口("D:\_home_data_\同步备份清单")
+    return
+    ; ----------------------------------------------------------
+    ; 单项菜单执行部分
+    ; ----------------------------------------------------------
+    Lab_备份360收藏夹bookmarks:
+        ;[仅点击选中Item]
+        show_msg("备份360收藏夹bookmarks")
+        备份文件到多目录("C:\Users\Tom\AppData\Local\360Chrome\Chrome\User Data\Default\360UID16303723_V8\Bookmarks"
+                        , ["D:\_home_data_\#tom#的文件夹\[ 6-备忘 ]\收藏夹备份"
+                            , "F:\_home_data_sync_\#tom#的文件夹_sync\[ 6-备忘 ]\收藏夹备份"])
+    return
+    ; ----------------------------------------------------------
+    Lab_打开文件操作菜单_End:
+        Gui, Destroy
+    return
+    ; --ends
+}
+
+
 ; ----------------------------------------------------------
 ; 备份源文件  := "D:\_home_data_\desktop\Bookmark"
 ; 备份目录列表:= ["D:\_home_data_\desktop\tmp1", "D:\_home_data_\desktop\tmp2"]
