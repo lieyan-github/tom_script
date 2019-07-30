@@ -5,8 +5,7 @@
     },
     "data_user": {
         "folders": {
-            "userdata": "userdata",
-            "test_folder": "tmp\\test_folder"
+            "userdata": "userdata"
         },
         "allowResizeWinsFile": "allowResizeWins.json",
         "clipboardFile": "tmpClip.clip",
