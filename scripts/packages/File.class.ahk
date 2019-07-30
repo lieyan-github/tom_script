@@ -61,7 +61,8 @@ class JsonFile extends File{
     ; static 读文件
     ; 返回json对象
     read(_jsonPath){
-        文件错误检测(_jsonPath)
+        if(! 文件存在(_jsonPath))
+            return {}
         _fileIn:= FileOpen(_jsonPath, "r", "utf-8")
         _json_str:= _fileIn.read()
         fileIn.close()
