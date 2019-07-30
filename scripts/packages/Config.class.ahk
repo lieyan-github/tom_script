@@ -31,6 +31,18 @@ class Config {
     init(){
         文件错误检测(Config.config_file)
         Config.reload()
+        Config.folders_init()
+    }
+
+    ; 初始化用户目录
+    folders_init(){
+        folders := Config.items["data_user"]["folders"]
+        for k,folder in folders{
+            _path := A_ScriptDir . "\" . folder
+            if(! FileExist(_path)){
+                FileCreateDir, %_path%
+            }
+        }
     }
 
     ; 重新加载配置文件, 刷新配置变量, 用于修改后的刷新

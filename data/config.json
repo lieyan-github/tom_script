@@ -1,21 +1,25 @@
 ﻿{
-   "commentSymbol": ";",
-   "data": {
-      "searchersFile": "searchers.json"
-   },
-   "data_user": {
-      "allowResizeWinsFile": "allowResizeWins.json",
-      "clipboardFile": "tmpClip.clip",
-      "CodeSnippetFile": "user_编程快捷键_CodeSnippets.ini",
-      "logFile": "tom的Ahk日志.ini",
-      "searchHistoryFile": "searchHistory.csv",
-      "批量关闭程序": "批量关闭程序.json",
-      "批量启动程序": "批量启动程序.json"
-   },
-   "wrapBorderLine1": "----------------------------------------------------------",
-   "wrapBorderLine2": "==========================================================",
-   "资源管理器": [
-      "explorer.exe",
-      "Everything.exe"
-   ]
+    "commentSymbol": ";",
+    "data": {
+        "searchersFile": "searchers.json"
+    },
+    "data_user": {
+        "folders": {
+            "userdata": "userdata",
+            "test_folder": "tmp\\test_folder"
+        },
+        "allowResizeWinsFile": "allowResizeWins.json",
+        "clipboardFile": "tmpClip.clip",
+        "CodeSnippetFile": "user_编程快捷键_CodeSnippets.ini",
+        "logFile": "tom的Ahk日志.ini",
+        "searchHistoryFile": "searchHistory.csv",
+        "批量关闭程序": "批量关闭程序.json",
+        "批量启动程序": "批量启动程序.json"
+    },
+    "wrapBorderLine1": "----------------------------------------------------------",
+    "wrapBorderLine2": "==========================================================",
+    "资源管理器": [
+        "explorer.exe",
+        "Everything.exe"
+    ]
 }
