@@ -373,7 +373,6 @@ return
     return
 
 ; 鼠标快速向左调整窗口()
-^MButton::
 $Wheelleft::
     if(inWinList(允许调整窗口白名单())){
         鼠标快速向左调整窗口()                                ; 资源管理器窗口
@@ -384,7 +383,6 @@ $Wheelleft::
 return
 
 ; 鼠标快速向右调整窗口()
-!MButton::
 $Wheelright::
     if(inWinList(允许调整窗口白名单())){
         鼠标快速向右调整窗口()                                ; 资源管理器窗口
