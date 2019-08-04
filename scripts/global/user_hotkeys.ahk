@@ -21,7 +21,7 @@
 
 
 :x*:;tag::
-    write("tags(美颜 美乳 美臀 诱惑 后入 湿吻 呻吟 高画质)")
+    write("tags(美颜 美乳 美臀 腰振 痉挛 潮吹 后入 湿吻 呻吟 风骚 诱惑 高画质)")
     send {left 1}
     Return
 
