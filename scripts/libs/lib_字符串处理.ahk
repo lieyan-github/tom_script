@@ -36,7 +36,7 @@ strDelSub(_instr, _subStr){
 ; 测试清洗
 ; [2019.12.12]    [韩国]    [剧情]    [BT下载][妹妹不是你][HD-MP4/1.2G][独家韩语.中字][720P][妻子姐姐.教我姿势]
 ; TransAngels.18.07.02.Domino.Presley.Independent.Woman..480p.MP4-XxX
-strClean(_string, _clean_str_list:="(\s|\?|\/|\[|\]|＋|\+|""|　|,|:|(?<!\d)\.|\.(?!\d))+"){
+strClean(_string, _clean_str_list:="(\s|\?|\/|\[|\]|＋|\+|""|_|　|,|:|(?<!\d)\.|\.(?!\d))+"){
     result:= _string
     ; 先用空格替代
     result := RegExReplace(result, _clean_str_list, " ")
