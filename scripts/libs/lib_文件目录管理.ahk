@@ -334,17 +334,17 @@ showFileHash(_type:="md5")
 ; ----------------------------------------------------------
 ; [图片类] 收集当前目录中所有匹配文件(含子目录)
 ; ----------------------------------------------------------
-收集当前目录中所有匹配文件(_filePatterns*)
+收集当前目录中所有匹配文件(_filePatterns)
 {
     ;通过点选目录或当前目录中的图片文件--进行获取目录路径
     _fullFileName := Clipboarder.get("copy")
-    收集指定目录中所有匹配文件(_fullFileName, _filePatterns*)
+    收集指定目录中所有匹配文件(_fullFileName, _filePatterns)
 }
 
 ; ----------------------------------------------------------
 ; [图片类] 收集指定目录中所有匹配文件(含子目录)
 ; ----------------------------------------------------------
-收集指定目录中所有匹配文件(_FullFileName , _filePatterns*)
+收集指定目录中所有匹配文件(_FullFileName, _filePatterns)
 {
 ;---第一, 获取当前目录路径;
     ;确认当前_dir中是目录, 否则取文件的当前所在目录路径
@@ -354,10 +354,10 @@ showFileHash(_type:="md5")
     if(操作确认("操作确认", "你确定要收集指定目录中所有匹配文件吗?")=false)
         return
 
-    _集中存放目录:= _dir . "\@结果存放目录@"    ;设置存放的根目录
+    _集中存放目录:= _dir . "\#结果存放目录#"    ;设置存放的根目录
 
 ;---第二, 获取目录中(含子目录)所有匹配文件的路径列表
-    _filesLongPathList:= getFilesLongPathList(_dir, 0, 1, _filePatterns*)
+    _filesLongPathList:= getFilesFromDir(_dir, _filePatterns, "R")
 
     if(_filesLongPathList.MaxIndex()>0)
         FileCreateDir, % _集中存放目录
@@ -419,7 +419,7 @@ showFileHash(_type:="md5")
 
 ;---第二, 获取目录中文件列表, 并过滤全部图片文件, 仅限jpg,gif,bmp
     ;为当前目录预先建立匹配的文件列表, 不递归子文件夹
-    _filesList:= getFilesNameList(_dir, 0, 0, "*.jpg", "*.jpeg", "*.gif", "*.bmp")
+    _filesList:= getFilesNameFromDir(_dir, ["*.jpg", "*.jpeg", "*.gif", "*.bmp"])
 
     ;---开始对列表中的所有文件进行处理
     _counter:= 0
@@ -514,46 +514,68 @@ getSelectedObjFullPathList(){
 }
 
 ; ----------------------------------------------------------
-; [函数库] getFilesLongPathList
-; 获取目录中所有匹配的文件/目录的完整长路径列表
-; 注意: 只是文件名并非完整路径;
+; [函数库] getSubDirs
+; 获取目录中所有匹配的目录的完整路径列表
 ;
 ; 参数:
 ;   _dir 指定目录末尾无"\";
-;   _includeFolders 0(仅文件) 1(文件和目录) 2(仅目录)
-;   _includeChildFolders 0(不递归子目录) 1(递归所有子目录)
-;   _filePatterns 支持星号和问号作为通配符使用,"*.jpg","*.gif"
+;   _filePatterns= ["*真木今日子*","*白石茉莉奈*"] 支持星号和问号作为通配符使用;
+;   _includeChildFolders R(递归所有子目录)
 ;
-;   输出结果 filesList[]
-getFilesLongPathList(_dir, _includeFolders, _includeChildFolders, _filePatterns*){
-    _filesLongPathList:= []
+; 返回:
+;   _dirPathList[]
+getSubDirs(_dir, _filePatterns, _includeChildFolders:=""){
+    _dirPathList:= []
     _counter:= 0
     for index, _filePattern in _filePatterns
-        Loop % _dir . "\" . _filePattern, % _includeFolders, % _includeChildFolders
+        Loop, Files, % _dir . "\" . _filePattern, % "D" . _includeChildFolders
         {
             _counter++
-            _filesLongPathList[_counter]:= A_LoopFileLongPath
+            _dirPathList[_counter]:= A_LoopFileLongPath
         }
-    return _filesLongPathList
+    return _dirPathList
 }
 
 ; ----------------------------------------------------------
-; [函数库] getFilesNameList
+; [函数库] getFilesFromDir
+; 获取目录中所有匹配的文件的完整路径列表
+;
+; 参数:
+;   _dir 指定目录末尾无"\";
+;   _filePatterns= ["*.jpg","*.gif"] 支持星号和问号作为通配符使用;
+;   _includeChildFolders R(递归所有子目录)
+;
+; 返回:
+;   _filesPathList[]
+getFilesFromDir(_dir, _filePatterns, _includeChildFolders:=""){
+    _filesPathList:= []
+    _counter:= 0
+    for index, _filePattern in _filePatterns
+        Loop, Files, % _dir . "\" . _filePattern, % "F" . _includeChildFolders
+        {
+            _counter++
+            _filesPathList[_counter]:= A_LoopFileLongPath
+        }
+    return _filesPathList
+}
+
+; ----------------------------------------------------------
+; [函数库] getFilesNameFromDir
 ; 获取目录中所有匹配的文件名(含扩展名)/目录名列表
 ; 注意: 只是文件名并非完整路径;
 ;
 ; 参数:
 ;   _dir 指定目录末尾无"\";
-;   _includeFolders 0(仅文件) 1(文件和目录) 2(仅目录)
-;   _includeChildFolders 0(不递归子目录) 1(递归所有子目录)
-;   _filePatterns 支持星号和问号作为通配符使用,"*.jpg","*.gif"
+;   _filePatterns= ["*.jpg","*.gif"] 支持星号和问号作为通配符使用;
+;   _includeChildFolders R(递归所有子目录)
 ;
-;   输出结果 filesList[]
-getFilesNameList(_dir, _includeFolders, _includeChildFolders, _filePatterns*){
+; 返回:
+;   _filesNameList[]
+getFilesNameFromDir(_dir, _filePatterns, _includeChildFolders:=""){
     _filesNameList:= []
     _counter:= 0
     for index, _filePattern in _filePatterns
-        Loop % _dir . "\" . _filePattern, % _includeFolders, % _includeChildFolders
+        Loop, Files, % _dir . "\" . _filePattern, % "F" . _includeChildFolders
         {
             _counter++
             _filesNameList[_counter]:= A_LoopFileName
@@ -582,6 +604,9 @@ get_fileNameNoExt(_FullFileName){
 ; ----------------------------------------------------------
 getDirPath(_FullFileName)
 {
+    ; 如果_FullFileName本身就是目录, 则直接返回_FullFileName
+    if InStr(FileExist(_FullFileName), "D")
+        return _FullFileName
     SplitPath, _FullFileName, _name, _dir, _ext, _name_no_ext, _drive
     return _dir
 }

@@ -100,7 +100,7 @@ class Menus {
                 ,"^"""
                 ,"""$"
                 ,"\\$")=true)
-                收集指定目录中所有匹配文件(_filePath,_filePattern)
+                收集指定目录中所有匹配文件(_filePath, StrSplit(_filePattern, ",", " "))
       return
       ; ----------------------------------------------------------
       收集所有匹配文件逆操作_func:
