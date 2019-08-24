@@ -49,9 +49,10 @@
     Lab_备份360收藏夹bookmarks:
         ;[仅点击选中Item]
         show_msg("备份360收藏夹bookmarks")
-        备份文件到多目录("C:\Users\Tom\AppData\Local\360Chrome\Chrome\User Data\Default\360UID16303723_V8\Bookmarks"
+        备份文件到多目录_有后缀("C:\Users\Tom\AppData\Local\360Chrome\Chrome\User Data\Default\360UID16303723_V8\Bookmarks"
                         , ["D:\_home_data_\#tom#的文件夹\[ 6-备忘 ]\收藏夹备份"
-                            , "F:\_home_data_sync_\#tom#的文件夹_sync\[ 6-备忘 ]\收藏夹备份"])
+                            , "F:\_home_data_sync_\#tom#的文件夹_sync\[ 6-备忘 ]\收藏夹备份"]
+                        , 3)
     return
     ; ----------------------------------------------------------
     Lab_打开文件操作菜单_End:
@@ -60,8 +61,8 @@
     ; --ends
 }
 
-
 ; ----------------------------------------------------------
+; 备份文件到多目录
 ; 备份源文件  := "D:\_home_data_\desktop\Bookmark"
 ; 备份目录列表:= ["D:\_home_data_\desktop\tmp1", "D:\_home_data_\desktop\tmp2"]
 ; ----------------------------------------------------------
@@ -75,19 +76,13 @@
     ; 收集文件名
     ;文件名长度  := InStr(源文件路径, ".", false, 0) - InStr(源文件路径, "\", false, 0) - 1
     文件名      := SubStr(备份源文件, InStr(备份源文件, "\", false, 0)+1)
-    含有扩展名  := InStr(备份源文件, ".")>0
-    扩展名      := 含有扩展名 ? SubStr(文件名, InStr(文件名, ".", false, 0)+1) : ""
-    文件名长度  := InStr(文件名, ".", false, 0) - 1
-    文件名      := 含有扩展名 ? SubStr(文件名, 1, 文件名长度) : 文件名
-    FormatTime, 新文件名后缀,, _yyyyMMdd_HHmmss
-    新文件名    := 含有扩展名 ? 文件名 . 新文件名后缀 . "." . 扩展名 : 文件名 . 新文件名后缀
     ; 验证结果信息
     checkList   := []
     errorList   := []
     result      := true
     ; 开始备份操作
     for _i, 备份目录 in 备份目录列表{
-        备份到文件      := 备份目录 . "\" . 新文件名
+        备份到文件      := 备份目录 . "\" . 文件名
         checkList[_i]   := 备份到文件
         ; 同步备份, 覆盖目的文件
         FileCopy, %备份源文件%, %备份到文件% , true
@@ -109,6 +104,74 @@
     }
     else{
         msgbox, 源文件备份完成!`n%备份源文件%
+    }
+    ; --end
+    return result
+}
+
+; ----------------------------------------------------------
+; 备份文件到多目录_有后缀
+; 备份源文件     := "D:\_home_data_\desktop\Bookmark"
+; 备份目录列表   := ["D:\_home_data_\desktop\tmp1", "D:\_home_data_\desktop\tmp2"]
+; 限制备份数     :=3 文件顺序按文件名排序;
+; ----------------------------------------------------------
+备份文件到多目录_有后缀(备份源文件, 备份目录列表, 限制备份数:=3){
+    ; 检查源文件是否存在
+    if(! FileExist(备份源文件)){
+        Clipboard := "备份源文件不存在!`n" . 备份源文件
+        msgbox % "备份源文件不存在!`n" . 备份源文件
+        return
+    }
+    ; 收集文件名
+    ;文件名长度  := InStr(源文件路径, ".", false, 0) - InStr(源文件路径, "\", false, 0) - 1
+    文件名      := SubStr(备份源文件, InStr(备份源文件, "\", false, 0)+1)
+    含有扩展名  := InStr(备份源文件, ".")>0
+    扩展名      := 含有扩展名 ? SubStr(文件名, InStr(文件名, ".", false, 0)+1) : ""
+    文件名长度  := InStr(文件名, ".", false, 0) - 1
+    文件名      := 含有扩展名 ? SubStr(文件名, 1, 文件名长度) : 文件名
+    FormatTime, 新文件名后缀,, _备份yyyyMMdd_HHmmss
+    备份文件名  := 含有扩展名 ? 文件名 . 新文件名后缀 . "." . 扩展名 : 文件名 . 新文件名后缀
+    ; 验证结果信息
+    checkList   := []
+    errorList   := []
+    result      := true
+    ; 开始备份操作
+    for _i, 备份目录 in 备份目录列表{
+        备份到文件      := 备份目录 . "\" . 备份文件名
+        checkList[_i]   := 备份到文件
+        ; 同步备份, 覆盖目的文件
+        FileCopy, %备份源文件%, %备份到文件% , true
+    }
+    ; 限制备份数
+    for _i, 备份目录 in 备份目录列表{
+        _已备份文件列表 := getFilesFromDir(备份目录, Array(文件名 . "_备份*"))
+        if(_已备份文件列表.Length() > 限制备份数){
+            _要删除文件数 := _已备份文件列表.Length() - 限制备份数
+            ; 删除前n个备份文件
+            Loop % _已备份文件列表.Length(){
+                if(A_Index > _要删除文件数)
+                    break
+                FileDelete, % _已备份文件列表[A_Index]
+            }
+        }
+    }
+    ; 检查备份结果文件是否存在
+    for _i, _file in checkList{
+        if(! FileExist(_file)){
+            errorList.push("`n备份文件不存在: " . _file)
+            result := false
+        }
+    }
+    ; 记录错误信息到剪贴板
+    if(! result){
+        strTmp:= ""
+        for _i, _error in errorList
+            strTmp .= _error
+        Clipboard := strTmp
+        show_msg("备份文件不存在, 错误文件信息已拷贝到剪贴板!")
+    }
+    else{
+        show_msg("源文件备份完成!`n" . 备份源文件)
     }
     ; --end
     return result
