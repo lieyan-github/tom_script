@@ -9,7 +9,6 @@
 ;1. 主程序ffmpeg视频处理gui()
 ;2. 功能, 按时间段剪切, 修改视频分辨率
 
-ffmpeg视频处理gui()
 ffmpeg视频处理gui(){
     static 源文件路径, 剪切时间列表, 输出文件名
 
@@ -80,7 +79,7 @@ ffmpeg视频处理gui(){
 ;        else
 ;            msgbox 匹配 %剪切时间列表%
 
-        if(ffmpeg剪切视频(源文件路径, 输出文件名, 剪切时间列表))
+        if(ffmpeg剪切视频(源文件路径, 输出文件名, Trim(剪切时间列表, ",")))
             msgbox finished
         else
             msgbox 剪切结果异常
