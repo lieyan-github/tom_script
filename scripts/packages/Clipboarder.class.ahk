@@ -283,7 +283,8 @@ class Clipboarder{
     }
 
     ; ----------------------------------------------------------
-    ; static 剪贴板数组拼接();
+    ; 剪贴板数组字符串拼接
+    ; static join(_in参数:="")
     ; return: 拼接后的字符串
     ; ----------------------------------------------------------
     join(_in参数:=""){
@@ -292,18 +293,14 @@ class Clipboarder{
             _参数:= ""
             if(_in参数 != "")
                 _参数:= _in参数
-            else
-                _参数:= {"包裹开始":"", "包裹结束":"", "连接符":" "}
-            ; 以逗号分割字符串
-            _split_Array:= Clipboarder.list
-            ; 以双引号包裹元素
-            Loop % _split_Array.Length(){
-                _split_Array[A_Index]:= strWrap(_split_Array[A_Index]
-                                                    , _参数["包裹开始"]
-                                                    , _参数["包裹结束"])
+            else if(RegExMatch(Clipboarder.list[1], "\d{2}:\d{2}:\d{2}.\d{3}") > 0 && Clipboarder.length()=2){
+                ; 针对视频时间识别的字符串拼接 00:33:37.048
+                _参数:= {"连接符":"-","结束符":","}
             }
+            else
+                _参数:= {"连接符":" "}
             ; 重新以逗号连接字符串
-            _result:= arrayJoin(_split_Array, _参数["连接符"])
+            _result:= arrayJoin(Clipboarder.list, _参数["连接符"]) . _参数["结束符"]
         }
         else
             show_msg("剪贴板数组为空, 无法进行连接字符串操作!")
