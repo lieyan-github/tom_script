@@ -450,6 +450,16 @@ class AvGirlInfo extends AvInfo {
         return _str
     }
 
+    toCsvStr(){
+        _str := Format("{1},{2},{3},{4},{5}"
+                        , arrayJoin(this.info["名字"], "_")
+                        , this.info["评级"]
+                        , this.info["生日"]
+                        , this.info["bra"]
+                        , arrayJoin(this.info["tags"], " "))
+        return _str
+    }
+
     ; ----------------------------------------------------------
     ; public 提取女优的相关信息, 第一个特征都设置为标准模式
     ; ----------------------------------------------------------
@@ -527,8 +537,8 @@ class AvGirlInfo extends AvInfo {
         _bra   := ""
         ; 匹配特征
         _bra := 按特征库提取字符串(in_avStr, _特征库)
-        ; 转大写字母
-        StringUpper, _bra, _bra
+        ; 转小写字母
+        StringLower, _bra, _bra
         ; 返回结果
         return _bra
     }
@@ -1402,6 +1412,11 @@ av女优_查询已看过(_in查询av女优名){
             MsgBox, 用户取消编辑, 未保存.
         else{
             ; 保存修改后的av女优信息
+            if(InStr(_修改后的av女优信息, "★") > 0){
+                ; 如果是格式化的内容, 则直接解析
+                avGirlInfo := new AvGirlInfo(_修改后的av女优信息)
+                _修改后的av女优信息 := avGirlInfo.toCsvStr()
+            }
             ; 到列表
             _已看过的av女优[_result] := StrSplit(Trim(_修改后的av女优信息), ",")
             ; 保存到文件
@@ -1416,6 +1431,11 @@ av女优_查询已看过(_in查询av女优名){
             MsgBox, 用户取消编辑, 未保存.
         else{
             ; 保存修改后的av女优信息
+            if(InStr(_修改后的av女优信息, "★") > 0){
+                ; 如果是格式化的内容, 则直接解析
+                avGirlInfo := new AvGirlInfo(_修改后的av女优信息)
+                _修改后的av女优信息 := avGirlInfo.toCsvStr()
+            }
             ; 到列表
             _已看过的av女优.push(StrSplit(Trim(_修改后的av女优信息), ","))
             ; 保存到文件
