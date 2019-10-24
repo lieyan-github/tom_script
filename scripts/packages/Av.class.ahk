@@ -1412,7 +1412,7 @@ av女优_查询已看过(_in查询av女优名){
             MsgBox, 用户取消编辑, 未保存.
         else{
             ; 保存修改后的av女优信息
-            if(InStr(_修改后的av女优信息, "★") > 0){
+            if(InStr(_修改后的av女优信息, "#av女优#") > 0){
                 ; 如果是格式化的内容, 则直接解析
                 avGirlInfo := new AvGirlInfo(_修改后的av女优信息)
                 _修改后的av女优信息 := avGirlInfo.toCsvStr()
@@ -1431,7 +1431,7 @@ av女优_查询已看过(_in查询av女优名){
             MsgBox, 用户取消编辑, 未保存.
         else{
             ; 保存修改后的av女优信息
-            if(InStr(_修改后的av女优信息, "★") > 0){
+            if(InStr(_修改后的av女优信息, "#av女优#") > 0){
                 ; 如果是格式化的内容, 则直接解析
                 avGirlInfo := new AvGirlInfo(_修改后的av女优信息)
                 _修改后的av女优信息 := avGirlInfo.toCsvStr()
