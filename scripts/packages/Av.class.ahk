@@ -1280,3 +1280,150 @@ class AvInfoAnalysis{
 }
 
 ; ----------------------------------------------------------
+
+
+; av作品_查询已看过(_in查询av编号)
+; 返回值: -1 失败, >0 存在已看过作品
+av作品_查询已看过(_in查询av编号){
+    _result := -1
+; 1.清洗av编号: 全部小写,包含"-_"
+    _查询av编号 := Format("{:L}", _in查询av编号)
+; 2.从"已看过的_av作品.txt"文件中读取每行,
+    _每行编辑格式 := "每行编辑格式:`n av编号(key), 评级(0烂片-3精品), 演员(可空 空格间隔), 标签(可空 空格间隔)"
+    _已看过的av作品_file := Config.upath("已看过的av作品")
+    _已看过的av作品 := []
+    ; 检查文件是否存在
+    if(FileExist(_已看过的av作品_file)){
+        ; 读取文件到列表
+        Loop, read, %_已看过的av作品_file%
+        {
+            if(trim(A_LoopReadLine) != "")
+                _已看过的av作品.push(StrSplit(A_LoopReadLine, ","))
+        }
+
+        ; 在列表中查询av编号
+        Loop % _已看过的av作品.Length()
+        {
+            if(_查询av编号 == _已看过的av作品[A_Index][1])
+            {
+                _result := A_Index
+                break
+            }
+        }
+    }
+    else{
+        MsgBox 指定文件路径不存在:`n %_已看过的av作品_file% `n`n下一步将新建文件
+    }
+
+; 3. 用input窗口显示av作品信息, 按ok键可保存修改
+    _原av作品信息 := ""
+    if(_result>0){
+        ; 如果已存在, 则显示已有信息, 按ok可保存修改
+        Loop % _已看过的av作品[_result].Length()
+        {
+            _原av作品信息 .= _已看过的av作品[_result][A_Index] . ","
+        }
+        _原av作品信息 := trim(_原av作品信息, ",")
+        InputBox, _修改后的av作品信息, 编辑AV作品信息, 指定AV作品编号存在`, 编辑AV作品信息`n`n%_每行编辑格式%, , 640, 320,,,,,%_原av作品信息%
+        if ErrorLevel
+            MsgBox, 用户取消编辑, 未保存.
+        else{
+            ; 保存修改后的av信息
+            ; 到列表
+            _已看过的av作品[_result] := StrSplit(Trim(_修改后的av作品信息), ",")
+            ; 保存到文件
+            CsvFile.writeListToCsv(_已看过的av作品, _已看过的av作品_file)
+            MsgBox, 编辑内容已保存`n`n%_修改后的av作品信息%
+        }
+    }
+    else{
+        ; 如果未存在, 则显示添加av信息, 按ok可保存修改
+        InputBox, _修改后的av作品信息, 添加AV作品信息, 指定AV作品编号不存在`, 添加AV作品信息`n`n%_每行编辑格式%, , 640, 320,,,,,%_查询av编号%
+        if ErrorLevel
+            MsgBox, 用户取消编辑, 未保存.
+        else{
+            ; 保存修改后的av信息
+            ; 到列表
+            _已看过的av作品.push(StrSplit(Trim(_修改后的av作品信息), ","))
+            ; 保存到文件
+            CsvFile.writeListToCsv(_已看过的av作品, _已看过的av作品_file)
+            MsgBox, 新内容已保存`n`n%_修改后的av作品信息%
+            ; 结果指向最后一个元素索引
+            _result := _已看过的av作品.Length()
+        }
+    }
+    return _result
+}
+
+; av女优_查询已看过(_in查询av女优名)
+; 返回值: -1 失败, >0 存在已看过女优
+av女优_查询已看过(_in查询av女优名){
+    _result := -1
+; 1.清洗av女优名: 全部小写,包含"-_"
+    _查询av女优名 := Format("{:L}", _in查询av女优名)
+; 2.从"已看过的_精品av女优.txt"文件中读取每行,
+    _每行编辑格式 := "每行编辑格式:`n 女优名(key), 评分(0烂-3精品), 生日(可空), 罩杯(a-z), 标签(可空 空格间隔)"
+    _已看过的av女优_file := Config.upath("已看过的av女优")
+    _已看过的av女优 := []
+    ; 检查文件是否存在
+    if(FileExist(_已看过的av女优_file)){
+        ; 读取文件到列表
+        Loop, read, %_已看过的av女优_file%
+        {
+            if(trim(A_LoopReadLine) != "")
+                _已看过的av女优.push(StrSplit(A_LoopReadLine, ","))
+        }
+
+        ; 在列表中查询av女优名
+        Loop % _已看过的av女优.Length()
+        {
+            if(InStr(_已看过的av女优[A_Index][1], _查询av女优名) > 0)
+            {
+                _result := A_Index
+                break
+            }
+        }
+    }
+    else{
+        MsgBox 指定文件路径不存在:`n %_已看过的av女优_file% `n`n下一步将新建文件
+    }
+
+; 3. 用input窗口显示av作品信息, 按ok键可保存修改
+    _原av女优信息 := ""
+    if(_result>0){
+        ; 如果已存在, 则显示已有信息, 按ok可保存修改
+        Loop % _已看过的av女优[_result].Length()
+        {
+            _原av女优信息 .= _已看过的av女优[_result][A_Index] . ","
+        }
+        _原av女优信息 := trim(_原av女优信息, ",")
+        InputBox, _修改后的av女优信息, 编辑AV女优信息, 指定AV女优存在`, 编辑AV女优信息`n`n%_每行编辑格式%, , 640, 320,,,,,%_原av女优信息%
+        if ErrorLevel
+            MsgBox, 用户取消编辑, 未保存.
+        else{
+            ; 保存修改后的av女优信息
+            ; 到列表
+            _已看过的av女优[_result] := StrSplit(Trim(_修改后的av女优信息), ",")
+            ; 保存到文件
+            CsvFile.writeListToCsv(_已看过的av女优, _已看过的av女优_file)
+            MsgBox, 编辑内容已保存`n`n%_修改后的av女优信息%
+        }
+    }
+    else{
+        ; 如果未存在, 则显示添加av信息, 按ok可保存修改
+        InputBox, _修改后的av女优信息, 添加AV女优信息, 指定AV女优不存在`, 添加AV女优信息`n`n%_每行编辑格式%, , 640, 320,,,,,%_查询av女优名%
+        if ErrorLevel
+            MsgBox, 用户取消编辑, 未保存.
+        else{
+            ; 保存修改后的av女优信息
+            ; 到列表
+            _已看过的av女优.push(StrSplit(Trim(_修改后的av女优信息), ","))
+            ; 保存到文件
+            CsvFile.writeListToCsv(_已看过的av女优, _已看过的av女优_file)
+            MsgBox, 新内容已保存`n`n%_修改后的av女优信息%
+            ; 结果指向最后一个元素索引
+            _result := _已看过的av女优.Length()
+        }
+    }
+    return _result
+}

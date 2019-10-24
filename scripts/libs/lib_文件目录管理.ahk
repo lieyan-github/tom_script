@@ -428,7 +428,7 @@ showFileHash(_type:="md5")
     ;---开始对列表中的所有文件进行处理
     _counter:= 0
     ;---开始创建操作日志
-    _file:=  FileOpen(_集中存放目录 . "\原文件结构备份.txt", 1)
+    _file:=  FileOpen(_集中存放目录 . "\原文件结构备份.txt", "w", Config.items["fileEncoding"])
     ;---记录日志每行的内容
     _log_writeLine:= ""
     Loop % _filesLongPathList.MaxIndex()
@@ -487,7 +487,7 @@ showFileHash(_type:="md5")
     ;---开始对列表中的所有文件进行处理
     _counter:= 0
     ;---开始创建操作日志
-    _file:=  FileOpen(_集中存放目录 . "\原文件结构备份.txt", 1)
+    _file:=  FileOpen(_集中存放目录 . "\原文件结构备份.txt", "w", Config.items["fileEncoding"])
     ;---记录日志每行的内容
     _log_writeLine:= ""
     Loop % _filesList.MaxIndex()

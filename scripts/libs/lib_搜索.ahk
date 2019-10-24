@@ -110,9 +110,12 @@ search_menu()
     Menu, SearchMenu, Add, [按住Shift显示序号 | 按住Ctrl显示项目], lab_SearchMenu_End
     Menu, SearchMenu, disable, [按住Shift显示序号 | 按住Ctrl显示项目]
     Menu, SearchMenu, Add
-    Menu, SearchMenu, Add, &h. 查看搜索历史, lab_SearchMenu_History
+    Menu, SearchMenu, Add, &a. 已看过的AV女优, lab_已看过的AV女优
+    Menu, SearchMenu, Add, &z. 已看过的AV作品, lab_已看过的AV作品
     Menu, SearchMenu, Add
-    Menu, SearchMenu, Add, &q. 打开搜索器, lab_SearchMenu_Run
+    Menu, SearchMenu, Add, &q. 打开本地搜索器, lab_打开本地搜索器
+    Menu, SearchMenu, Add
+    Menu, SearchMenu, Add, &h. 查看搜索历史, lab_SearchMenu_History
     Menu, SearchMenu, Add
     Menu, SearchMenu, Add, &e. 编辑搜索列表, lab_SearchMenu_Edit
     Menu, SearchMenu, Add
@@ -163,23 +166,34 @@ search_menu()
         ;[普通粘贴]
         write(Clipboarder.item(A_ThisMenuItemPos))
     Return
-    ; ----------------------------------------------------------
+
     lab_SearchMenu_Clipboard:
         write(Clipboard)
     return
-    ; ----------------------------------------------------------
-    lab_SearchMenu_History:
-        run % Config.upath("searchHistoryFile")
+
+    lab_已看过的AV女优:
+        av女优_查询已看过(_searchKey)
     return
-    ; ----------------------------------------------------------
-    lab_SearchMenu_Run:
+
+    lab_已看过的AV作品:
+        av作品_查询已看过(_searchKey)
+    return
+
+    lab_打开本地搜索器:
         run % _localSearcher["cmd"]
     return
-    ; ----------------------------------------------------------
+
+    lab_SearchMenu_History:
+        if(FileExist(Config.upath("searchHistoryFile")))
+            run % Config.upath("searchHistoryFile")
+        Else
+            msgbox, searchHistoryFile 文件不存在!
+    return
+
     lab_SearchMenu_Edit:
         run % Config.path("searchersFile")
     return
-    ; ----------------------------------------------------------
+
     lab_SearchMenu_End:
         Gui, Destroy
     return

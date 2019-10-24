@@ -63,7 +63,7 @@ class JsonFile extends File{
     read(_jsonPath){
         if(! 文件存在(_jsonPath))
             return {}
-        _fileIn:= FileOpen(_jsonPath, "r", "utf-8")
+        _fileIn:= FileOpen(_jsonPath, "r", Config.items["fileEncoding"])
         _json_str:= _fileIn.read()
         fileIn.close()
         return JSON.Load(_json_str)
@@ -74,7 +74,7 @@ class JsonFile extends File{
         _json_str := JSON.Dump(_jsonObj,, 3)
         _json_str := StrReplace(_json_str, "`n", "`r`n") ; for display purposes only
         ; 输出结果到文件
-        _dump_file:= FileOpen(_jsonPath, "w", "utf-8")
+        _dump_file:= FileOpen(_jsonPath, "w", Config.items["fileEncoding"])
         _dump_file.write(_json_str)
         _dump_file.close()
     }
@@ -124,12 +124,11 @@ class CsvFile extends File{
     append(_filePath, _params*){
         _line := ""
         for _index, _param in _params {
-            _line .= _param
-            if(_index < _params.MaxIndex())
-                _line .= ","
+            _line .= Trim(_param) . ","
         }
+        _line := RTrim(_line, ",")
         try{
-            _fileObj := FileOpen(_filePath, "a")
+            _fileObj := FileOpen(_filePath, "a", Config.items["fileEncoding"])
             _fileObj.WriteLine(_line)
         }
         catch e{
@@ -162,16 +161,15 @@ class CsvFile extends File{
         ; 数组格式: [{k:v, k:v}, {k:v, k:v}, {k:v, k:v}]
         _line := "" ; 行内容将{k1:v1, k2:v2} 转化成 "v1,v2,..."的字符串
         try{
-            _fileObj := FileOpen(_filePath, "w")
+            _fileObj := FileOpen(_filePath, "w", Config.items["fileEncoding"])
             for _rindex, _rvalue in _list {
                 ; 每行开始缓存清空
                 _line := ""
                 ; 拼接行内容
                 for _ckey, _cvalue in _list[_rindex] {
-                    _line .= _cvalue
-                    if(A_index < _list[_rindex].MaxIndex())
-                        _line .= ","
+                    _line .= trim(_cvalue) . ","
                 }
+                _line := RTrim(_line, ",")
                 ;写入一行到文件
                 _fileObj.WriteLine(_line)
             }

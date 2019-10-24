@@ -135,7 +135,7 @@ class Clipboarder{
         _filePath := Config.upath("clipboardFile")
         try
         {
-            _fileObj := FileOpen(_filePath, "w")
+            _fileObj := FileOpen(_filePath, "w", Config.items["fileEncoding"])
             ; 将数组list写入文件
             For index, value in Clipboarder.list
             {

@@ -1,5 +1,6 @@
 ﻿{
     "commentSymbol": ";",
+    "fileEncoding" : "utf-8",
     "data": {
         "searchersFile": "searchers.json"
     },
@@ -13,7 +14,9 @@
         "logFile": "tom的Ahk日志.ini",
         "searchHistoryFile": "searchHistory.csv",
         "批量关闭程序": "批量关闭程序.json",
-        "批量启动程序": "批量启动程序.json"
+        "批量启动程序": "批量启动程序.json",
+        "已看过的av作品": "av_已看过的_作品.txt",
+        "已看过的av女优": "av_已看过的_女优.txt"
     },
     "wrapBorderLine1": "----------------------------------------------------------",
     "wrapBorderLine2": "==========================================================",
