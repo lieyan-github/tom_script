@@ -1296,25 +1296,26 @@ class AvInfoAnalysis{
 ; 返回值: -1 失败, >0 存在已看过作品
 av作品_查询已看过(_in查询av编号){
     _result := -1
+    _查询名称 := "av作品"
 ; 1.清洗av编号: 全部小写,包含"-_"
-    _查询av编号 := Format("{:L}", _in查询av编号)
-; 2.从"已看过的_av作品.txt"文件中读取每行,
+    _查询关键字 := Format("{:L}", _in查询av编号)
+; 2.从_查询文件"已看过的_av作品.txt"文件中, 读取所有非空行到_查询列表
     _每行编辑格式 := "每行编辑格式:`n av编号(key), 评级(0烂片-3精品), 演员(可空 空格间隔), 标签(可空 空格间隔)"
-    _已看过的av作品_file := Config.upath("已看过的av作品")
-    _已看过的av作品 := []
+    _查询文件 := Config.upath("已看过的av作品")
+    _查询列表 := []
     ; 检查文件是否存在
-    if(FileExist(_已看过的av作品_file)){
+    if(FileExist(_查询文件)){
         ; 读取文件到列表
-        Loop, read, %_已看过的av作品_file%
+        Loop, read, %_查询文件%
         {
             if(trim(A_LoopReadLine) != "")
-                _已看过的av作品.push(StrSplit(A_LoopReadLine, ","))
+                ; 清洗查询文件的脏数据, 这里加入Format("{:L}",A_LoopReadLine) 小写字母转换
+                _查询列表.push(StrSplit(Format("{:L}",A_LoopReadLine), ","))
         }
-
-        ; 在列表中查询av编号
-        Loop % _已看过的av作品.Length()
+        ; 在查询列表中根据关键字, 查询数据行索引号
+        Loop % _查询列表.Length()
         {
-            if(_查询av编号 == _已看过的av作品[A_Index][1])
+            if(_查询关键字 == _查询列表[A_Index][1])
             {
                 _result := A_Index
                 break
@@ -1322,44 +1323,48 @@ av作品_查询已看过(_in查询av编号){
         }
     }
     else{
-        MsgBox 指定文件路径不存在:`n %_已看过的av作品_file% `n`n下一步将新建文件
+        MsgBox 指定文件路径不存在:`n %_查询文件% `n`n下一步将新建文件
     }
 
-; 3. 用input窗口显示av作品信息, 按ok键可保存修改
-    _原av作品信息 := ""
+; 3. 用input窗口显示数据行内容, 按ok键可保存修改
+    _初始行内容 := ""
+    _修改后的行内容 := ""
+    ; 根据是否存在已有数据行区别对待
     if(_result>0){
         ; 如果已存在, 则显示已有信息, 按ok可保存修改
-        Loop % _已看过的av作品[_result].Length()
+        Loop % _查询列表[_result].Length()
         {
-            _原av作品信息 .= _已看过的av作品[_result][A_Index] . ","
+            _初始行内容 .= _查询列表[_result][A_Index] . ","
         }
-        _原av作品信息 := trim(_原av作品信息, ",")
-        InputBox, _修改后的av作品信息, 编辑AV作品信息, 指定AV作品编号存在`, 编辑AV作品信息`n`n%_每行编辑格式%, , 640, 320,,,,,%_原av作品信息%
+        _初始行内容 := trim(_初始行内容, ",")
+        InputBox, _input修改后的行内容, 编辑%_查询名称%, 指定%_查询名称%存在`, 编辑%_查询名称%`n`n%_每行编辑格式%, , 640, 320,,,,,%_初始行内容%
+        _修改后的行内容 := Format("{:L}",_input修改后的行内容)
         if ErrorLevel
             MsgBox, 用户取消编辑, 未保存.
         else{
-            ; 保存修改后的av信息
-            ; 到列表
-            _已看过的av作品[_result] := StrSplit(Trim(_修改后的av作品信息), ",")
+            ; 保存修改后的数据行
+            ; 保存到列表
+            _查询列表[_result] := StrSplit(Trim(_修改后的行内容), ",")
             ; 保存到文件
-            CsvFile.writeListToCsv(_已看过的av作品, _已看过的av作品_file)
-            MsgBox, 编辑内容已保存`n`n%_修改后的av作品信息%
+            CsvFile.writeListToCsv(_查询列表, _查询文件)
+            MsgBox, 编辑内容已保存`n`n%_修改后的行内容%
         }
     }
     else{
-        ; 如果未存在, 则显示添加av信息, 按ok可保存修改
-        InputBox, _修改后的av作品信息, 添加AV作品信息, 指定AV作品编号不存在`, 添加AV作品信息`n`n%_每行编辑格式%, , 640, 320,,,,,%_查询av编号%
+        ; 如果未存在, 则显示添加信息, 按ok可保存修改
+        InputBox, _input修改后的行内容, 添加%_查询名称%, 指定%_查询名称%不存在`, 添加%_查询名称%`n`n%_每行编辑格式%, , 640, 320,,,,,%_查询av编号%
+        _修改后的行内容 := Format("{:L}",_input修改后的行内容)
         if ErrorLevel
             MsgBox, 用户取消编辑, 未保存.
         else{
-            ; 保存修改后的av信息
-            ; 到列表
-            _已看过的av作品.push(StrSplit(Trim(_修改后的av作品信息), ","))
+            ; 保存修改后的数据行
+            ; 保存到列表
+            _查询列表.push(StrSplit(Trim(_修改后的行内容), ","))
             ; 保存到文件
-            CsvFile.writeListToCsv(_已看过的av作品, _已看过的av作品_file)
-            MsgBox, 新内容已保存`n`n%_修改后的av作品信息%
+            CsvFile.writeListToCsv(_查询列表, _查询文件)
+            MsgBox, 新内容已保存`n`n%_修改后的行内容%
             ; 结果指向最后一个元素索引
-            _result := _已看过的av作品.Length()
+            _result := _查询列表.Length()
         }
     }
     return _result
@@ -1369,25 +1374,26 @@ av作品_查询已看过(_in查询av编号){
 ; 返回值: -1 失败, >0 存在已看过女优
 av女优_查询已看过(_in查询av女优名){
     _result := -1
+    _查询名称 := "av女优"
 ; 1.清洗av女优名: 全部小写,包含"-_"
-    _查询av女优名 := Format("{:L}", _in查询av女优名)
-; 2.从"已看过的_精品av女优.txt"文件中读取每行,
+    _查询关键字 := Format("{:L}", _in查询av女优名)
+; 2.从_查询文件"已看过的_精品av女优.txt"文件中, 读取所有非空行到_查询列表
     _每行编辑格式 := "每行编辑格式:`n 女优名(key), 评分(0烂-3精品), 生日(可空), 罩杯(a-z), 标签(可空 空格间隔)"
-    _已看过的av女优_file := Config.upath("已看过的av女优")
-    _已看过的av女优 := []
+    _查询文件 := Config.upath("已看过的av女优")
+    _查询列表 := []
     ; 检查文件是否存在
-    if(FileExist(_已看过的av女优_file)){
+    if(FileExist(_查询文件)){
         ; 读取文件到列表
-        Loop, read, %_已看过的av女优_file%
+        Loop, read, %_查询文件%
         {
             if(trim(A_LoopReadLine) != "")
-                _已看过的av女优.push(StrSplit(A_LoopReadLine, ","))
+                ; 清洗查询文件的脏数据, 这里加入Format("{:L}",A_LoopReadLine) 小写字母转换
+                _查询列表.push(StrSplit(Format("{:L}",A_LoopReadLine), ","))
         }
-
-        ; 在列表中查询av女优名
-        Loop % _已看过的av女优.Length()
+        ; 在查询列表中根据关键字, 查询数据行索引号
+        Loop % _查询列表.Length()
         {
-            if(InStr(_已看过的av女优[A_Index][1], _查询av女优名) > 0)
+            if(InStr(_查询列表[A_Index][1], _查询关键字) > 0)
             {
                 _result := A_Index
                 break
@@ -1395,54 +1401,58 @@ av女优_查询已看过(_in查询av女优名){
         }
     }
     else{
-        MsgBox 指定文件路径不存在:`n %_已看过的av女优_file% `n`n下一步将新建文件
+        MsgBox 指定文件路径不存在:`n %_查询文件% `n`n下一步将新建文件
     }
 
-; 3. 用input窗口显示av作品信息, 按ok键可保存修改
-    _原av女优信息 := ""
+; 3. 用input窗口显示数据行内容, 按ok键可保存修改
+    _初始行内容 := ""
+    _修改后的行内容 := ""
+    ; 根据是否存在已有数据行区别对待
     if(_result>0){
         ; 如果已存在, 则显示已有信息, 按ok可保存修改
-        Loop % _已看过的av女优[_result].Length()
+        Loop % _查询列表[_result].Length()
         {
-            _原av女优信息 .= _已看过的av女优[_result][A_Index] . ","
+            _初始行内容 .= _查询列表[_result][A_Index] . ","
         }
-        _原av女优信息 := trim(_原av女优信息, ",")
-        InputBox, _修改后的av女优信息, 编辑AV女优信息, 指定AV女优存在`, 编辑AV女优信息`n`n%_每行编辑格式%, , 640, 320,,,,,%_原av女优信息%
+        _初始行内容 := trim(_初始行内容, ",")
+        InputBox, _input修改后的行内容, 编辑%_查询名称%, 指定%_查询名称%存在`, 编辑%_查询名称%`n`n%_每行编辑格式%, , 640, 320,,,,,%_初始行内容%
+        _修改后的行内容 := Format("{:L}",_input修改后的行内容)
         if ErrorLevel
             MsgBox, 用户取消编辑, 未保存.
         else{
-            ; 保存修改后的av女优信息
-            if(InStr(_修改后的av女优信息, "#av女优#") > 0){
+            ; 保存修改后的数据行
+            if(InStr(_修改后的行内容, "#av女优#") > 0){
                 ; 如果是格式化的内容, 则直接解析
-                avGirlInfo := new AvGirlInfo(_修改后的av女优信息)
-                _修改后的av女优信息 := avGirlInfo.toCsvStr()
+                avGirlInfo := new AvGirlInfo(_修改后的行内容)
+                _修改后的行内容 := avGirlInfo.toCsvStr()
             }
-            ; 到列表
-            _已看过的av女优[_result] := StrSplit(Trim(_修改后的av女优信息), ",")
+            ; 保存到列表
+            _查询列表[_result] := StrSplit(Trim(_修改后的行内容), ",")
             ; 保存到文件
-            CsvFile.writeListToCsv(_已看过的av女优, _已看过的av女优_file)
-            MsgBox, 编辑内容已保存`n`n%_修改后的av女优信息%
+            CsvFile.writeListToCsv(_查询列表, _查询文件)
+            MsgBox, 编辑内容已保存`n`n%_修改后的行内容%
         }
     }
     else{
-        ; 如果未存在, 则显示添加av信息, 按ok可保存修改
-        InputBox, _修改后的av女优信息, 添加AV女优信息, 指定AV女优不存在`, 添加AV女优信息`n`n%_每行编辑格式%, , 640, 320,,,,,%_查询av女优名%
+        ; 如果未存在, 则显示添加信息, 按ok可保存修改
+        InputBox, _input修改后的行内容, 添加%_查询名称%, 指定%_查询名称%不存在`, 添加%_查询名称%`n`n%_每行编辑格式%, , 640, 320,,,,,%_查询关键字%
+        _修改后的行内容 := Format("{:L}",_input修改后的行内容)
         if ErrorLevel
             MsgBox, 用户取消编辑, 未保存.
         else{
-            ; 保存修改后的av女优信息
-            if(InStr(_修改后的av女优信息, "#av女优#") > 0){
+            ; 保存修改后的数据行
+            if(InStr(_修改后的行内容, "#av女优#") > 0){
                 ; 如果是格式化的内容, 则直接解析
-                avGirlInfo := new AvGirlInfo(_修改后的av女优信息)
-                _修改后的av女优信息 := avGirlInfo.toCsvStr()
+                avGirlInfo := new AvGirlInfo(_修改后的行内容)
+                _修改后的行内容 := avGirlInfo.toCsvStr()
             }
-            ; 到列表
-            _已看过的av女优.push(StrSplit(Trim(_修改后的av女优信息), ","))
+            ; 保存到列表
+            _查询列表.push(StrSplit(Trim(_修改后的行内容), ","))
             ; 保存到文件
-            CsvFile.writeListToCsv(_已看过的av女优, _已看过的av女优_file)
-            MsgBox, 新内容已保存`n`n%_修改后的av女优信息%
+            CsvFile.writeListToCsv(_查询列表, _查询文件)
+            MsgBox, 新内容已保存`n`n%_修改后的行内容%
             ; 结果指向最后一个元素索引
-            _result := _已看过的av女优.Length()
+            _result := _查询列表.Length()
         }
     }
     return _result
