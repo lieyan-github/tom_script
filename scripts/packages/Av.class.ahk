@@ -1404,7 +1404,7 @@ av女优_查询已看过(_in查询av女优名){
             if(InStr(_查询列表[A_Index][1], _查询关键字) > 0)
             {
                 _result := A_Index
-                return _result
+                Break
             }
         }
     }
