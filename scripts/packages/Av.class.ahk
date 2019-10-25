@@ -1342,6 +1342,10 @@ av作品_查询已看过(_in查询av编号){
         if ErrorLevel
             MsgBox, 用户取消编辑, 未保存.
         else{
+            if(trim(_修改后的行内容) == ""){
+                MsgBox, 编辑内容为空`n`n结束查询操作!
+                return _result
+            }
             ; 保存修改后的数据行
             ; 保存到列表
             _查询列表[_result] := StrSplit(Trim(_修改后的行内容), ",")
@@ -1352,11 +1356,15 @@ av作品_查询已看过(_in查询av编号){
     }
     else{
         ; 如果未存在, 则显示添加信息, 按ok可保存修改
-        InputBox, _input修改后的行内容, 添加%_查询名称%, 指定%_查询名称%不存在`, 添加%_查询名称%`n`n%_每行编辑格式%, , 640, 320,,,,,%_查询av编号%
+        InputBox, _input修改后的行内容, 添加%_查询名称%, 指定%_查询名称%不存在`, 添加%_查询名称%`n`n%_每行编辑格式%, , 640, 320,,,,,%_查询关键字%
         _修改后的行内容 := Format("{:L}",_input修改后的行内容)
         if ErrorLevel
             MsgBox, 用户取消编辑, 未保存.
         else{
+            if(trim(_修改后的行内容) == ""){
+                MsgBox, 编辑内容为空`n`n结束查询操作!
+                return _result
+            }
             ; 保存修改后的数据行
             ; 保存到列表
             _查询列表.push(StrSplit(Trim(_修改后的行内容), ","))
@@ -1396,7 +1404,7 @@ av女优_查询已看过(_in查询av女优名){
             if(InStr(_查询列表[A_Index][1], _查询关键字) > 0)
             {
                 _result := A_Index
-                break
+                return _result
             }
         }
     }
@@ -1420,6 +1428,10 @@ av女优_查询已看过(_in查询av女优名){
         if ErrorLevel
             MsgBox, 用户取消编辑, 未保存.
         else{
+            if(trim(_修改后的行内容) == ""){
+                MsgBox, 编辑内容为空`n`n结束查询操作!
+                return _result
+            }
             ; 保存修改后的数据行
             if(InStr(_修改后的行内容, "#av女优#") > 0){
                 ; 如果是格式化的内容, 则直接解析
@@ -1440,6 +1452,10 @@ av女优_查询已看过(_in查询av女优名){
         if ErrorLevel
             MsgBox, 用户取消编辑, 未保存.
         else{
+            if(trim(_修改后的行内容) == ""){
+                MsgBox, 编辑内容为空`n`n结束查询操作!
+                return _result
+            }
             ; 保存修改后的数据行
             if(InStr(_修改后的行内容, "#av女优#") > 0){
                 ; 如果是格式化的内容, 则直接解析
