@@ -37,7 +37,7 @@
         },
         {
             "name": "btso",
-            "cmd": "https://btspread.com/search/%s",
+            "cmd": "https://btos.pw/search/%s",
             "tag": [
                 "e-bt"
             ]
