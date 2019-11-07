@@ -91,7 +91,7 @@ class Test {
         _str.= "; ==========================================================`n"
         Loop % this.errorList.MaxIndex()
             _str .= A_Index . ". " this.errorList[A_Index] . "`n"
-        _str.= "`n`n`n`n`n`n"
+        _str.= "`n`n`n"
         _str.= "; valid list -- [" . this.validList.MaxIndex() . "]`n"
         _str.= "; ==========================================================`n"
         Loop % this.validList.MaxIndex()

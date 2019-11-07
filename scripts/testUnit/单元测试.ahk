@@ -3,175 +3,186 @@
     ; 单元测试 public static test()
     ; ----------------------------------------------------------
     test(){
-        ;收藏夹 tags格式化
+        ; Av.rename 收藏夹重命名av女优
+        ; ----------------------------------------------------------
+        avstr := "佐山愛 - 演員 - 影片 - AVMOO"
+        Clipboard := ""
+        assert("Av.rename av女优-001", Av.rename(avstr) == "#av女优# ★★★ 佐山愛 1990-00-00 tags(标签) " . Sys.date() . " - 演員 - 影片 - AVMOO")
+
+        ; 收藏夹重命名av女优, 从剪贴板获取生日和罩杯
+        avstr := "佐山愛 - 演員 - 影片 - AVMOO"
+        Clipboard := "1998年10月30日 g罩杯"
+        assert("Av.rename av女优-002", Av.rename(avstr) == "#av女优# ★★★ 佐山愛 1998-10-30 tags(美颜 乳g) " . Sys.date() . " - 演員 - 影片 - AVMOO")
+
+        ; Av.rename 收藏夹重命名av作品
+        ; ----------------------------------------------------------
+        avstr := "RBD-930 強制受胎闇市場 佐山愛_真木今日子 - AVMOO"
+        assert("Av.rename av作品-001", Av.rename(avstr) == "#av作品# ★★★ RBD-930 強制受胎闇市場 佐山愛_真木今日子 tags(标签) " . Sys.date() . " - AVMOO")
+
+        ; 对收藏夹内容格式化
+        avstr := "#av作品# ★★★ RBD-930 強制受胎闇市場 佐山愛_真木今日子 tags(美颜_乳g_诱惑) 2019年10月30日 - AVMOO"
+        assert("Av.rename av作品-002", Av.rename(avstr) == "#av作品# ★★★ RBD-930 強制受胎闇市場 佐山愛_真木今日子 tags(美颜 乳g 诱惑) 2019-10-30 - AVMOO")
+
+        ; 模板_tags_format 识别下划线间隔的多个标签
+        ; ----------------------------------------------------------
         avstr := "tags(美颜_丰乳h_美臀)"
-        assert("tags格式化tags(美颜_丰乳h_美臀)"
-            , 模板_tags_format(avstr) == "tags(美颜 丰乳h 美臀)")
+        assert("模板_tags_format-001", 模板_tags_format(avstr) == "tags(美颜 丰乳h 美臀)")
 
         avstr := "#精品女优#(美颜_丰乳h_美臀)"
-        assert("tags格式化#精品女优#(美颜_丰乳h_美臀)"
-            , 模板_tags_format(avstr) == "tags(美颜 丰乳h 美臀)")
+        assert("模板_tags_format-002", 模板_tags_format(avstr) == "tags(美颜 丰乳h 美臀)")
 
+        avstr := "(美颜_丰乳h_美臀)"
+        assert("模板_tags_format-003", 模板_tags_format(avstr) == "tags(美颜 丰乳h 美臀)")
+
+        ; AvInfo
         ; ----------------------------------------------------------
+        ; 000 标准格式化分析
+        avstr := "#av女优# ★★★ 佐山愛 1989-01-08 tags(美颜 丰乳h 美臀)"
+        assert("AvInfo.提取tags-000", arrayJoin(AvInfo.提取tags(avstr)) == "美颜 丰乳h 美臀")
 
-        avstr := "#av女优# ★★★ 佐山愛 1989-01-08 tags(美颜_丰乳h_美臀) 2016-03-02 - 演員 - 影片 - JavZoo"
-        assert("收藏夹 tags格式化#001"
-            , 模板_tags_format(avstr) == "#av女优# ★★★ 佐山愛 1989-01-08 tags(美颜 丰乳h 美臀) 2016-03-02 - 演員 - 影片 - JavZoo")
+        ; 001 特殊情况分析 tags下划线
+        avstr := "#av女优# ★★★ 佐山愛 1989-01-08 tags(美颜_丰乳h_美臀)"
+        assert("AvInfo.提取tags-001", arrayJoin(AvInfo.提取tags(avstr)) == "美颜 丰乳h 美臀")
 
-        avstr := "#av女优# ★★★ 佐山愛 1989-01-08 (美颜_丰乳h_美臀) 2016-03-02 - 演員 - 影片 - JavZoo"
-        assert("收藏夹 识别无tags格式化#002"
-            , 模板_tags_format(avstr) == "#av女优# ★★★ 佐山愛 1989-01-08 tags(美颜 丰乳h 美臀) 2016-03-02 - 演員 - 影片 - JavZoo")
+        ; 002 特殊情况分析 tags只有括号且下划线间隔
+        avstr := "#av女优# ★★★ 佐山愛 1989-01-08 (美颜_丰乳h_美臀)"
+        assert("AvInfo.提取tags-002", arrayJoin(AvInfo.提取tags(avstr)) == "美颜 丰乳h 美臀")
 
-        avstr := "#av作品# ★★★ PRED-149 張り込み7日目の汗だく捜査官 ～ダメよ、任務中なのにワタシったら…真夏編～ 凛音とうか tags(风骚_诱惑_丰乳_腰振_高画质) 2019-05-26 - AVMOO"
-        assert("收藏夹 tags格式化#003"
-            , 模板_tags_format(avstr) == "#av作品# ★★★ PRED-149 張り込み7日目の汗だく捜査官 ～ダメよ、任務中なのにワタシったら…真夏編～ 凛音とうか tags(风骚 诱惑 丰乳 腰振 高画质) 2019-05-26 - AVMOO")
-
-        avstr := "#av作品# ★★★ MIDE-089 猛烈なKISSと絡み合う肉体 夏目彩春 (极品诱惑_激吻) 2016-08-11 - AVMOO"
-        assert("收藏夹 tags格式化#004"
-            , 模板_tags_format(avstr) == "#av作品# ★★★ MIDE-089 猛烈なKISSと絡み合う肉体 夏目彩春 tags(极品诱惑 激吻) 2016-08-11 - AVMOO")
-
-
-        ;av女优 单元测试
+        ; AvGirlInfo
         ; ----------------------------------------------------------
-
-        avstr := "#av女优# ★★ 三浦歩美 1983-00-00 tags(美颜_乳g_熟女) 2019-06-13 - 演員 - 影片 - AVMOO"
+        ; 000 标准格式化分析
+        avstr := "#av女优# ★★ 三浦歩美 1983-00-00 tags(美颜 乳g 熟女)"
         _av作品提取内容 := new AvGirlInfo(avstr)
-        assert("AvGirlInfo 识别收藏夹女优格式内容  tags下划线间隔"
-            , _av作品提取内容.toStr() == "#av女优# ★★ 三浦歩美 1983-00-00 地区(日本) tags(美颜 乳g 熟女) 备注()")
+        assert("AvGirlInfo-000", _av作品提取内容.toStr() == "#av女优# ★★ 三浦歩美 1983-00-00 tags(美颜 乳g 熟女)")
 
+        ; 001 特殊情况分析 收藏夹格式 toStr("all")
         avstr := "#av女优# ★★ 三浦歩美 1983-00-00 tags(美颜 乳g 熟女) 2019-06-13 - 演員 - 影片 - AVMOO"
         _av作品提取内容 := new AvGirlInfo(avstr)
-        assert("AvGirlInfo 识别收藏夹女优格式内容 tags空格间隔"
-            , _av作品提取内容.toStr() == "#av女优# ★★ 三浦歩美 1983-00-00 地区(日本) tags(美颜 乳g 熟女) 备注()")
+        assert("AvGirlInfo-001", _av作品提取内容.toStr("all") == "#av女优# ★★ 三浦歩美 1983-00-00 地区(日本) tags(美颜 乳g 熟女) 备注()")
 
+        ; 002 特殊情况分析 tags下划线间隔
+        avstr := "#av女优# ★★ 三浦歩美 1983-00-00 tags(美颜_乳g_熟女) 2019-06-13 - 演員 - 影片 - AVMOO"
+        _av作品提取内容 := new AvGirlInfo(avstr)
+        assert("AvGirlInfo-002", _av作品提取内容.toStr() == "#av女优# ★★ 三浦歩美 1983-00-00 tags(美颜 乳g 熟女)")
+
+        ; 003 特殊情况分析 tags只有括号且下划线间隔
         avstr := "#av女优# ★★ 咲々原リン 1998-07-05 (美颜_乳E_混血) 2019-03-05 - 演員 - 影片 - AVMOO"
         _av作品提取内容 := new AvGirlInfo(avstr)
-        assert("AvGirlInfo 识别收藏夹女优格式内容  无tags"
-            , _av作品提取内容.toStr() == "#av女优# ★★ 咲々原リン 1998-07-05 地区(日本) tags(美颜 乳E 混血) 备注()")
+        assert("AvGirlInfo-003", _av作品提取内容.toStr() == "#av女优# ★★ 咲々原リン 1998-07-05 tags(美颜 乳E 混血)")
 
-        avstr := "#av女优# ★★ 咲々原リン 1998年07月05日 (美颜_乳E_混血) 2019-03-05 - 演員 - 影片 - AVMOO"
-        _av作品提取内容 := new AvGirlInfo(avstr)
-        assert("AvGirlInfo 识别收藏夹女优格式内容  日期识别1998年07月05日"
-            , _av作品提取内容.toStr() == "#av女优# ★★ 咲々原リン 1998-07-05 地区(日本) tags(美颜 乳E 混血) 备注()")
-
-        avstr := "#av女优# ★★ 咲々原リン 1998/07/05 (美颜_乳E_混血) 2019-03-05 - 演員 - 影片 - AVMOO"
-        _av作品提取内容 := new AvGirlInfo(avstr)
-        assert("AvGirlInfo 识别收藏夹女优格式内容  日期识别1998/07/05"
-            , _av作品提取内容.toStr() == "#av女优# ★★ 咲々原リン 1998-07-05 地区(日本) tags(美颜 乳E 混血) 备注()")
-
-
-        ;av有码作品 单元测试
+        ; Av作品日本有码Info
         ; ----------------------------------------------------------
-
-        avstr := "#av作品# ★★★ MIDE-255 巨乳女教師の匂い立つ汗と愛液 神咲詩織 (美乳_激情诱惑) 2016-03-07 - AVMOO"
+        ; 000 标准格式化分析
+        avstr := "#av作品# ★★★ MIDE-255 巨乳女教師の匂い立つ汗と愛液 神咲詩織 真木今日子 tags(美乳 风骚 诱惑)"
         _av作品提取内容 := new Av作品日本有码Info(avstr)
-        assert("Av作品日本有码Info 识别收藏夹av作品"
-            , _av作品提取内容.toStr() == "#av作品# ★★★ MIDE-255 巨乳女教師の匂い立つ汗と愛液 演员(神咲詩織) tags(美乳 激情诱惑) 地区(日本) 有码 导演() 制作商() 发行商() 系列()")
+        assert("Av作品日本有码Info-000", _av作品提取内容.toStr() == "#av作品# ★★★ MIDE-255 巨乳女教師の匂い立つ汗と愛液 神咲詩織 真木今日子 tags(美乳 风骚 诱惑)")
 
-
-        avstr := "#av作品# ★★★ JUY-777 向かい部屋の人妻 佐山愛_佐山爱 (极品诱惑_丰乳_风骚) 2019-06-13 - AVMOO"
+        ; 001 特殊情况分析 tags只有括号且下划线间隔
+        avstr := "#av作品# ★★★ MIDE-255 巨乳女教師の匂い立つ汗と愛液 神咲詩織 真木今日子 (美乳_激情诱惑)"
         _av作品提取内容 := new Av作品日本有码Info(avstr)
-        assert("Av作品日本有码Info 识别提取多演员 以空格分隔"
-            , _av作品提取内容.toStr() == "#av作品# ★★★ JUY-777 向かい部屋の人妻 演员(佐山愛 佐山爱) tags(极品诱惑 丰乳 风骚) 地区(日本) 有码 导演() 制作商() 发行商() 系列()")
+        assert("Av作品日本有码Info-001", _av作品提取内容.toStr("all") == "#av作品# ★★★ MIDE-255 巨乳女教師の匂い立つ汗と愛液 演员(神咲詩織 真木今日子) tags(美乳 激情诱惑) 地区(日本) 有码 导演() 制作商() 发行商() 系列()")
 
+        ; 002 特殊情况分析 收藏夹测试
+        avstr := "#av作品# ★★★ JUY-777 向かい部屋の人妻 佐山愛 真木今日子 (极品诱惑_丰乳_风骚) 2019-06-13 - AVMOO"
+        _av作品提取内容 := new Av作品日本有码Info(avstr)
+        assert("Av作品日本有码Info-002", _av作品提取内容.toStr("all") == "#av作品# ★★★ JUY-777 向かい部屋の人妻 演员(佐山愛 真木今日子) tags(极品诱惑 丰乳 风骚) 地区(日本) 有码 导演() 制作商() 发行商() 系列()")
 
-        ;av无码作品 单元测试
+        ; 003 特殊情况分析 收藏夹格式 多女优 空格间隔
+        avstr := "#av作品# ★★★ JUY-777 向かい部屋の人妻 佐山愛 真木今日子 (极品诱惑_丰乳_风骚) 2019-06-13 - AVMOO"
+        _av作品提取内容 := new Av作品日本有码Info(avstr)
+        assert("Av作品日本有码Info-003", _av作品提取内容.toStr() == "#av作品# ★★★ JUY-777 向かい部屋の人妻 佐山愛 真木今日子 tags(极品诱惑 丰乳 风骚)")
+
+        avstr := "MIDE-255 巨乳女教師の匂い立つ汗と愛液 神咲詩織 真木今日子"
+        _av作品提取内容 := new Av作品日本有码Info(avstr)
+        assert("Av作品日本有码Info-004", _av作品提取内容.toStr() == "#av作品# ★ MIDE-255 巨乳女教師の匂い立つ汗と愛液 神咲詩織 真木今日子 tags()")
+
+        ; Av作品日本无码Info
         ; ----------------------------------------------------------
-
-        avstr := "#av作品# ★★ carib-060215-890 一本道~乳神 真木今日子 tags(极品诱惑_丰乳_风骚)"
+        ; 000 标准格式化分析 all
+        avstr := "#av作品# ★★ carib-060215-890 一本道~乳神 佐山愛 真木今日子 tags(极品诱惑_丰乳_风骚)"
         _av作品提取内容 := new Av作品日本无码Info(avstr)
-        assert("Av作品日本无码Info 识别carib-060215-890"
-            , _av作品提取内容.toStr() == "#av作品# ★★ carib-060215-890 一本道~乳神 演员(真木今日子) tags(极品诱惑 丰乳 风骚) 地区(日本) 无码 导演() 制作商() 发行商() 系列()")
+        assert("Av作品日本无码Info-000", _av作品提取内容.toStr("all") == "#av作品# ★★ carib-060215-890 一本道~乳神 演员(佐山愛 真木今日子) tags(极品诱惑 丰乳 风骚) 地区(日本) 无码 导演() 制作商() 发行商() 系列()")
 
-        avstr := "#av作品# ★★ 060215-890-carib 一本道~乳神 真木今日子 tags(极品诱惑_丰乳_风骚)"
+        ; 001 标准格式化分析 carib-060215-890
+        avstr := "#av作品# ★★ carib-060215-890 一本道~乳神 佐山愛 真木今日子 tags(极品诱惑_丰乳_风骚)"
         _av作品提取内容 := new Av作品日本无码Info(avstr)
-        assert("Av作品日本无码Info 识别060215-890-carib"
-            , _av作品提取内容.toStr() == "#av作品# ★★ carib-060215-890 一本道~乳神 演员(真木今日子) tags(极品诱惑 丰乳 风骚) 地区(日本) 无码 导演() 制作商() 发行商() 系列()")
+        assert("Av作品日本无码Info-001", _av作品提取内容.toStr() == "#av作品# ★★ carib-060215-890 一本道~乳神 佐山愛 真木今日子 tags(极品诱惑 丰乳 风骚)")
 
-        avstr := "#av作品# ★★ 1pon-071912_387 一本道~乳神 真木今日子 tags(极品诱惑_丰乳_风骚)"
+        ; 002 标准化格式分析 1pon-071912_387
+        avstr := "#av作品# ★★ 1pon-071912-387 一本道~乳神 佐山愛 真木今日子 tags(极品诱惑_丰乳_风骚)"
         _av作品提取内容 := new Av作品日本无码Info(avstr)
-        assert("Av作品日本无码Info 识别1pon-071912_387"
-            , _av作品提取内容.toStr() == "#av作品# ★★ 1pon-071912-387 一本道~乳神 演员(真木今日子) tags(极品诱惑 丰乳 风骚) 地区(日本) 无码 导演() 制作商() 发行商() 系列()")
+        assert("Av作品日本无码Info-002", _av作品提取内容.toStr() == "#av作品# ★★ 1pon-071912-387 一本道~乳神 佐山愛 真木今日子 tags(极品诱惑 丰乳 风骚)")
 
-        avstr := "#av作品# ★★ 071912_387-1pon 一本道~乳神 真木今日子 tags(极品诱惑_丰乳_风骚)"
+        ; 对不规范的无码av编号进行修复 060215-890-carib -> carib-060215-890
+        avstr := "#av作品# ★★ 060215-890-carib 一本道~乳神 佐山愛 真木今日子 tags(极品诱惑_丰乳_风骚)"
         _av作品提取内容 := new Av作品日本无码Info(avstr)
-        assert("Av作品日本无码Info 识别071912_387-1pon"
-            , _av作品提取内容.toStr() == "#av作品# ★★ 1pon-071912-387 一本道~乳神 演员(真木今日子) tags(极品诱惑 丰乳 风骚) 地区(日本) 无码 导演() 制作商() 发行商() 系列()")
+        assert("Av作品日本无码Info-003", _av作品提取内容.toStr() == "#av作品# ★★ carib-060215-890 一本道~乳神 佐山愛 真木今日子 tags(极品诱惑 丰乳 风骚)")
+
+        ; 对不规范的无码av编号进行修复 071912_387-1pon -> 1pon-071912-387
+        avstr := "#av作品# ★★ 071912_387-1pon 一本道~乳神 佐山愛 真木今日子 tags(极品诱惑_丰乳_风骚)"
+        _av作品提取内容 := new Av作品日本无码Info(avstr)
+        assert("Av作品日本无码Info-004", _av作品提取内容.toStr() == "#av作品# ★★ 1pon-071912-387 一本道~乳神 佐山愛 真木今日子 tags(极品诱惑 丰乳 风骚)")
+
+        ; 初始文件名格式化
+        avstr := "carib-060215-890 一本道~乳神 佐山愛 真木今日子"
+        _av作品提取内容 := new Av作品日本无码Info(avstr)
+        assert("Av作品日本无码Info-005", _av作品提取内容.toStr() == "#av作品# ★ carib-060215-890 一本道~乳神 佐山愛 真木今日子 tags()")
+
+        ; 对不规范的无码av编号进行修复 071912_387-1pon -> 1pon-071912-387
+        avstr := "#av作品# ★★ 071912_387-1pondo 一本道~乳神 佐山愛 真木今日子 tags(极品诱惑_丰乳_风骚)"
+        _av作品提取内容 := new Av作品日本无码Info(avstr)
+        assert("Av作品日本无码Info-006", _av作品提取内容.toStr() == "#av作品# ★★ 1pon-071912-387 一本道~乳神 佐山愛 真木今日子 tags(极品诱惑 丰乳 风骚)")
 
 
-        ;av欧美无码作品 单元测试
+        ; Av作品欧美无码Info
         ; ----------------------------------------------------------
+        预期结果    := "#av作品# ★★★ DorcelClub - Anna Polina, Tina Kay - Mes Nuits En Prison tags(极品 诱惑)"
 
-        avstr := "#av作品# ★★ x-art - Abella Danger, Angela White, Krissy Lynn - Phone Service Skills"
+        avstr := "DorcelClub - Anna Polina, Tina Kay - Mes Nuits En Prison"
         _av作品提取内容 := new Av作品欧美无码Info(avstr)
-        assert("Av作品欧美无码Info 识别"
-            , _av作品提取内容.toStr() == "#av作品# ★★ x-art - Abella Danger, Angela White, Krissy Lynn - Phone Service Skills 演员() tags() 地区(欧美) 无码 制作商(x-art) 发行商(x-art) 系列()")
+        assert("Av作品欧美无码Info-001", _av作品提取内容.toStr() == "#av作品# ★ DorcelClub - Anna Polina, Tina Kay - Mes Nuits En Prison tags()")
 
-        avstr := "#av作品# ★★★ Blacked - Danni Rivers - My First BBC tags(极品诱惑_后入)"
+        avstr := "DorcelClub - Anna Polina, Tina Kay - Mes Nuits En Prison"
         _av作品提取内容 := new Av作品欧美无码Info(avstr)
-        assert("Av作品欧美无码Info 识别演员Danni Rivers"
-            , _av作品提取内容.toStr() == "#av作品# ★★★ Blacked - Danni Rivers - My First BBC 演员(Danni Rivers) tags(极品诱惑 后入) 地区(欧美) 无码 制作商(Blacked) 发行商(Blacked) 系列()")
+        assert("Av作品欧美无码Info-002", _av作品提取内容.toStr("all") == "#av作品# ★ 制作商(DorcelClub) 演员(Anna Polina, Tina Kay) 标题(Mes Nuits En Prison) tags() 地区(欧美) 无码")
+
+        avstr := "#av作品# ★★★ DorcelClub - Anna Polina, Tina Kay - Mes Nuits En Prison tags(极品 诱惑)"
+        _av作品提取内容 := new Av作品欧美无码Info(avstr)
+        assert("Av作品欧美无码Info-003", _av作品提取内容.toStr() == 预期结果)
+
+        avstr := "#av作品# ★★★ DorcelClub - Anna Polina, Tina Kay - Mes Nuits En Prison (极品_诱惑)"
+        _av作品提取内容 := new Av作品欧美无码Info(avstr)
+        assert("Av作品欧美无码Info-004", _av作品提取内容.toStr() == 预期结果)
 
 
-
+        ; Sys
         ; ----------------------------------------------------------
+        assert("Sys-001", Sys.now() ~= "(?:\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})")
+        assert("Sys-002", Sys.date() ~= "(?:\d{4}-\d{2}-\d{2})")
+        assert("Sys-003", Sys.time() ~= "(?:\d{2}:\d{2}:\d{2})")
+        assert("Sys-004", Sys.week() ~= "(?:[1-7])")
 
-        assert("Sys.now() ~= dddd-dd-dd dd:dd:dd"
-                    , Sys.now() ~= "(?:\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})")
-
-        assert("Sys.date() ~= dddd-dd-dd"
-                    , Sys.date() ~= "(?:\d{4}-\d{2}-\d{2})")
-
-        assert("Sys.time() ~= dd:dd:dd"
-                    , Sys.time() ~= "(?:\d{2}:\d{2}:\d{2})")
-
-        assert("Sys.week() ~= d[1-7]"
-                    , Sys.week() ~= "(?:[1-7])")
-
-
+        ; path
         ; ----------------------------------------------------------
-
-        assert("Path.hasExtName(""C:\Windows\hh.exe"") == true"
-                    , true == Path.hasExtName("C:\Windows\hh.exe"))
-
-        assert("Path.hasExtName(""C:\Windows\hh.1exe"") == true"
-                    , true == Path.hasExtName("C:\Windows\hh.1exe"))
-
-        assert("Path.isDir(""C:\Windows\System32"") == true"
-                    , true == Path.isDir("C:\Windows\System32"))
+        assert("Path-001", true == Path.hasExtName("C:\Windows\hh.exe"))
+        assert("Path-002", true == Path.hasExtName("C:\Windows\hh.1exe"))
+        assert("Path-003", true == Path.isDir("C:\Windows\System32"))
 
         ; path test
         _path := Path.parse("C:\Windows\notepad.exe")
 
-        assert("parse(""C:\Windows\notepad.exe"") file: notepad.exe"
-                    , "notepad.exe" == _path.file)
-
-        assert("parse(""C:\Windows\notepad.exe"") dir: C:\Windows"
-                    , "C:\Windows" == _path.dir)
-
-        assert("parse(""C:\Windows\notepad.exe"") ext: exe"
-                    , "exe" == _path.ext)
-
-        assert("parse(""C:\Windows\notepad.exe"") fileNoExt: notepad"
-                    , "notepad" == _path.fileNoExt)
-
-        assert("parse(""C:\Windows\notepad.exe"") drive: C: //区分大小写"
-                    , "C:" == _path.drive)
+        assert("Path-004", "notepad.exe" == _path.file)
+        assert("Path-005", "C:\Windows" == _path.dir)
+        assert("Path-006", "exe" == _path.ext)
+        assert("Path-007", "notepad" == _path.fileNoExt)
+        assert("Path-008", "C:" == _path.drive)
 
         ; path test 2 对不含扩展名 split自动检测处理
         _path := Path.parse("C:\Windows\notepad")
 
-        assert("parse(""C:\Windows\notepad"") file: notepad"
-                    , "notepad" == _path.file)
-
-        assert("parse(""C:\Windows\notepad"") ext: 空字符"
-                    , "" == _path.ext)
-
-        assert("parse(""C:\Windows\notepad"") fileNoExt: notepad"
-                    , "notepad" == _path.fileNoExt)
-
-
-
+        assert("Path-009", "notepad" == _path.file)
+        assert("Path-010", "" == _path.ext)
+        assert("Path-011", "notepad" == _path.fileNoExt)
     }
 }
 

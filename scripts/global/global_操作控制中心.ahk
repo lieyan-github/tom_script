@@ -94,6 +94,7 @@ Capslock & 5::show_msg(A_ThisHotkey)
 ;#e::                                                        ; 打开home目录
 #home::打开窗口("D:\_home_\tom")
 
+^#RButton::
 ^#home::打开窗口(A_ScriptDir)                                ; 打开脚本主目录
 
 #RButton::                                                  ;打开主菜单

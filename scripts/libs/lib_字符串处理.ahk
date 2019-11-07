@@ -91,7 +91,7 @@ strN(_str, _numOfRepeats)
 strFixDate(_dateStr)
 {
     _fixDate := _dateStr
-    if(RegExMatch(_dateStr, "(\d{2,4})[-年\.](\d{1,2})[-月\.](\d{1,2})日?", _date)>0)
+    if(RegExMatch(_dateStr, 正则表达式.模板("日期"), _date)>0)
     {
         _fixDate := strFill(_date1, 4, "19") . "-" . strFill(_date2, 2, "0") . "-" . strFill(_date3, 2, "0")
     }

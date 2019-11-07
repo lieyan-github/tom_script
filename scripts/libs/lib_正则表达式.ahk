@@ -69,3 +69,24 @@
     _returnRegExStr := "[分割字段测试]`n" . arrayToStr(_处理日志) . "`n" . _returnRegExStr
     return _returnRegExStr
 }
+
+; 正则表达式 模板库
+; 获取正则表达式方法: 正则表达式.模板("日期")
+class 正则表达式{
+    ; public
+    模板库 := {}
+    ;public
+    init模板库(){
+        this.模板库["日期"] := "(\d{2,4})[-年\./](\d{1,2})[-月\./](\d{1,2})日?"
+    }
+
+    ; public static
+    模板(_key){
+        正则obj := new 正则表达式()
+        正则obj.init模板库()
+        Return 正则obj.模板库[_key]
+    }
+}
+
+
+

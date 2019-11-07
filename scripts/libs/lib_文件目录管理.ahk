@@ -205,8 +205,6 @@ f2自动重命名(_type:="id")
     ; 输出新文件名
     send {f2}
     sleep 100
-    send ^a
-    sleep 100
     ; 输出新文件名, 直接粘贴输出, 不需要再按f2
     write(_newFileName)
 }
@@ -288,8 +286,8 @@ fileRename(_oldFilePath, _type:="clip")
     ; ----------------------------------------------------------
     ; 检查并补充新文件名的扩展名, 非undo操作
     ; ----------------------------------------------------------
-    if(_type != "undo" && _extFileName != "")
-        _newFileName:= _newFileName . "." . _extFileName
+    ; if(_type != "undo" && _extFileName != "")
+    ;     _newFileName:= _newFileName . "." . _extFileName
     ; 输出新文件名
     return _newFileName
 }
