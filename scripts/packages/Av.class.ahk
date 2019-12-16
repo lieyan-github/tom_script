@@ -402,6 +402,15 @@ class AvInfo {
         this.info := {}
     }
 
+    ; 识别av字符串是否属于某种类型, 比如av女优, av有码作品, av无码作品 ...
+    识别特征(in_avStr){
+        return 匹配特征库(in_avStr, this.识别特征库())
+    }
+    ; 识别特征() 配套的特征库
+    识别特征库(){
+        return []
+    }
+
     ; 提取评级
     ; 格式化特征: ★+
     提取评级(in_avStr){
@@ -493,6 +502,14 @@ class AvGirlInfo extends AvInfo {
         if(in_avStr!=""){
             this.提取全部(in_avStr)
         }
+    }
+
+    ; 识别特征() 配套的特征库
+    识别特征库(){
+        return  ["^#av女优#\s★*\s(\S+?)\s"
+                    , "^(\S+)\s-\s演員"
+                    , "演员\((.*?)\)"
+                    , "(?:類別 正體中文 |類別 )(\S+)"]
     }
 
     ; public 提取全部(in_avStr)
@@ -638,6 +655,11 @@ class Av作品日本有码Info extends AvInfo {
         }
     }
 
+    ; 识别特征() 配套的特征库
+    识别特征库(){
+        return ["i)([a-z]{2,6}-\d{2,5}\s)"]
+    }
+
     ; public 提取全部(in_avStr)
     提取全部(in_avStr){
         _avStr:= in_avStr
@@ -689,15 +711,20 @@ class Av作品日本有码Info extends AvInfo {
         return _out
     }
 
+    toCsvStr(){
+        _str := Format("{1},{2},{3},{4}"
+                        , this.info["编号"]
+                        , this.info["评级"]
+                        , arrayJoin(this.info["演员"], " ")
+                        , arrayJoin(this.info["tags"], " "))
+        return _str
+    }
+
     ; ----------------------------------------------------------
     ; public static 提取av作品的相关信息, 第一个特征都设置为标准模式
     ; ----------------------------------------------------------
     提取编号(in_avStr){
-        _特征库 := ["i)(carib[a-z]*[-_]\d{6}[-_]\d{3})"
-                    , "i)(\d{6}[-_]\d{3}[-_]carib)"
-                    , "i)(1pon[a-z]*[-_]\d{6}[-_]\d{3})"
-                    , "i)(\d{6}[-_]\d{3}[-_]1pon)"
-                    , "i)([a-z]{2,6}-\d{2,5})"]
+        _特征库 := ["i)([a-z]{2,6}-\d{2,5})"]
         _编号   := ""
         ; 匹配特征
         _编号 := 按特征库提取字符串(in_avStr, _特征库)
@@ -847,6 +874,14 @@ class Av作品日本无码Info extends AvInfo {
         }
     }
 
+    ; 识别特征() 配套的特征库
+    识别特征库(){
+        return ["i)(carib[a-z]*[-_]\d{6}[-_]\d{3})"
+                    , "i)(\d{6}[-_]\d{3}[-_]carib)"
+                    , "i)(1pon[a-z]*[-_]\d{6}[-_]\d{3})"
+                    , "i)(\d{6}[-_]\d{3}[-_]1pon[a-z]*)"]
+    }
+
     ; public 提取全部(in_avStr)
     提取全部(in_avStr){
         _avStr:= in_avStr
@@ -898,6 +933,15 @@ class Av作品日本无码Info extends AvInfo {
         return _out
     }
 
+    toCsvStr(){
+        _str := Format("{1},{2},{3},{4}"
+                        , this.info["编号"]
+                        , this.info["评级"]
+                        , arrayJoin(this.info["演员"], " ")
+                        , arrayJoin(this.info["tags"], " "))
+        return _str
+    }
+
     ; ----------------------------------------------------------
     ; public static 提取av作品的相关信息, 第一个特征都设置为标准模式
     ; ----------------------------------------------------------
@@ -917,7 +961,7 @@ class Av作品日本无码Info extends AvInfo {
 
     无码编号格式化(_无码编号){
         _out := ""
-        if(InStr(_无码编号, "carib")){
+        if(InStr(_无码编号, "carib") or InStr(_无码编号, "加勒比")){
             ; 如果是carib作品
             _out .= "carib-"
             RegExMatch(_无码编号, "(\d{6})", _match)
@@ -925,7 +969,7 @@ class Av作品日本无码Info extends AvInfo {
             RegExMatch(_无码编号, "\d{6}[-_](\d{3})", _match)
             _out .= _match1
         }
-        else if(InStr(_无码编号, "1pon")){
+        else if(InStr(_无码编号, "1pon") or InStr(_无码编号, "一本道")){
             ; 如果是carib作品
             _out .= "1pon-"
             RegExMatch(_无码编号, "(\d{6})", _match)
@@ -1079,6 +1123,12 @@ class Av作品欧美无码Info extends AvInfo {
         }
     }
 
+    ; 识别特征() 配套的特征库
+    识别特征库(){
+        return ["\S{3,}\s-\s.+\s-\s(.+)\s(tags)?\(.+\)"
+                    , "\S{3,}\s-\s.+\s-\s(.+)"]
+    }
+
     ; public 提取全部(in_avStr)
     提取全部(in_avStr){
         _avStr:= in_avStr
@@ -1170,40 +1220,30 @@ class Av作品欧美无码Info extends AvInfo {
 ; ----------------------------------------------------------
 class AvInfoAnalysis{
     ; public new
-    __new(){
-        ; todo
-    }
-    ; 追踪日志
-    _log := []
-    ; av信息对象
-    _avInfo := {}
-    ; 初始化成员变量
-    init(){
-        this._log := []
-        this._avInfo := {}
+    __New(){
+        this.avGirlInfo := new AvGirlInfo()
+        this.av作品日本有码Info := new Av作品日本有码Info()
+        this.av作品日本无码Info := new Av作品日本无码Info()
+        this.av作品欧美无码Info := new Av作品欧美无码Info()
     }
 
     ; public static parse(in_avStr) return AvInfoObject
     ; 需要判断是
-    ; 1. 日本有码
-    ; 2. 日本无码
-    ; 3. 欧美无码
+    ; 1. 日本av女优
+    ; 2. 日本有码
+    ; 3. 日本无码
+    ; 4. 欧美无码
     parse(in_avStr){
-        this.init()
-        _av女优_特征库   := [""]
-        _日本有码_特征库 := [""]
-        _日本无码_特征库 := [""]
-        _欧美无码_特征库 := [""]
-        if(匹配特征库(in_avStr, _av女优_特征库))
-            _avInfo := new AvGirlInfo(in_avStr)
-        else if(匹配特征库(in_avStr, _日本有码_特征库))
-            _avInfo := new Av作品日本有码Info(in_avStr)
-        else if(匹配特征库(in_avStr, _日本无码_特征库))
-            _avInfo := new Av作品日本无码Info(in_avStr)
-        else if(匹配特征库(in_avStr, _欧美无码_特征库))
-            _avInfo := new Av作品欧美无码Info(in_avStr)
-
-        return _avInfo
+        _avinfo := new AvInfoAnalysis()
+        if(_avinfo.avGirlInfo.识别特征(in_avStr))
+            return _avinfo.avGirlInfo
+        if(_avinfo.av作品日本无码Info.识别特征(in_avStr))
+            return _avinfo.av作品日本无码Info
+        if(_avinfo.av作品日本有码Info.识别特征(in_avStr))
+            return _avinfo.av作品日本有码Info
+        if(_avinfo.av作品欧美无码Info.识别特征(in_avStr))
+            return _avinfo.av作品欧美无码Info
+        return ""
     }
 }
 
@@ -1289,89 +1329,41 @@ class AvInfoAnalysis{
 
 ; ----------------------------------------------------------
 
+av_查询已看过(_查询av关键字){
+    if(RegExMatch(_查询av关键字, "\d"))          ; 如果包含数字, 查询av作品
+        av作品_查询已看过(_查询av关键字)
+    else                                        ; 否则查询av女优
+        av女优_查询已看过(_查询av关键字)
+}
+
+; 待增加功能
+分析_av作品_查询已看过_输入内容(_str){
+    _result := ""
+    if(InStr(_str, "#av作品#") > 0){
+        ; 如果是格式化的内容, 则直接解析
+        _avInfo := AvInfoAnalysis.parse(_str)
+        _avInfo.提取全部(_str)
+        _result := _avInfo.toCsvStr()
+    }
+    return _result
+}
 
 ; av作品_查询已看过(_in查询av编号)
 ; 返回值: -1 失败, >0 存在已看过作品
 av作品_查询已看过(_in查询av编号){
-    _result := -1
-    _查询名称 := "av作品"
-; 1.清洗av编号: 全部小写,包含"-_"
-    _查询关键字 := Format("{:L}", _in查询av编号)
-; 2.从_查询文件"已看过的_av作品.txt"文件中, 读取所有非空行到_查询列表
-    _每行编辑格式 := "每行编辑格式:`n av编号(key), 评级(0烂片-3精品), 演员(可空 空格间隔), 标签(可空 空格间隔)"
-    _查询文件 := Config.upath("已看过的av作品")
-    _查询列表 := []
-    ; 检查文件是否存在
-    if(FileExist(_查询文件)){
-        ; 读取文件到列表
-        Loop, read, %_查询文件%
-        {
-            if(trim(A_LoopReadLine) != "")
-                ; 清洗查询文件的脏数据, 这里加入Format("{:L}",A_LoopReadLine) 小写字母转换
-                _查询列表.push(StrSplit(Format("{:L}",A_LoopReadLine), ","))
-        }
-        ; 在查询列表中根据关键字, 查询数据行索引号
-        Loop % _查询列表.Length()
-        {
-            if(_查询关键字 == _查询列表[A_Index][1])
-            {
-                _result := A_Index
-                break
-            }
-        }
-    }
-    else{
-        MsgBox %_查询名称%`n`n指定文件路径不存在:`n %_查询文件% `n`n下一步将新建文件
-    }
+    return av_csv查询(_in查询av编号
+                        , "av作品"
+                        , Config.upath("已看过的av作品")
+                        , "编辑格式:`n av编号(key), 评级(0烂片-3精品), 演员(可空 空格间隔), 标签(可空 空格间隔)"
+                        , "分析_av作品_查询已看过_输入内容")
+}
 
-; 3. 用input窗口显示数据行内容, 按ok键可保存修改
-    _初始行内容 := ""
-    _修改后的行内容 := ""
-    ; 根据是否存在已有数据行区别对待
-    if(_result>0){
-        ; 如果已存在, 则显示已有信息, 按ok可保存修改
-        Loop % _查询列表[_result].Length()
-        {
-            _初始行内容 .= _查询列表[_result][A_Index] . ","
-        }
-        _初始行内容 := trim(_初始行内容, ",")
-        InputBox, _input修改后的行内容, 编辑%_查询名称%, 指定%_查询名称%存在`, 编辑%_查询名称%`n`n%_每行编辑格式%, , 640, 320,,,,,%_初始行内容%
-        _修改后的行内容 := Format("{:L}",_input修改后的行内容)
-        if ErrorLevel
-            MsgBox, 用户取消编辑, 未保存.
-        else{
-            if(trim(_修改后的行内容) == ""){
-                MsgBox, %_查询名称%`n`n编辑内容为空`n`n结束查询操作!
-                return _result
-            }
-            ; 保存修改后的数据行
-            ; 保存到列表
-            _查询列表[_result] := StrSplit(Trim(_修改后的行内容), ",")
-            ; 保存到文件
-            CsvFile.writeListToCsv(_查询列表, _查询文件)
-            MsgBox, %_查询名称%`n`n编辑内容已保存`n`n%_修改后的行内容%
-        }
-    }
-    else{
-        ; 如果未存在, 则显示添加信息, 按ok可保存修改
-        InputBox, _input修改后的行内容, 添加%_查询名称%, 指定%_查询名称%不存在`, 添加%_查询名称%`n`n%_每行编辑格式%, , 640, 320,,,,,%_查询关键字%
-        _修改后的行内容 := Format("{:L}",_input修改后的行内容)
-        if ErrorLevel
-            MsgBox, %_查询名称%`n`n用户取消编辑, 未保存.
-        else{
-            if(trim(_修改后的行内容) == ""){
-                MsgBox, %_查询名称%`n`n编辑内容为空`n`n结束查询操作!
-                return _result
-            }
-            ; 保存修改后的数据行
-            ; 保存到列表
-            _查询列表.push(StrSplit(Trim(_修改后的行内容), ","))
-            ; 保存到文件
-            CsvFile.writeListToCsv(_查询列表, _查询文件)
-            MsgBox, %_查询名称%`n`n新内容已保存`n`n%_修改后的行内容%
-            ; 结果指向最后一个元素索引
-            _result := _查询列表.Length()
-        }
+分析_av女优_查询已看过_输入内容(_str){
+    _result := ""
+    if(InStr(_str, "#av女优#") > 0){
+        ; 如果是格式化的内容, 则直接解析
+        _avInfo := new AvGirlInfo(_str)
+        _result := _avInfo.toCsvStr()
     }
     return _result
 }
@@ -1379,14 +1371,27 @@ av作品_查询已看过(_in查询av编号){
 ; av女优_查询已看过(_in查询av女优名)
 ; 返回值: -1 失败, >0 存在已看过女优
 av女优_查询已看过(_in查询av女优名){
+    return av_csv查询(_in查询av女优名
+                        , "av女优"
+                        , Config.upath("已看过的av女优")
+                        , "编辑格式:`n 女优名(key), 评分(0烂-3精品), 生日(可空), 罩杯(a-z), 标签(可空 空格间隔)"
+                        , "分析_av女优_查询已看过_输入内容")
+}
+
+; av_csv查询(...)
+; 返回值: -1 失败, >0 存在
+; 参数:
+; _in分析函数名(要分析的字符串), 返回分析取得的内容, 否则返回""
+av_csv查询(_in查询关键字, _in查询类型, _in查询文件, _in编辑格式提示信息, _in分析函数名:=""){
     _result := -1
-    _查询名称 := "av女优"
+    _查询类型 := Format("{:L}", _in查询类型)
 ; 1.清洗av女优名: 全部小写,包含"-_"
-    _查询关键字 := Format("{:L}", _in查询av女优名)
+    _查询关键字 := Format("{:L}", _in查询关键字)
 ; 2.从_查询文件"已看过的_精品av女优.txt"文件中, 读取所有非空行到_查询列表
-    _每行编辑格式 := "每行编辑格式:`n 女优名(key), 评分(0烂-3精品), 生日(可空), 罩杯(a-z), 标签(可空 空格间隔)"
-    _查询文件 := Config.upath("已看过的av女优")
+    _编辑格式提示 := _in编辑格式提示信息
+    _查询文件 := _in查询文件
     _查询列表 := []
+    _分析函数名 := trim(_in分析函数名)
     ; 检查文件是否存在
     if(FileExist(_查询文件)){
         ; 读取文件到列表
@@ -1407,68 +1412,84 @@ av女优_查询已看过(_in查询av女优名){
         }
     }
     else{
-        MsgBox %_查询名称%`n`n指定文件路径不存在:`n %_查询文件% `n`n下一步将新建文件
+        MsgBox %_查询类型% `n`n指定文件路径不存在: `n%_查询文件% `n`n下一步将新建文件
     }
 
 ; 3. 用input窗口显示数据行内容, 按ok键可保存修改
-    _初始行内容 := ""
-    _修改后的行内容 := ""
+    _初始行内容        := ""
+    _修改后的行内容    := ""
+    _inputbox标题     := ""
+    _inputbox提示信息 := ""
     ; 根据是否存在已有数据行区别对待
     if(_result>0){
-        ; 如果已存在, 则显示已有信息, 按ok可保存修改
+        ; 如果已存在数据项, 则显示已有信息, 按ok可保存修改
         Loop % _查询列表[_result].Length()
         {
             _初始行内容 .= _查询列表[_result][A_Index] . ","
         }
         _初始行内容 := trim(_初始行内容, ",")
-        InputBox, _input修改后的行内容, 编辑%_查询名称%, 指定%_查询名称%存在`, 编辑%_查询名称%`n`n%_每行编辑格式%, , 640, 320,,,,,%_初始行内容%
-        _修改后的行内容 := Format("{:L}",_input修改后的行内容)
-        if ErrorLevel
-            MsgBox, 用户取消编辑, 未保存.
-        else{
-            if(trim(_修改后的行内容) == ""){
-                MsgBox, %_查询名称%`n`n编辑内容为空`n`n结束查询操作!
-                return _result
-            }
-            ; 保存修改后的数据行
-            if(InStr(_修改后的行内容, "#av女优#") > 0){
-                ; 如果是格式化的内容, 则直接解析
-                avGirlInfo := new AvGirlInfo(_修改后的行内容)
-                _修改后的行内容 := avGirlInfo.toCsvStr()
-            }
-            ; 保存到列表
-            _查询列表[_result] := StrSplit(Trim(_修改后的行内容), ",")
-            ; 保存到文件
-            CsvFile.writeListToCsv(_查询列表, _查询文件)
-            MsgBox, %_查询名称%`n`n编辑内容已保存`n`n%_修改后的行内容%
-        }
+        ; iputbox提示信息
+        _inputbox标题 := "编辑" . _查询类型
+        _inputbox提示信息 := format("查询{1}: {2} - 存在! `n`n编辑{1}: {2} `n`n{3}", _查询类型, _查询关键字, _编辑格式提示)
     }
     else{
-        ; 如果未存在, 则显示添加信息, 按ok可保存修改
-        InputBox, _input修改后的行内容, 添加%_查询名称%, 指定%_查询名称%不存在`, 添加%_查询名称%`n`n%_每行编辑格式%, , 640, 320,,,,,%_查询关键字%
-        _修改后的行内容 := Format("{:L}",_input修改后的行内容)
-        if ErrorLevel
-            MsgBox, %_查询名称%`n`n用户取消编辑, 未保存.
-        else{
-            if(trim(_修改后的行内容) == ""){
-                MsgBox, %_查询名称%`n`n编辑内容为空`n`n结束查询操作!
-                return _result
-            }
-            ; 保存修改后的数据行
-            if(InStr(_修改后的行内容, "#av女优#") > 0){
-                ; 如果是格式化的内容, 则直接解析
-                avGirlInfo := new AvGirlInfo(_修改后的行内容)
-                _修改后的行内容 := avGirlInfo.toCsvStr()
-            }
-            ; 保存到列表
-            _查询列表.push(StrSplit(Trim(_修改后的行内容), ","))
-            ; 保存到文件
-            CsvFile.writeListToCsv(_查询列表, _查询文件)
-            MsgBox, %_查询名称%`n`n新内容已保存`n`n%_修改后的行内容%
-            ; 结果指向最后一个元素索引
-            _result := _查询列表.Length()
-        }
+        ; 如果已存在数据项, 则显示已有信息
+        _初始行内容 := _查询关键字
+        ; iputbox提示信息
+        _inputbox标题 := "添加" . _查询类型
+        _inputbox提示信息 := format("查询{1}: {2} - 不存在! `n`n添加{1}: {2} `n`n{3}", _查询类型, _查询关键字, _编辑格式提示)
     }
+    ; ----------------------------------------------------------
+    ; 用户在inputbox编辑内容
+    ; ----------------------------------------------------------
+    InputBox, _input修改后的行内容, %_inputbox标题%, %_inputbox提示信息%, , 640, 320,,,,,%_初始行内容%
+    _修改后的行内容 := Format("{:L}",_input修改后的行内容)
+    ; 退出条件1, 用户取消编辑
+    if ErrorLevel {
+        MsgBox, % format("{1}: {2} `n`n用户取消编辑, 未保存!", _查询类型, _查询关键字)
+        return _result
+    }
+    ; 退出条件2, 用户输入空
+    if(trim(_修改后的行内容) == ""){
+        MsgBox, % format("{1}: {2} `n`n用户编辑内容为空 `n`n结束查询操作!", _查询类型, _查询关键字)
+        return _result
+    }
+    ; 分析内容1, 对格式化形式的输入内容进行提取
+    if(_分析函数名 != ""){
+        _func分析 := Func(_分析函数名)
+        _分析后的内容 := _func分析.Call(_修改后的行内容)
+        if(_分析后的内容 != "")
+            _修改后的行内容 := _分析后的内容
+    }
+    ; 合法验证, 对输入内容进行合法验证, 第一个逗号前的内容必须包含搜索关键字
+    _第一个逗号位置 := InStr(_修改后的行内容, ",")
+    if(_第一个逗号位置 <= 1){
+        msgbox, % format("{1}: {2} `n`n操作取消, 用户未按格式输入内容: `n注意逗号间隔且关键字不能为空! `n`n{3} `n`n用户输入: `n{4}", _查询类型, _查询关键字, _编辑格式提示, _修改后的行内容)
+        return _result
+    }
+    _第一个逗号前的内容 := SubStr(_修改后的行内容, 1, _第一个逗号位置-1)
+    if(InStr(_第一个逗号前的内容, _查询关键字) < 1){
+        msgbox, % format("{1}: {2} `n`n操作取消, 用户未按格式输入内容: `n第一项未包含查询的关键字! `n`n{3} `n`n用户输入: `n{4}", _查询类型, _查询关键字, _编辑格式提示, _修改后的行内容)
+        return _result
+    }
+    ; ----------------------------------------------------------
+    ; 用户在inputbox编辑内容 - end
+    ; ----------------------------------------------------------
+
+    ; 保存修改后的数据行
+    ; 保存到列表
+    ; 区别对待, 根据是否存在已有数据行
+    if(_result>0){
+        ; 已存在项目, 进行修改
+        _查询列表[_result] := StrSplit(Trim(_修改后的行内容), ",")
+    }
+    else{
+        ; 新项目, 进行追加
+        _查询列表.push(StrSplit(Trim(_修改后的行内容), ","))
+    }
+    ; 保存到文件
+    CsvFile.writeListToCsv(_查询列表, _查询文件)
+    MsgBox, % format("{1}: {2} `n`n编辑内容已保存 `n`n{3}", _查询类型, _查询关键字, _修改后的行内容)
+
     return _result
 }
-

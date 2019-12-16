@@ -110,8 +110,7 @@ search_menu()
     Menu, SearchMenu, Add, [按住Shift显示序号 | 按住Ctrl显示项目], lab_SearchMenu_End
     Menu, SearchMenu, disable, [按住Shift显示序号 | 按住Ctrl显示项目]
     Menu, SearchMenu, Add
-    Menu, SearchMenu, Add, &a. 已看过的AV女优, lab_已看过的AV女优
-    Menu, SearchMenu, Add, &z. 已看过的AV作品, lab_已看过的AV作品
+    Menu, SearchMenu, Add, &a. 已看过的AV资料, lab_已看过的AV资料
     Menu, SearchMenu, Add
     Menu, SearchMenu, Add, &q. 打开本地搜索器, lab_打开本地搜索器
     Menu, SearchMenu, Add
@@ -171,12 +170,8 @@ search_menu()
         write(Clipboard)
     return
 
-    lab_已看过的AV女优:
-        av女优_查询已看过(_searchKey)
-    return
-
-    lab_已看过的AV作品:
-        av作品_查询已看过(_searchKey)
+    lab_已看过的AV资料:
+        av_查询已看过(_searchKey)
     return
 
     lab_打开本地搜索器:

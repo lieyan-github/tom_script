@@ -56,7 +56,7 @@ class Menus {
       Menu, MainMenu, Default, 刷新(Win+F12)
       Menu, MainMenu, add, 编辑脚本(&E),编辑_func
       Menu, MainMenu, add, 打开脚本目录(Win+End),打开脚本目录_func
-      Menu, MainMenu, add, 帮助(Win+F1),帮助_func
+      Menu, MainMenu, add, 帮助(Ctrl+Win+F1),帮助_func
       Menu, MainMenu, add                   ;创建一条分割线。
       Menu, MainMenu, add, 退出(&X),退出_func
       ; ----------------------------------------------------------
@@ -168,7 +168,7 @@ class Menus {
       return
       ; ----------------------------------------------------------
       帮助_func:
-         run "D:\_home_\tom\program\green_program\辅助工具\AutoHotkey\AutoHotkey.chm"
+         打开ahk帮助()
       return
       ; ----------------------------------------------------------
       退出_func:

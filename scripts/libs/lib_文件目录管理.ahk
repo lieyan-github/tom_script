@@ -50,8 +50,8 @@
         ;[仅点击选中Item]
         show_msg("备份360收藏夹bookmarks")
         备份文件到多目录_有后缀("C:\Users\Tom\AppData\Local\360Chrome\Chrome\User Data\Default\360UID16303723_V8\Bookmarks"
-                        , ["D:\_home_data_\#tom#的文件夹\[ 6-备忘 ]\收藏夹备份"
-                            , "F:\_home_data_sync_\#tom#的文件夹_sync\[ 6-备忘 ]\收藏夹备份"]
+                        , ["D:\_home_data_\#tom的文件夹\[ 6-备忘 ]\收藏夹备份"
+                            , "g:\_home_data_sync_\#tom的文件夹_sync\[ 6-备忘 ]\收藏夹备份"]
                         , 3)
     return
     ; ----------------------------------------------------------

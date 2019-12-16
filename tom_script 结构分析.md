@@ -25,6 +25,9 @@
 
     - class AvInfo
         - methods
+            - 识别特征(in_avStr)
+            - 识别特征库()
+                - return []
             - 提取评级()
             - 提取tags()
             - 提取备注()
