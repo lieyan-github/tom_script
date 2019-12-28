@@ -23,6 +23,17 @@
     test_run()
 }
 
+; 快捷复制
+$RButton::
+    ; 鼠标左键如果在按下, 同时按下右键为复制
+    if GetKeyState("LButton") {
+        send ^c
+        show_msg("已复制选择内容")
+    }
+    else
+        send {RButton}
+Return
+
 
 ; ----------------------------------------------------------
 ; [ 热键用到的快捷操作 ]
@@ -222,10 +233,10 @@ Launch_App2::提示热键无操作()
 ; ----------------------------------------------------------
 ; 音量控制
 ; ----------------------------------------------------------
-^!up::Send {Volume_Up}
-^!down::Send {Volume_Down}
-^!WheelUp::Send {Volume_Up}
-^!WheelDown::Send {Volume_Down}
+#up::Send {Volume_Up}
+#down::Send {Volume_Down}
+#WheelUp::Send {Volume_Up}
+#WheelDown::Send {Volume_Down}
 ; ----------------------------------------------------------
 ; [lib_搜索]快捷搜索
 ; ----------------------------------------------------------

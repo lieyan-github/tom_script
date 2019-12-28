@@ -376,6 +376,8 @@ class Clipboarder{
     Menu, ClipMenu, Add, &e. 加密字符串, Lab_Encrypt
     Menu, ClipMenu, Add, &d. 解密字符串, Lab_Decrypt
     Menu, ClipMenu, Add
+    Menu, ClipMenu, Add, &f. 剪贴板文件名⋙内容⋙剪贴板, Lab_fileContentFromClipboard
+    Menu, ClipMenu, Add
 
     ; 显示菜单
     Menu, ClipMenu, Show, %A_CaretX%, %A_CaretY%
@@ -510,9 +512,37 @@ class Clipboarder{
         解密字符串()
     return
 
+    Lab_fileContentFromClipboard:
+        从剪贴板文件名_获取多文件文本内容_到剪贴板()
+    Return
+
     Lab_End:
         Gui, Destroy
     return
     ; ==========================================================
 }
 
+; 从剪贴板文件名_获取多文件文本内容_到剪贴板
+从剪贴板文件名_获取多文件文本内容_到剪贴板(){
+    _paths := Clipboard
+    _out := ""
+    Loop, parse, _paths, `r`n
+    {
+        _out .= 提取文件文本内容(A_LoopField) . "`n"
+    }
+    Clipboard := _out
+}
+
+; 返回文件文本内容
+提取文件文本内容(_path, _encoding:= "utf-8"){
+    if FileExist(_path){
+        _out := ""
+        _f := FileOpen(_path, "r", _encoding)
+        _out := _f.Read()
+        _f.Close()
+        Return _out
+    }
+    else{
+        Return ""
+    }
+}
