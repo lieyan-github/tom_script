@@ -175,13 +175,13 @@ arrayToStr(_array, _indent:=true, _level:=0, _indentStr:="    ", _endStr:="`n")
             _indent_str .= _indentStr
     _maxKeyWidth := arrayMaxKeyWidth(_array)                ; 统计数组键字符的最大宽度, 等宽格式化用
     for k, v in _array {
-        if(!IsObject(v)){
+        if(!IsObject(v)){   ; 如果非对象或一维数组
             _result .= Format("{1} : {2}"
                         , _indent_str . strFill(k, _maxKeyWidth, " ", "right")
                         , v . _endStr)
         }
         else{
-            if(isArray(v)){ ; 如果是数组
+            if(isArray(v)){ ; 如果是多维数组
                 _result .= Format("{1} : {2}{3}{4}"
                             , _indent_str . strFill(k, _maxKeyWidth, " ", "right")
                             , "[" . _endStr

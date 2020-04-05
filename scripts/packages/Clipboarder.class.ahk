@@ -311,8 +311,12 @@ class Clipboarder{
 ; ----------------------------------------------------------
 ; [快捷操作]复制到剪贴板数组()
 ; ----------------------------------------------------------
-复制到剪贴板数组(){
-    Clipboarder.push(Clipboarder.get("copy"))
+复制到剪贴板数组(_index:=0){
+    ; 如果指定已存在的数组序号, 则直接修改指定序号内容
+    if(_index > 0 and _index <= Clipboarder.length())
+        Clipboarder.item(_index, Clipboarder.get("copy"))
+    Else
+        Clipboarder.push(Clipboarder.get("copy"))
     ; debug
     show_msg(Clipboarder.toStr(), "剪贴板列表")
 }
@@ -328,9 +332,13 @@ class Clipboarder{
 ; ----------------------------------------------------------
 ; [快捷操作]粘贴来自剪贴板数组()
 ; ----------------------------------------------------------
-粘贴来自剪贴板数组(){
+粘贴来自剪贴板数组(_index:=0){
     if(Clipboarder.length() > 0){
-        write(Clipboarder.item(Clipboarder.length()))
+        ; 如果指定已存在的数组序号, 则直接输出指定序号内容
+        if(_index > 0 and _index <= Clipboarder.length())
+            write(Clipboarder.item(_index))
+        Else
+            write(Clipboarder.item(Clipboarder.length()))
     }
     else{
         msgbox, 剪贴板数组空!

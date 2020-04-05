@@ -9,37 +9,56 @@
 ;1. 主程序ffmpeg视频处理gui()
 ;2. 功能, 按时间段剪切, 修改视频分辨率
 
-ffmpeg视频处理gui(){
-    static 源文件路径, 剪切时间列表, 输出文件名
+ffmpeg视频处理gui()
 
-    ; 窗体公共部分
-    Gui Add, Button, x11 y242 w80 h23, &Exit
-    Gui Add, Button, x409 y240 w80 h23, 剪切
-    Gui Add, Button, x309 y240 w80 h23, 修改分辨率
+ffmpeg视频处理gui(){
+    static 源文件路径, 剪切时间列表, 输出文件名, 输出目录, 剪辑后缀
+    ; 获取文件路径, 通过复制获得
+    send ^c
+    sleep 200
+    if FileExist(Clipboard){
+        源文件路径   := Clipboard
+        ; 获取目录和文件名前的 \ 位置
+        _begin_pos  := InStr(源文件路径, "\", false, 0, 2)
+        _end_pos    := InStr(源文件路径, "\", false, 0, 1)
+        _dot_pos    := InStr(源文件路径, ".", false, 0, 1)
+        _文件名      := SubStr(源文件路径, _end_pos + 1, _dot_pos - _end_pos - 1)
+        _扩展名      := SubStr(源文件路径, _dot_pos + 1)
+        _当前目录名  := SubStr(源文件路径, _begin_pos + 1, _end_pos - _begin_pos - 1)
+        if(InStr(_当前目录名, "#") == 1 and not(InStr(_文件名, "#")))
+            输出文件名   := _当前目录名
+        else
+            输出文件名   := _文件名
+    }
+    ; 初始化窗体公共部分
+    Gui Add, Button, x11 y350 w80 h23, &Exit
+    Gui Add, Button, x409 y350 w80 h23, 剪切
+    Gui Add, Button, x309 y350 w80 h23, 修改分辨率
     ;Gui Add, Text, x150 y240 w220 h20 +0x200, 注意: 需提前在path设置ffmpeg路径
-    Gui Add, Tab3, x12 y12 w477 h215, Main|Options
+    Gui Add, Tab3, x12 y12 w477 h320, Main|Options
     ; Tab Main
     Gui Tab, 1
+        gui, font, s10, Consolas
         Gui Add, GroupBox, x19 y41 w461 h85, Files
-        Gui Add, Text, x33 y65 w70 h22 +0x200, 源文件路径:
-        Gui Add, Edit, x121 y67 w350 h19 v源文件路径
-        Gui Add, Text, x33 y93 w66 h23 +0x200, 时间列表:
+        Gui Add, Text, x30 y65 w80 h23 +0x200, 源文件路径
+        Gui Add, Edit, x121 y66 w350 h19 v源文件路径, %源文件路径%
+        Gui Add, Text, x30 y93 w80 h23 +0x200, 时间列表
         Gui Add, Edit, x121 y94 w350 h19 v剪切时间列表
         ; GroupBox Output
-        Gui Add, GroupBox, x20 y138 w253 h76, Output
-        Gui Add, Text, x27 y159 w64 h23 +0x200, 输出文件名:
-        Gui Add, Edit, x96 y161 w160 h19 v输出文件名
-        Gui Add, Text, x27 y187 w56 h23 +0x200, 输出目录:
-        Gui Add, Edit, x96 y188 w160 h19 +ReadOnly, 默认输出到桌面
+        Gui Add, GroupBox, x19 y138 w461 h85, Output
+        Gui Add, Text, x30 y159 w80 h23 +0x200, 输出文件名
+        Gui Add, Edit, x121 y160 w350 h19 v输出文件名, %输出文件名%
+        Gui Add, Text, x30 y187 w80 h23 +0x200, 输出目录
+        Gui Add, Edit, x121 y188 w350 h19 +ReadOnly v输出目录, %A_Desktop%
         ; GroupBox Options
-        Gui Add, GroupBox, x280 y138 w199 h76, Options
-        Gui Add, Text, x287 y160 w56 h23 +0x200, 分割后缀:
-        Gui Add, Edit, x352 y160 w118 h19 +ReadOnly, _clip
-        Gui Add, Text, x287 y187 w56 h23 +0x200, 改分辨率:
-        Gui Add, Edit, x352 y188 w118 h19 +ReadOnly, 1280x720
+        Gui Add, GroupBox, x19 y235 w461 h85, Options
+        Gui Add, Text, x30 y256 w80 h23 +0x200, 剪辑后缀
+        Gui Add, Edit, x121 y257 w350 h19 +ReadOnly v剪辑后缀, _剪辑_
+        Gui Add, Text, x30 y284 w80 h23 +0x200, 改分辨率
+        Gui Add, Edit, x121 y285 w350 h19 +ReadOnly, 1280x720
     Gui Tab
 
-    Gui Show, w504 h277, ffmpeg剪切视频GUI - (需在path设置ffmpeg路径)
+    Gui Show, , ffmpeg剪切视频GUI - (需在path设置ffmpeg路径)
     Return
 
     Button修改分辨率:
@@ -79,7 +98,7 @@ ffmpeg视频处理gui(){
 ;        else
 ;            msgbox 匹配 %剪切时间列表%
 
-        if(ffmpeg剪切视频(源文件路径, 输出文件名, Trim(剪切时间列表, ",")))
+        if(ffmpeg剪切视频(源文件路径, 输出文件名, Trim(剪切时间列表, ","), 输出目录, 剪辑后缀))
             msgbox finished
         else
             msgbox 剪切结果异常
@@ -87,16 +106,15 @@ ffmpeg视频处理gui(){
         Gui Restore
     return
 
-
     ButtonExit:
     GuiEscape:
     GuiClose:
         Gui, Destroy
-        Exit
+        ExitApp
     return
 }
 
-ffmpeg剪切视频(_源文件路径, _输出文件名, _剪切时间列表, _输出目录:=""){
+ffmpeg剪切视频(_源文件路径, _输出文件名, _剪切时间列表, _输出目录:="", _剪辑后缀:="_剪辑_"){
     ; 基本参数
     源文件路径  := _源文件路径
     源文件名长度:= InStr(源文件路径, ".", false, 0) - InStr(源文件路径, "\", false, 0) - 1
@@ -104,7 +122,7 @@ ffmpeg剪切视频(_源文件路径, _输出文件名, _剪切时间列表, _输
     剪切时间列表:= IsObject(_剪切时间列表) ? _剪切时间列表 : StrSplit(_剪切时间列表, ",", " ")
     输出目录    := _输出目录!="" ? _输出目录 : A_Desktop
     输出扩展名  := SubStr(源文件路径, InStr(源文件路径, ".", false, 0)+1)
-    分割后缀    := "_clip"
+    剪辑后缀    := _剪辑后缀
     ; 验证结果: 预期生成文件验证
     预期生成文件列表    := []
     resultBool  := true
@@ -116,7 +134,10 @@ ffmpeg剪切视频(_源文件路径, _输出文件名, _剪切时间列表, _输
         间隔符位置:= InStr(剪切时间段,"-")
         开始时间:= SubStr(剪切时间段, 1, 间隔符位置-1)
         结束时间:= SubStr(剪切时间段, 间隔符位置+1)
-        输出路径:=  输出目录 . "\" . 输出文件名 . 分割后缀 . i . "." . 输出扩展名
+        ; 使用序号后缀
+        ;输出路径:=  输出目录 . "\" . 输出文件名 . 剪辑后缀 . i . "." . 输出扩展名
+        ; 使用时间段后缀
+        输出路径:=  输出目录 . "\" . 输出文件名 . 剪辑后缀 . StrReplace(剪切时间段, ":", "_") . "." . 输出扩展名
         ; 加入预期结果
         预期生成文件列表.push(输出路径)
         strCmd:= format("ffmpeg -ss {1} -to {2} -i ""{3}"" -vcodec copy -acodec copy ""{4}"""

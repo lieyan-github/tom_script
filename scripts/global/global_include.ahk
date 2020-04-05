@@ -65,7 +65,6 @@
 #include scripts\专用脚本\[烈焰实用工具] 通达信股票软件相关操作.ahk
 #include scripts\专用脚本\[烈焰实用工具] MT4外汇软件相关操作.ahk
 #include scripts\专用脚本\[烈焰实用工具] 文华财经软件相关操作.ahk
-#include scripts\专用脚本\[tom实用工具] ffmpeg视频处理GUI.ahk
 #include scripts\专用脚本\[tom实用工具] sublimeText操作.ahk
 
 ; ----------------------------------------------------------

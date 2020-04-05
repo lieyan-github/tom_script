@@ -110,7 +110,17 @@ search_menu()
     Menu, SearchMenu, Add, [按住Shift显示序号 | 按住Ctrl显示项目], lab_SearchMenu_End
     Menu, SearchMenu, disable, [按住Shift显示序号 | 按住Ctrl显示项目]
     Menu, SearchMenu, Add
-    Menu, SearchMenu, Add, &a. 已看过的AV资料, lab_已看过的AV资料
+    ; ----------------------------------------------------------
+    ; AV菜单内容
+    ; ----------------------------------------------------------
+    Menu, menu_av, add, &``. AV作品, lab_查询AV作品
+    Menu, menu_av, add, &1. AV女优, lab_查询AV女优
+    Menu, menu_av, add, &2. AV制作商, lab_查询AV制作商
+    Menu, menu_av, add, &3. AV发行商, lab_查询AV发行商
+    Menu, menu_av, add, &4. AV导演, lab_查询AV导演
+    ; ------------------------------------------------
+    ; AV分支选项
+    Menu, SearchMenu, add, &a. 查询AV资料, :menu_av
     Menu, SearchMenu, Add
     Menu, SearchMenu, Add, &q. 打开本地搜索器, lab_打开本地搜索器
     Menu, SearchMenu, Add
@@ -170,9 +180,29 @@ search_menu()
         write(Clipboard)
     return
 
-    lab_已看过的AV资料:
-        av_查询已看过(_searchKey)
+    ; av相关查询
+    ; ----------------------------------------------------------
+    lab_查询AV作品:
+        av查询_作品(_searchKey)
     return
+
+    lab_查询AV女优:
+        av查询_女优(_searchKey)
+    return
+
+    lab_查询AV制作商:
+        show_msg("查询AV制作商  暂无功能")
+    return
+
+    lab_查询AV发行商:
+        show_msg("查询AV发行商  暂无功能")
+    return
+
+    lab_查询AV导演:
+        show_msg("查询AV导演  暂无功能")
+    return
+    ; ----------------------------------------------------------
+
 
     lab_打开本地搜索器:
         run % _localSearcher["cmd"]
@@ -186,7 +216,7 @@ search_menu()
     return
 
     lab_SearchMenu_Edit:
-        run % Config.path("searchersFile")
+        Run, % "Notepad.exe " . Config.path("searchersFile")
     return
 
     lab_SearchMenu_End:

@@ -23,16 +23,23 @@
     test_run()
 }
 
-; 快捷复制
-$RButton::
-    ; 鼠标左键如果在按下, 同时按下右键为复制
-    if GetKeyState("LButton") {
-        send ^c
-        show_msg("已复制选择内容")
-    }
-    else
-        send {RButton}
+; 快捷复制窗口标题
+!RButton::
+    _复制窗口标题 := (获取窗口信息()).window.title
+    Clipboard := _复制窗口标题
+    show_msg("窗口标题:`n" . _复制窗口标题 . "`n`n===== 已复制到剪贴板 =====")
 Return
+
+; 快捷复制 发现bug无法右键选择区域
+; $RButton::
+;     ; 鼠标左键如果在按下, 同时按下右键为复制
+;     if GetKeyState("LButton") {
+;         send ^c
+;         show_msg("已复制选择内容:`n" . Clipboard)
+;     }
+;     else
+;         send {RButton}
+; Return
 
 
 ; ----------------------------------------------------------
@@ -97,15 +104,6 @@ web财经(){
 ; ----------------------------------------------------------
 ; [ 常用功能设置]
 ; ----------------------------------------------------------
-$Capslock::show_msg("键屏蔽, 用alt + Capslock代替.")   ; 屏蔽Capslock键
-^Capslock::show_msg(A_ThisHotkey)
-Capslock & `::show_msg(A_ThisHotkey)
-Capslock & 1::show_msg(A_ThisHotkey)
-Capslock & 2::show_msg(A_ThisHotkey)
-Capslock & 3::show_msg(A_ThisHotkey)
-Capslock & 4::show_msg(A_ThisHotkey)
-Capslock & 5::show_msg(A_ThisHotkey)
-
 ;#e::                                                        ; 打开home目录
 #home::打开窗口("D:\_home_\tom")
 
@@ -126,7 +124,7 @@ $!`::打开音速启动()
 #f1::打开编辑器()
 #f2::打开计算器()
 #f3::打开截图()
-#f4::ffmpeg视频处理gui()
+#f4::run %A_WorkingDir%\scripts\专用脚本\[tom实用工具] ffmpeg视频处理GUI.ahk
 #f5::script_reload()
 #f6::打开文件比较()
 #f7::提示热键无操作()
@@ -240,7 +238,6 @@ Launch_App2::提示热键无操作()
 ; ----------------------------------------------------------
 ; [lib_搜索]快捷搜索
 ; ----------------------------------------------------------
-#Capslock::
 #q::search_menu()                   ;搜索菜单
 ^#q::运行程序("D:\Program Files\Listary\Listary.exe")
 
@@ -257,10 +254,39 @@ return
 ^#v::粘贴来自剪贴板数组()
 #space::打开剪贴板菜单()
 
-;快捷选择粘贴剪贴板
-^#1::write(Clipboarder.item(1))
-^#2::write(Clipboarder.item(2))
-^#3::write(Clipboarder.item(3))
+;快捷选择复制到剪贴板
+^#`::清空并复制到剪贴板数组()
+^#1::复制到剪贴板数组(1)
+^#2::复制到剪贴板数组(2)
+^#3::复制到剪贴板数组(3)
+^#4::复制到剪贴板数组(4)
+^#5::复制到剪贴板数组(5)
+^#6::复制到剪贴板数组(6)
+
+; Capslock 组合键
+; Capslock用ESC + Capslock代替
+$Capslock::
+    show_msg("键屏蔽, 用ESC + Capslock代替.")   ; 屏蔽Capslock键
+    打开剪贴板菜单()
+    Return
+^Capslock::清空并复制到剪贴板数组()
+#Capslock::复制到剪贴板数组()
++Capslock::粘贴来自剪贴板数组()
+!Capslock::剪贴板数组拼接并粘贴()
+^!Capslock::
+^#Capslock::
+    Clipboarder.clean()
+    剪贴板数组拼接并粘贴()
+    Return
+
+;快捷选择剪贴板粘贴
+Capslock & `::剪贴板数组拼接并粘贴()
+Capslock & 1::粘贴来自剪贴板数组(1)
+Capslock & 2::粘贴来自剪贴板数组(2)
+Capslock & 3::粘贴来自剪贴板数组(3)
+Capslock & 4::粘贴来自剪贴板数组(4)
+Capslock & 5::粘贴来自剪贴板数组(5)
+Capslock & 6::粘贴来自剪贴板数组(6)
 
 ; ----------------------------------------------------------
 ; [字符串类]加密/解密字符串
