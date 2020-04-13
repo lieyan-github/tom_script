@@ -22,7 +22,8 @@ class Path {
                 , dir: _dir
                 , ext: _ext
                 , fileNoExt: _fileNoExt
-                , drive: _drive}
+                , drive: _drive
+                , 当前目录名: SubStr(_dir, InStr(_dir, "\", false, 0, 1) + 1)}
     }
 
     ; static 判断指定文件路径是否是目录

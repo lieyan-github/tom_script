@@ -21,6 +21,8 @@ class Config {
     ; 特殊应用软件变量定义
     ; 全局变量
     ; ----------------------------------------------------------
+    static rename_regexMatch   := "^.*$"
+    static rename_regexReplace := "{clipboard}"
     ; [mt4平台] 十字光标开关切换标志
     static mt4_ctrl_f_switch := 0
 

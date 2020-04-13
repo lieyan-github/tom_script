@@ -25,6 +25,7 @@
     "wrapBorderLine2": "==========================================================",
     "资源管理器": [
         "explorer.exe",
-        "Everything.exe"
+        "Everything.exe",
+        "Q-Dir.exe"
     ]
 }

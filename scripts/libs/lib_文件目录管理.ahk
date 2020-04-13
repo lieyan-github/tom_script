@@ -8,6 +8,252 @@
 ; ----------------------------------------------------------
 ; ==========================================================
 
+; 返回对象 _特征组列表
+; [
+;   {特征": "小写....", "说明": "....", "分组": [该特征的分组内容,...]},
+;   {特征": "小写....", "说明": "....", "分组": [该特征的分组内容,...]}
+; ]
+根据特征分组(_in特征模式, _in待分组字符串列表){
+    ; _特征分组列表, 结构为 [{"特征": "....", "分组": [该特征的分组内容,...]}, ....]
+    _特征组列表 := []
+    Loop % _in待分组字符串列表.Length(){
+        ; 循环找出所有独立特征
+        if(RegExMatch(_in待分组字符串列表[A_Index], _in特征模式, match)){
+            if(match1 != ""){
+                ; 如果有子模式1, 则开始加入特征组
+                ; 判断特征是否已存在此特征
+                _特征不存在 := true
+                _特征索引   := 0
+                _子模式1    := Format("{:L}", match1)
+                Loop % _特征组列表.Length(){
+                    ; 发现存在特征就跳出监测, 特征全部小写
+                    if(_特征组列表[A_Index].特征 == _子模式1){
+                        _特征不存在 := false
+                        _特征索引   := A_Index
+                        break
+                    }
+                }
+                ; 发现新特征
+                ; 在特征组添加新元素, ["新特征",[带有特征的内容]]
+                if(_特征不存在){
+                    _obj   := {}
+                    _obj.特征  := _子模式1
+                    _obj.分组  := []
+                    _obj.分组.push(_in待分组字符串列表[A_Index])
+                    _obj.说明  := _in待分组字符串列表[A_Index]
+                    _特征组列表.push(_obj)
+                }
+                else{
+                    ; 如果已有特征, 则把内容加入该特征分组第二个数组中
+                    _特征组列表[_特征索引]["分组"].push(_in待分组字符串列表[A_Index])
+                }
+            }
+        }
+    }
+    return _特征组列表
+}
+
+快速收集特征文件到目录_单目录(_in特征, _使用特征重命名:=False){
+    _文件路径       := Clipboarder.get("copy")
+    _当前目录       := SubStr(_文件路径, 1, InStr(_文件路径, "\", false, 0) - 1)
+    av_收集特征文件到目录_单目录(_in特征, _当前目录, _当前目录, _使用特征重命名)
+}
+
+av_收集特征文件到目录_单目录(_in特征, _in收集目录, _in存储目录, _使用特征重命名:=False){
+    ; 预清理错误
+    if !FileExist(_in收集目录){
+        msgbox, 指定收集目录不存在! `n%_in收集目录%
+        return
+    }
+    if !FileExist(_in存储目录){
+        msgbox, 指定存储目录不存在! `n%_in存储目录%
+        return
+    }
+
+    ; 获取当前目录所有文件列表
+    _当前目录文件列表 := []
+    Loop Files, %_in收集目录%\*.*, F  ; 所有文件
+    {
+        _当前目录文件列表.push(A_LoopFileName)
+    }
+
+    ; 判断特征, 收集符合特征的文件到列表
+    ; 特征用正则匹配
+    _特征组列表 := 根据特征分组(_in特征, _当前目录文件列表)
+    _存储文件列表     := []
+    Loop % _特征组列表.Length(){
+        _特征     := _特征组列表[A_Index].特征
+        _文件列表 := _特征组列表[A_Index].分组
+        _目录名   := SubStr(_特征组列表[A_Index].说明
+                            , 1
+                            , InStr(_特征组列表[A_Index].说明, ".", false, 0) - 1)
+        _存储目录 := _in存储目录 . "\" . _目录名
+        ; av作品登记
+        av数据捕捉_api(_目录名, "add")
+
+        ; 开始分组进行创建目录和移动文件
+        if !FileExist(_存储目录){
+            FileCreateDir, % _存储目录
+        }
+        Loop % _文件列表.Length(){
+            _旧文件路径 := _in收集目录 . "\" . _文件列表[A_Index]
+            _新文件路径 := _存储目录 . "\" . _文件列表[A_Index]
+            _扩展名    := SubStr(_文件列表[A_Index], InStr(_文件列表[A_Index], ".", false, 0) + 1)
+            ; 解决重名问题
+            _count    := 1
+            if(_使用特征重命名){
+                _新文件路径 := _存储目录 . "\" . _特征 . "." . _扩展名
+                while(FileExist(_新文件路径)){
+                    _count++
+                    _新文件路径 := _存储目录 . "\" . _特征 . " -" . _count . "." . _扩展名
+                }
+                _存储文件列表.push(_新文件路径)
+                FileMove, % _旧文件路径, % _新文件路径
+            }
+            else{
+                _存储文件列表.push(_新文件路径)
+                FileMove, % _旧文件路径, % _新文件路径
+            }
+        }
+
+    }
+
+    ; 验证移动结果
+    批量检验文件是否存在(_存储文件列表)
+    return
+}
+
+收集特征文件到目录_单目录(_in特征, _in收集目录, _in存储目录, _使用特征重命名:=False){
+    ; 预清理错误
+    if !FileExist(_in收集目录){
+        msgbox, 指定收集目录不存在! `n%_in收集目录%
+        return
+    }
+    if !FileExist(_in存储目录){
+        msgbox, 指定存储目录不存在! `n%_in存储目录%
+        return
+    }
+
+    ; 获取当前目录所有文件列表
+    _当前目录文件列表 := []
+    Loop Files, %_in收集目录%\*.*, F  ; 所有文件
+    {
+        _当前目录文件列表.push(A_LoopFileName)
+    }
+
+    ; 判断特征, 收集符合特征的文件到列表
+    ; 特征用正则匹配
+    _特征组列表 := 根据特征分组(_in特征, _当前目录文件列表)
+    _存储文件列表     := []
+    Loop % _特征组列表.Length(){
+        _特征     := _特征组列表[A_Index].特征
+        _文件列表 := _特征组列表[A_Index].分组
+        _目录名   := SubStr(_特征组列表[A_Index].说明
+                            , 1
+                            , InStr(_特征组列表[A_Index].说明, ".", false, 0) - 1)
+        _存储目录 := _in存储目录 . "\" . _目录名
+        ; 开始分组进行创建目录和移动文件
+        if !FileExist(_存储目录){
+            FileCreateDir, % _存储目录
+        }
+        Loop % _文件列表.Length(){
+            _旧文件路径 := _in收集目录 . "\" . _文件列表[A_Index]
+            _新文件路径 := _存储目录 . "\" . _文件列表[A_Index]
+            _扩展名    := SubStr(_文件列表[A_Index], InStr(_文件列表[A_Index], ".", false, 0) + 1)
+            ; 解决重名问题
+            _count    := 1
+            if(_使用特征重命名){
+                _新文件路径 := _存储目录 . "\" . _特征 . "." . _扩展名
+                while(FileExist(_新文件路径)){
+                    _count++
+                    _新文件路径 := _存储目录 . "\" . _特征 . " -" . _count . "." . _扩展名
+                }
+                _存储文件列表.push(_新文件路径)
+                FileMove, % _旧文件路径, % _新文件路径
+            }
+            else{
+                _存储文件列表.push(_新文件路径)
+                FileMove, % _旧文件路径, % _新文件路径
+            }
+        }
+
+    }
+
+    ; 验证移动结果
+    批量检验文件是否存在(_存储文件列表)
+    return
+}
+
+; ---
+批量检验文件是否存在(_in文件路径列表){
+    _errorList := []
+    ; 检验文件路径
+    Loop % _in文件路径列表.Length(){
+        if !FileExist(_in文件路径列表[A_Index])
+            _errorList.push("结果文件不存在: " . _in文件路径列表[A_Index])
+    }
+    if(_errorList.Length() > 0){
+        msgbox, 处理过程中发生错误!
+        arrayPrint(_errorList)
+    }
+    else
+        show_msg("[批量检验文件] -- 在指定路径存在, ok! `n`n 总文件数 : " . _in文件路径列表.Length())
+    return
+}
+
+; _指定目录名可以是文件名也可以是路径
+; 如果是文件名, 则在收集文件的当前目录中新建指定目录名目录
+快速收集选中文件到指定目录(_in指定目录名){
+    _文件列表字符串   := Clipboarder.get("copy")
+    _源文件列表      := []
+    _指定目录        := _in指定目录名
+    ; 获取文件列表
+    Loop, parse, _文件列表字符串, `n, `r
+    {
+        _源文件列表.push(A_LoopField)
+    }
+    if !FileExist(_指定目录){
+        ; 否则在收集的文件当前目录下建指定目录
+        _当前文件目录   := (Path.parse(_源文件列表[1])).dir
+        _指定目录       := _当前文件目录 . "\" . _in指定目录名
+        if !FileExist(_指定目录){
+            FileCreateDir, % _指定目录
+        }
+    }
+    收集文件到指定目录(_源文件列表, _指定目录)
+}
+
+收集文件到指定目录(_in源文件列表, _in指定目录){
+    if !FileExist(_in指定目录){
+        msgbox, 指定目录不存在! `n%_in指定目录%
+        return
+    }
+
+    _目标文件列表     := []
+    _errorList       := []
+    ; 获取文件列表
+    Loop % _in源文件列表.Length(){
+        _文件名 := (Path.parse(_in源文件列表[A_Index])).file
+        _目标文件列表.push(_in指定目录 . "\" . _文件名)
+    }
+    ; 开始收集并移动源文件
+    Loop % _in源文件列表.Length(){
+        if FileExist(_in源文件列表[A_Index])
+            FileMove, % _in源文件列表[A_Index], % _目标文件列表[A_Index]
+        else
+            _errorList.push("源文件不存在: " . _in源文件列表[A_Index])
+    }
+
+    if(_errorList.Length() > 0){
+        msgbox, 处理过程中发生错误!
+        arrayPrint(_errorList)
+    }
+
+    ; 验证移动结果
+    批量检验文件是否存在(_目标文件列表)
+    return
+}
+
 ; 运行程序(_inPath)
 运行程序(_inPath){
     ; 检测路径是否存在
@@ -184,10 +430,10 @@
 ; 需要选中图标, 限制在文件夹窗口或桌面才能起作用
 ; _type="undo", 则恢复修改前的内容, 进行undo操作;
 ; ----------------------------------------------------------
-自动重命名(_type:="id")
+自动重命名(_type, _regexMatch:="", _regexReplace:="")
 {
     ; 获取源文件名
-    _newFileName := fileRename(Clipboarder.get("cut"), _type)
+    _newFileName := fileRename(Clipboarder.get("cut"), _type, _regexMatch, _regexReplace)
     ; 输出新文件名
     send ^a
     sleep 100
@@ -200,10 +446,10 @@
 ; 需要选中图标, 限制在文件夹窗口或桌面才能起作用
 ; _type="undo", 则恢复修改前的内容, 进行undo操作;
 ; ----------------------------------------------------------
-f2自动重命名(_type:="id")
+f2自动重命名(_type, _regexMatch:="", _regexReplace:="")
 {
     ; 获取源文件名
-    _newFileName := fileRename(Clipboarder.get("cut"), _type)
+    _newFileName := fileRename(Clipboarder.get("cut"), _type, _regexMatch, _regexReplace)
     ; 输出新文件名
     send {f2}
     sleep 100
@@ -214,18 +460,19 @@ f2自动重命名(_type:="id")
 ; ----------------------------------------------------------
 ; [函数]fileRename(_oldFilePath, _type:=1)
 ; ----------------------------------------------------------
-fileRename(_oldFilePath, _type:="clip")
+fileRename(_oldFilePath, _type:="regExp", _regexMatch:="", _regexReplace:="")
 {
     ; 输出结果
     _newFileName        := ""
     ; 备份剪贴板原内容
     ; 对剪贴板中存储的文件路径, 只提取不带扩展名的文件名, 另外也用于后面的文件名对比;
-    _path_backup   := Path.parse(clipboard)
+    _new_path_backup   := Path.parse(clipboard)
     ; 准备数据, 分解数据
     _path               := Path.parse(_oldFilePath)
     _filePath           := _path.path
     _fileName           := _path.fileNoExt
     _extFileName        := _path.ext
+
 
     ; ----------------------------------------------------------
     ; 备份原文件名, 通过剪贴板管理恢复历史记录
@@ -233,34 +480,36 @@ fileRename(_oldFilePath, _type:="clip")
     ; ----------------------------------------------------------
     if(_type != "undo")
         if(_extFileName != "")
-            Clipboarder.push(_fileName . "." . _extFileName)
+            Clipboarder.undoList.push(_fileName . "." . _extFileName)
         else
-            Clipboarder.push(_fileName)
+            Clipboarder.undoList.push(_fileName)
     ; ----------------------------------------------------------
     ; 根据type类型, 制作新的文件名, 不含扩展名
     ; ----------------------------------------------------------
-    if(_type == "undo")
-    {
+    if(_type == "undo") {
         ; undo操作, 恢复修改前的内容;
         if(_extFileName == "")
-            _newFileName := Path.parse(Clipboarder.pop()).fileNoExt
-        else{
-            _newFileName := Path.parse(Clipboarder.pop()).fileNoExt . "." . _extFileName
-        }
+            _newFileName := Path.parse(Clipboarder.undoList.pop()).fileNoExt
+        else
+            _newFileName := Path.parse(Clipboarder.undoList.pop()).fileNoExt . "." . _extFileName
     }
-    else if(_type == "av")
-    {
+    else if(_type == "av") {
         ; 如果当前文件名与剪贴板相同, 则进行特殊分析
         ; 分析是否是av作品名, 并进行相关格式化
         _newFileName := Av.rename(_fileName)
+        av数据捕捉_api(_newFileName, "add")
     }
-    else if(_type == "clip"){                               ;使用剪贴板内容作为新文件名;
-            _newFileName := _path_backup.fileNoExt
+    else if(_type == "regExp") {                             ;使用正则表达式替换新文件名;
+            ; 优先正则替换
+            _newFileName    := RegExReplace(_fileName, _regexMatch, _regexReplace)
+            ; 然后进行特殊内容替换, 特殊内容以{xxx}标记
+            If InStr(_newFileName, "{clipboard}")
+                _newFileName := StrReplace(_newFileName, "{clipboard}", _new_path_backup.fileNoExt)
+            If InStr(_newFileName, "{id}")
+                _newFileName := StrReplace(_newFileName, "{id}", strId())
+            ; 先进行特殊
     }
-    else if(_type == "id"){                                 ;使用id文件名
-        _newFileName := strId()
-    }
-    else if(_type == "img_id"){                            ;[图片类] 尺寸 + id 进行特殊命名
+    else if(_type == "img_id") {                             ;[图片类] 尺寸 + id 进行特殊命名
         ;[图片类]按尺寸进行特殊命名, 仅支持 GIF JPG BMP, 不区分大小写
         if(_extFileName="jpg" or _extFileName="gif" or _extFileName="bmp"){
             _imgInfo := getImageSize(_filePath)

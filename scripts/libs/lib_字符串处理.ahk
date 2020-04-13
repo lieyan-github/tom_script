@@ -8,6 +8,22 @@
 ;
 ; ==========================================================
 
+; 根据_instr和正则表达式_regExp(大写O模式), 生成一个match数组对象,
+; return 内容为捕获的子模式,
+create_regexMatch(_instr, _inregExp){
+    _regExp := "O)" . _inregExp
+    _foundPos :=  RegExMatch(_instr, _regExp, _matchObj)
+    if(_foundPos > 0){
+        _matches := []
+        loop % _matchObj.Count(){
+            _matches.push(_matchObj.Value(A_Index))
+        }
+        return _matches
+    }
+    else
+        return ""
+}
+
 ; 移除字符串的开始和/或末尾的某些字符, 例如, " abc " => "abc"
 ; _type in ["", "r", "l"]; ""首尾都清理
 strTrim(_instr, _OmitChars:=" `t", _type:=""){

@@ -46,6 +46,8 @@ class Menus {
       Menu, menu_全局变量编辑, add, 编辑文本注释边框_2, 编辑文本注释边框_2_func
       Menu, menu_全局变量编辑, add, 编辑白名单_允许鼠标调大小的窗口, 编辑白名单_允许鼠标调大小的窗口_func
       Menu, menu_全局变量编辑, add,
+      Menu, menu_全局变量编辑, add, 编辑Config.rename_regexMatch和Replace, 编辑rename_regexMatch和Replace_func
+      Menu, menu_全局变量编辑, add,
       ; 将一组子菜单挂接到父节点
       Menu, MainMenu, add, 全局变量编辑, :menu_全局变量编辑
       Menu, MainMenu, add                   ;创建一条分割线。
@@ -154,6 +156,21 @@ class Menus {
             , _tmp)=true)
             Config.set("allowResizeWins", str_Split(trim(_tmp, ","), ","))
       return
+      ; ----------------------------------------------------------
+      编辑rename_regexMatch和Replace_func:
+         ; 修改rename_regexMatch
+         _tmp := Config.rename_regexMatch
+         if(用户修改变量(_tmp
+            , "Config.rename_regexMatch"
+            , _tmp)=true)
+            Config.rename_regexMatch := _tmp
+         ; 修改rename_regexReplace
+         _tmp := Config.rename_regexReplace
+         if(用户修改变量(_tmp
+            , "Config.rename_regexReplace"
+            , _tmp)=true)
+            Config.rename_regexReplace := _tmp
+      Return
       ; ----------------------------------------------------------
       刷新_func:
          script_reload()
