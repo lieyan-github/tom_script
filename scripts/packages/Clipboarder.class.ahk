@@ -14,6 +14,8 @@ class Clipboarder{
     static backupList   := []           ;剪贴板备份, 用于剪贴板临时输出
     static 结束标志      := "###EOF###"
     static undoList     := []           ;剪贴板undo数组代替全局变量
+                                        ;记录操作数据, 以便undo恢复
+                                        ;undoList := [{"type": "操作类型", "data": [源文件的路径, 改名后的路径]}, .....]
 
     ; ----------------------------------------------------------
     ; [ 修改list数组 ] : 需要最后进行save保存到文件
@@ -387,6 +389,8 @@ class Clipboarder{
     Menu, ClipMenu, Add
     Menu, ClipMenu, Add, &f. 剪贴板文件名⋙内容⋙剪贴板, Lab_fileContentFromClipboard
     Menu, ClipMenu, Add
+    Menu, ClipMenu, Add, &u. 查看剪贴板对象内容, Lab_查看剪贴板对象内容
+    Menu, ClipMenu, Add
 
     ; 显示菜单
     Menu, ClipMenu, Show, %A_CaretX%, %A_CaretY%
@@ -523,6 +527,27 @@ class Clipboarder{
 
     Lab_fileContentFromClipboard:
         从剪贴板文件名_获取多文件文本内容_到剪贴板()
+    Return
+
+    Lab_查看剪贴板对象内容:
+        _剪贴板内容 := "[list] "
+                        . "`n; =========================================================="
+                        . "`n" . arrayToStr(Clipboarder.list)
+                        . "`n"
+                        . "`n[backupList] "
+                        . "`n; =========================================================="
+                        . "`n" . arrayToStr(Clipboarder.backupList)
+                        . "`n`n"
+                        . "`n[undoList] "
+                        . "`n; =========================================================="
+                        . "`n" . arrayToStr(Clipboarder.undoList)
+                        . "`n`n"
+                        . "`n[结束标志] "
+                        . "`n; =========================================================="
+                        . "`n" . arrayToStr(Clipboarder.结束标志)
+                        . "`n`n"
+        _剪贴板内容 := StrReplace(_剪贴板内容, "`n", "`r`n")
+        show_text(_剪贴板内容)
     Return
 
     Lab_End:

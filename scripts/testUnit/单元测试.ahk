@@ -199,8 +199,8 @@
 
         ; path
         ; ----------------------------------------------------------
-        assert("Path-001", true == Path.hasExtName("C:\Windows\hh.exe"))
-        assert("Path-002", true == Path.hasExtName("C:\Windows\hh.1exe"))
+        assert("Path-001", true == Path.hasExt("C:\Windows\hh.exe"))
+        assert("Path-002", true == Path.hasExt("C:\Windows\hh.1exe"))
         assert("Path-003", true == Path.isDir("C:\Windows\System32"))
 
         ; path test

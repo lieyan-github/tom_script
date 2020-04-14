@@ -88,7 +88,7 @@ av_收集特征文件到目录_单目录(_in特征, _in收集目录, _in存储�
                             , 1
                             , InStr(_特征组列表[A_Index].说明, ".", false, 0) - 1)
         _存储目录 := _in存储目录 . "\" . _目录名
-        ; av作品登记
+        ; ; 收集捕捉新的av作品信息
         av数据捕捉_api(_目录名, "add")
 
         ; 开始分组进行创建目录和移动文件
@@ -190,7 +190,7 @@ av_收集特征文件到目录_单目录(_in特征, _in收集目录, _in存储�
     ; 检验文件路径
     Loop % _in文件路径列表.Length(){
         if !FileExist(_in文件路径列表[A_Index])
-            _errorList.push("结果文件不存在: " . _in文件路径列表[A_Index])
+            _errorList.push(format("结果文件不存在: 序号[{1}] - {2}", A_Index, _in文件路径列表[A_Index]))
     }
     if(_errorList.Length() > 0){
         msgbox, 处理过程中发生错误!
@@ -429,6 +429,7 @@ av_收集特征文件到目录_单目录(_in特征, _in收集目录, _in存储�
 ; [操作]批量简化内容 - 自动重命名
 ; 需要选中图标, 限制在文件夹窗口或桌面才能起作用
 ; _type="undo", 则恢复修改前的内容, 进行undo操作;
+; debug 此函数已被 自动重命名单文件或目录() 替代待删除, 清理
 ; ----------------------------------------------------------
 自动重命名(_type, _regexMatch:="", _regexReplace:="")
 {
@@ -445,20 +446,136 @@ av_收集特征文件到目录_单目录(_in特征, _in收集目录, _in存储�
 ; [操作]批量简化内容 - f2自动重命名
 ; 需要选中图标, 限制在文件夹窗口或桌面才能起作用
 ; _type="undo", 则恢复修改前的内容, 进行undo操作;
+; debug 此函数已被 自动重命名单文件或目录() 替代待删除, 清理
 ; ----------------------------------------------------------
 f2自动重命名(_type, _regexMatch:="", _regexReplace:="")
 {
-    ; 获取源文件名
-    _newFileName := fileRename(Clipboarder.get("cut"), _type, _regexMatch, _regexReplace)
-    ; 输出新文件名
-    send {f2}
-    sleep 100
-    ; 输出新文件名, 直接粘贴输出, 不需要再按f2
-    write(_newFileName)
+    快捷批量重命名文件或目录(_type, _regexMatch, _regexReplace)
+}
+
+; 使用方法
+; 先鼠标选取要重命名的文件或目录, 然后按下快捷键直接批量复制路径, 开始重命名
+快捷批量重命名文件或目录(_type:="regExp", _regexMatch:="", _regexReplace:=""){
+    _源文件路径列表 := []
+    _剪贴板 := Clipboarder.get("copy")
+    Loop, parse, _剪贴板, `n, `r
+    {
+        _源文件路径列表.push(A_LoopField)
+    }
+    批量重命名文件或目录(_源文件路径列表, _type, _regexMatch, _regexReplace, Clipboarder.undoList)
+}
+
+; ----------------------------------------------------------
+; 批量重命名文件或目录(_in源文件路径列表, _type:="regExp", _regexMatch, _regexReplace, _undoList)
+; ----------------------------------------------------------
+批量重命名文件或目录(_in源文件路径列表, _type, _regexMatch, _regexReplace, _undoList)
+{
+    _新文件路径列表 := []
+    loop % _in源文件路径列表.Length(){
+        _新文件路径列表.push(自动重命名单文件或目录(_in源文件路径列表[A_Index], _type, _regexMatch, _regexReplace, _undoList))
+    }
+    批量检验文件是否存在(_新文件路径列表)
+}
+
+; ----------------------------------------------------------
+; 自动重命名单文件或目录(_in源文件路径, _type:="regExp", _regexMatch, _regexReplace, _undoList)
+; _undoList := [{"type": "操作类型", "data": [源文件的路径, 改名后的路径]}, .....]
+; ----------------------------------------------------------
+自动重命名单文件或目录(_in源文件路径, _type, _regexMatch, _regexReplace, _undoList)
+{
+    ; 输出结果
+    _oldFile        := Path.parse(_in源文件路径)
+    _源文件路径      := _oldFile.path
+    _源文件目录      := _oldFile.dir
+    _源文件名        := _oldFile.fileNoExt
+    _扩展名          := _oldFile.hasExt ? _oldFile.ext : ""
+
+    _新文件名        := ""
+    _新文件路径      := _源文件路径       ; 如果最终新旧文件路径完全一致, 则不进行操作
+
+    ; ----------------------------------------------------------
+    ; 根据type类型, 制作新的文件名, 不含扩展名
+    ; ----------------------------------------------------------
+    if(_type == "av") {
+        ; 如果当前文件名与剪贴板相同, 则进行特殊分析
+        ; 分析是否是av作品名, 并进行相关格式化
+        _新文件名 := Av.rename(_源文件名)
+    }
+    else if(_type == "regExp") {                             ;使用正则表达式替换新文件名;
+            ; 优先正则替换
+            _新文件名    := RegExReplace(_源文件名, _regexMatch, _regexReplace)
+            ; 然后进行特殊内容替换, 特殊内容以{xxx}标记
+            If InStr(_新文件名, "{clipboard}")
+                _新文件名 := StrReplace(_新文件名, "{clipboard}", _new_path_backup.fileNoExt)
+            If InStr(_新文件名, "{id}")
+                _新文件名 := StrReplace(_新文件名, "{id}", strId())
+    }
+    else{
+        ; 新旧文件名一致, 则不进行操作
+        _新文件名 := _源文件名
+    }
+
+    ; ----------------------------------------------------------
+    ; undo操作, 恢复修改前的内容, 查询undo列表, 根据列表恢复以前的文件名
+    ; ----------------------------------------------------------
+    if(_type == "undo") {
+        _undoindex := -1
+        if(_undoList.Length()<1){
+            show_msg("undo列表为空, 无法进行undo操作!")
+        }
+        loop % _undoList.Length(){
+            if(_undoList[A_Index].type = "rename"){
+                if(_undoList[A_Index].data[2] = _in源文件路径){
+                    _源文件路径 := _undoList[A_Index].data[2]
+                    _新文件路径 := _undoList[A_Index].data[1]
+                    _undoindex := A_Index
+                    break
+                }
+            }
+        }
+        ;如果找到恢复项, 则删除此项, pop操作
+        if(_undoindex>0)
+            _undoList.RemoveAt(_undoindex)
+    }
+    else{
+        ; ----------------------------------------------------------
+        ; 非undo正常操作, 检查并补充新文件名的扩展名, 组成完整路径
+        ; ----------------------------------------------------------
+        _新文件路径 := format("{1}\{2}", _源文件目录, _新文件名)
+        if(_oldFile.hasExt)
+            _新文件路径 .= "." . _扩展名
+    }
+
+    ; 执行重命名文件或目录
+    ; 新旧文件路径完全一致, 则不进行操作
+    if(_新文件路径 != _源文件路径){
+        if(_oldFile.isDir)
+            FileMoveDir, % _源文件路径, % _新文件路径 , R
+        else
+            FileMove, % _源文件路径, % _新文件路径
+
+        ; 为undo保存操作记录
+        ; ----------------------------------------------------------
+        ; 备份原文件名, 通过剪贴板管理恢复历史记录
+        ; _type=0 "undo"为恢复操作, 只有非恢复操作才有必要备份
+        ; ----------------------------------------------------------
+        if(_type != "undo"){
+            _本次操作 := {}
+            _本次操作.type := "rename"
+            _本次操作.data  := []
+            _本次操作.data.push(_源文件路径)
+            _本次操作.data.push(_新文件路径)
+            _undoList.push(_本次操作)
+        }
+    }
+
+    ; 返回新文件路径, 用于批量验证重命名结果.
+    return _新文件路径
 }
 
 ; ----------------------------------------------------------
 ; [函数]fileRename(_oldFilePath, _type:=1)
+; debug 此函数已被 自动重命名单文件或目录() 替代待删除, 清理
 ; ----------------------------------------------------------
 fileRename(_oldFilePath, _type:="regExp", _regexMatch:="", _regexReplace:="")
 {
@@ -497,7 +614,6 @@ fileRename(_oldFilePath, _type:="regExp", _regexMatch:="", _regexReplace:="")
         ; 如果当前文件名与剪贴板相同, 则进行特殊分析
         ; 分析是否是av作品名, 并进行相关格式化
         _newFileName := Av.rename(_fileName)
-        av数据捕捉_api(_newFileName, "add")
     }
     else if(_type == "regExp") {                             ;使用正则表达式替换新文件名;
             ; 优先正则替换

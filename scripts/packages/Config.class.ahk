@@ -21,8 +21,13 @@ class Config {
     ; 特殊应用软件变量定义
     ; 全局变量
     ; ----------------------------------------------------------
-    static rename_regexMatch   := "^.*$"
-    static rename_regexReplace := "{clipboard}"
+    static rename_regexMatch   := format("i).*?({1}|{2}|{3}|{4}|{5}).*"
+                                        , "carib[^-]*[_-]\d{6}[_-]\d{3}"
+                                        , "1pon[^-]*[_-]\d{6}[_-]\d{3}"
+                                        , "CAPPV[^-]*[_-]\d{6}[_-]\d{3}"
+                                        , "Avs[_-]museum[_-]\d{6}"
+                                        , "[a-z]{2,5}-\d+")
+    static rename_regexReplace := "$1"
     ; [mt4平台] 十字光标开关切换标志
     static mt4_ctrl_f_switch := 0
 

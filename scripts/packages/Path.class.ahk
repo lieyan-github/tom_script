@@ -23,7 +23,9 @@ class Path {
                 , ext: _ext
                 , fileNoExt: _fileNoExt
                 , drive: _drive
-                , 当前目录名: SubStr(_dir, InStr(_dir, "\", false, 0, 1) + 1)}
+                , 当前目录名: SubStr(_dir, InStr(_dir, "\", false, 0, 1) + 1)
+                , isDir: Path.isDir(_filePath)
+                , hasExt: Path.hasExt(_filePath)}
     }
 
     ; static 判断指定文件路径是否是目录
@@ -36,10 +38,12 @@ class Path {
     }
 
     ; static 判断字符串是否包含扩展名
-    hasExtName(_filePath){
-        if(_filePath ~= "i)(?:\.[a-z0-9]{1,6})$")
-            return true
+    hasExt(_filePath){
+        if(Path.isDir(_filePath))
+            return False        ; 目录没有扩展名
+        if(_filePath ~= "i)(?:\.[a-z0-9]{1,8})$")
+            return true         ; 有扩展名
         else
-            return false
+            return false        ; 无扩展名
     }
 }
