@@ -448,14 +448,13 @@ av_收集特征文件到目录_单目录(_in特征, _in收集目录, _in存储�
 ; _type="undo", 则恢复修改前的内容, 进行undo操作;
 ; debug 此函数已被 自动重命名单文件或目录() 替代待删除, 清理
 ; ----------------------------------------------------------
-f2自动重命名(_type, _regexMatch:="", _regexReplace:="")
-{
+f2自动重命名(_type, _regexMatch:="", _regexReplace:=""){
     快捷批量重命名文件或目录(_type, _regexMatch, _regexReplace)
 }
 
 ; 使用方法
 ; 先鼠标选取要重命名的文件或目录, 然后按下快捷键直接批量复制路径, 开始重命名
-快捷批量重命名文件或目录(_type:="regExp", _regexMatch:="", _regexReplace:=""){
+快捷批量重命名文件或目录(_type, _regexMatch:="", _regexReplace:=""){
     _源文件路径列表 := []
     _剪贴板 := Clipboarder.get("copy")
     Loop, parse, _剪贴板, `n, `r
@@ -468,8 +467,7 @@ f2自动重命名(_type, _regexMatch:="", _regexReplace:="")
 ; ----------------------------------------------------------
 ; 批量重命名文件或目录(_in源文件路径列表, _type:="regExp", _regexMatch, _regexReplace, _undoList)
 ; ----------------------------------------------------------
-批量重命名文件或目录(_in源文件路径列表, _type, _regexMatch, _regexReplace, _undoList)
-{
+批量重命名文件或目录(_in源文件路径列表, _type, _regexMatch, _regexReplace, _undoList){
     _新文件路径列表 := []
     loop % _in源文件路径列表.Length(){
         _新文件路径列表.push(自动重命名单文件或目录(_in源文件路径列表[A_Index], _type, _regexMatch, _regexReplace, _undoList))
@@ -481,8 +479,7 @@ f2自动重命名(_type, _regexMatch:="", _regexReplace:="")
 ; 自动重命名单文件或目录(_in源文件路径, _type:="regExp", _regexMatch, _regexReplace, _undoList)
 ; _undoList := [{"type": "操作类型", "data": [源文件的路径, 改名后的路径]}, .....]
 ; ----------------------------------------------------------
-自动重命名单文件或目录(_in源文件路径, _type, _regexMatch, _regexReplace, _undoList)
-{
+自动重命名单文件或目录(_in源文件路径, _type, _regexMatch, _regexReplace, _undoList){
     ; 输出结果
     _oldFile        := Path.parse(_in源文件路径)
     _源文件路径      := _oldFile.path
@@ -504,11 +501,18 @@ f2自动重命名(_type, _regexMatch:="", _regexReplace:="")
     else if(_type == "regExp") {                             ;使用正则表达式替换新文件名;
             ; 优先正则替换
             _新文件名    := RegExReplace(_源文件名, _regexMatch, _regexReplace)
+
+            ;debug
+            msgbox, RegExReplace_新文件名 = "%_新文件名%"
+
             ; 然后进行特殊内容替换, 特殊内容以{xxx}标记
             If InStr(_新文件名, "{clipboard}")
-                _新文件名 := StrReplace(_新文件名, "{clipboard}", _new_path_backup.fileNoExt)
+                _新文件名 := StrReplace(_新文件名, "{clipboard}", Clipboard)
             If InStr(_新文件名, "{id}")
                 _新文件名 := StrReplace(_新文件名, "{id}", strId())
+
+            ;debug
+            msgbox, StrReplace_新文件名 = "%_新文件名%"
     }
     else{
         ; 新旧文件名一致, 则不进行操作
@@ -577,8 +581,7 @@ f2自动重命名(_type, _regexMatch:="", _regexReplace:="")
 ; [函数]fileRename(_oldFilePath, _type:=1)
 ; debug 此函数已被 自动重命名单文件或目录() 替代待删除, 清理
 ; ----------------------------------------------------------
-fileRename(_oldFilePath, _type:="regExp", _regexMatch:="", _regexReplace:="")
-{
+fileRename(_oldFilePath, _type:="regExp", _regexMatch:="", _regexReplace:=""){
     ; 输出结果
     _newFileName        := ""
     ; 备份剪贴板原内容
@@ -663,8 +666,7 @@ fileRename(_oldFilePath, _type:="regExp", _regexMatch:="", _regexReplace:="")
 ; [操作]showFileHash(_type:="md5")
 ; 显示对比文件的md5或hash值, 参数=""则两种值都计算
 ; ----------------------------------------------------------
-showFileHash(_type:="md5")
-{
+showFileHash(_type:="md5"){
     _filePathList := getSelectedObjFullPathList()
     Loop % _filePathList.MaxIndex()
     {
@@ -707,8 +709,7 @@ showFileHash(_type:="md5")
 ;   1. 原文件结构备份.txt;
 ;   2. 前提是图片名没有改变
 ; ----------------------------------------------------------
-收集指定目录中所有匹配文件_逆操作(_FullFileName)
-{
+收集指定目录中所有匹配文件_逆操作(_FullFileName){
     ;--- 确认当前_dir中是目录, 否则取文件的当前所在目录路径
     _dir:= getDirPath(_fullFileName)
 
@@ -749,8 +750,7 @@ showFileHash(_type:="md5")
 ; _filePath: 文件现在的路径
 ; _oldFilePath: 文件要恢复过去的路径
 ; ----------------------------------------------------------
-恢复文件(_filePath, _oldFilePath)
-{
+恢复文件(_filePath, _oldFilePath){
     SplitPath, _oldFilePath, , _dir
     _dir := RegExReplace(_dir, "\\$")  ;移除可能出现在末尾的反斜线.
     _dir := _dir . "\"
@@ -762,8 +762,7 @@ showFileHash(_type:="md5")
 ; ----------------------------------------------------------
 ; [图片类] 收集当前目录中所有匹配文件(含子目录)
 ; ----------------------------------------------------------
-收集当前目录中所有匹配文件(_filePatterns)
-{
+收集当前目录中所有匹配文件(_filePatterns){
     ;通过点选目录或当前目录中的图片文件--进行获取目录路径
     _fullFileName := Clipboarder.get("copy")
     收集指定目录中所有匹配文件(_fullFileName, _filePatterns)
@@ -772,8 +771,7 @@ showFileHash(_type:="md5")
 ; ----------------------------------------------------------
 ; [图片类] 收集指定目录中所有匹配文件(含子目录)
 ; ----------------------------------------------------------
-收集指定目录中所有匹配文件(_FullFileName, _filePatterns)
-{
+收集指定目录中所有匹配文件(_FullFileName, _filePatterns){
 ;---第一, 获取当前目录路径;
     ;确认当前_dir中是目录, 否则取文件的当前所在目录路径
     _dir:= getDirPath(_fullFileName)
@@ -819,8 +817,7 @@ showFileHash(_type:="md5")
 ; ----------------------------------------------------------
 ; [图片类] 将当前目录中图片按尺寸重命名并分类存放
 ; ----------------------------------------------------------
-将当前目录中图片按尺寸重命名并分类存放()
-{
+将当前目录中图片按尺寸重命名并分类存放(){
     ;通过点选目录或当前目录中的图片文件--进行获取目录路径
     _fullFileName := Clipboarder.get("copy")
     将指定目录中图片按尺寸重命名并分类存放(_fullFileName)
@@ -832,8 +829,7 @@ showFileHash(_type:="md5")
 ; 按图片尺寸进行分类整理存放,并在文件名前面进行标注,保持原文件名内容;
 ; 并按文件大小分类存到对应类别的文件夹中;
 ; ----------------------------------------------------------
-将指定目录中图片按尺寸重命名并分类存放(_fullFileName)
-{
+将指定目录中图片按尺寸重命名并分类存放(_fullFileName){
 ;---第一, 获取当前目录路径;
     ;确认当前_dir中是目录, 否则取文件的当前所在目录路径
     _dir:= getDirPath(_fullFileName)
@@ -888,8 +884,7 @@ showFileHash(_type:="md5")
 ; ----------------------------------------------------------
 ; [图片类]辅助工具 - 根据图片尺寸划分大小等级
 ; ----------------------------------------------------------
-根据图片尺寸划分大小等级(_inWidth, _inHeight)
-{
+根据图片尺寸划分大小等级(_inWidth, _inHeight){
     _总像素:= _inWidth*_inHeight
     if(_总像素<200000)
     {
@@ -916,8 +911,7 @@ showFileHash(_type:="md5")
 ; ----------------------------------------------------------
 ; 2013年02月22日 获取图片文件尺寸, 仅支持 GIF JPG BMP
 ; ----------------------------------------------------------
-getImageSize(_ImageFile)
-{
+getImageSize(_ImageFile){
     ;仅支持 GIF JPG BMP
     Gui, 99:Add, Picture, Hidden, % _ImageFile
     Gui, 99:Cancel
@@ -1030,8 +1024,7 @@ get_fileNameNoExt(_FullFileName){
 ; ----------------------------------------------------------
 ; 从指定文件路径中获取目录路径, "c:\windows"
 ; ----------------------------------------------------------
-getDirPath(_FullFileName)
-{
+getDirPath(_FullFileName){
     ; 如果_FullFileName本身就是目录, 则直接返回_FullFileName
     if InStr(FileExist(_FullFileName), "D")
         return _FullFileName

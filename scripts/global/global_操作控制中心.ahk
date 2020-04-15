@@ -399,12 +399,12 @@ $^!r::
     if(inWinList(Config.get("资源管理器"))){
         ; 资源管理器窗口, 按ctrl+alt+r
         ; 结果: 剪贴板内容 + 扩展名
-        f2自动重命名("regExp", "^.*$", "{clipboard}")
+        f2自动重命名("regExp", "^.+$", "{clipboard}")
     }
     else if(inWinList(["#32770"], "class")){
         ; 另存为窗口, 按ctrl+alt+r
         ; 结果: 剪贴板内容 + 扩展名"
-        自动重命名("regExp", "^.*$", "{clipboard}")
+        自动重命名("regExp", "^.+$", "{clipboard}")
     }
     else{
         send ^!r
