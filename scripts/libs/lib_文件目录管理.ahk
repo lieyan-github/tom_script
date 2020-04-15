@@ -197,7 +197,7 @@ av_收集特征文件到目录_单目录(_in特征, _in收集目录, _in存储�
         arrayPrint(_errorList)
     }
     else
-        show_msg("[批量检验文件] -- 在指定路径存在, ok! `n`n 总文件数 : " . _in文件路径列表.Length())
+        show_msg(format("批量检验文件 - 总数[{1}] `n`n验证路径完成, 全部ok.", _in文件路径列表.Length()))
     return
 }
 
@@ -502,17 +502,11 @@ f2自动重命名(_type, _regexMatch:="", _regexReplace:=""){
             ; 优先正则替换
             _新文件名    := RegExReplace(_源文件名, _regexMatch, _regexReplace)
 
-            ;debug
-            msgbox, RegExReplace_新文件名 = "%_新文件名%"
-
             ; 然后进行特殊内容替换, 特殊内容以{xxx}标记
             If InStr(_新文件名, "{clipboard}")
                 _新文件名 := StrReplace(_新文件名, "{clipboard}", Clipboard)
             If InStr(_新文件名, "{id}")
                 _新文件名 := StrReplace(_新文件名, "{id}", strId())
-
-            ;debug
-            msgbox, StrReplace_新文件名 = "%_新文件名%"
     }
     else{
         ; 新旧文件名一致, 则不进行操作
