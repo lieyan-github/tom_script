@@ -28,6 +28,8 @@ show_text(_text, _title:="显示文本", _w:=800, _h:=600){
     gui, font, s12, Consolas
     Gui, Add, Edit, vMyEdit W%_w% H%_h% ReadOnly +HScroll -Wrap, % _text
     Gui, Show, AutoSize Center, % _title
+
+    send {right 1}
     return Myhwnd
 
     GuiSize:

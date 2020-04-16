@@ -15,14 +15,23 @@
 ^#a::
 :x*:;avny::write("#av女优# ★★★ ")               ; 输出"#av女优# ★★★ "
 
+#+a::
+    write(format("tags({1})", Av.get_tags格式("av女优", false)))
+    send {left 1}
+    ; 帮助提示
+    show_msg(Av.get_tags格式("av女优", true),,5000)
+    Return
 
 ^#z::
 :x*:;avzp::write("#av作品# ★★★ ")               ; 输出"#av作品# ★★★ "
 
-
-:x*:;tag::
-    write("tags(后入 中字 湿吻 风骚 诱惑)")
+#+z::
+:x*:;ta::
+    write(format("tags({1})", Av.get_tags格式("av作品", false)))
     send {left 1}
+    ; 帮助提示
+    show_msg(Av.get_tags格式("av作品", true), , 5000)
+    Return
     Return
 
 ; ----------------------------------------------------------

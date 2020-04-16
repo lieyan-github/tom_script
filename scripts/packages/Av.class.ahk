@@ -39,6 +39,58 @@ class Av {
         this._模板["日期"] := Sys.date()
     }
 
+    ; 获取tags格式, 为输入做提示建议
+    get_tags格式(_type, _isHelp, _间隔符:="｜", _行间隔符:="`n"){
+        _return := ""
+        _tags_av := Av.get_tags_json(_type)
+
+        if(! _isHelp){
+            ; 关注的几个关键点(颜值, 是否美丰乳罩杯, 是否美臀, 性格是否活泼, 其他特点或技能演技, 是否诱惑, 是否精品女优)
+            ; _return := "脸漂亮｜乳f｜美臀｜丰满｜熟女 80后｜演技｜技能｜特点｜极品诱惑｜精品女优"
+            Loop % _tags_av.Length() {
+                _return .= _tags_av[A_Index].item . _间隔符
+            }
+            _return := trim(_return, _间隔符)
+        }
+        else{
+            Loop % _tags_av.Length() {
+                _tag_可选项 := ""
+                _index      := A_Index
+
+                Loop % _tags_av[_index].可选项.Length() {
+                    _tag_可选项 .=  _tags_av[_index].可选项[A_Index] . " "
+                }
+                _tag_可选项 := trim(_tag_可选项, " ")
+
+                _return     .= format("{1}{2}{3}{4}{5}{6}"
+                                , _tags_av[A_Index].item
+                                , _间隔符
+                                , _tag_可选项
+                                , _间隔符
+                                , _tags_av[A_Index].备注
+                                , _行间隔符)
+            }
+            ; _return := format("{1}长相｜漂亮 一般 丑"
+            ;                 . "{1}乳房｜巨乳h-L 美丰乳d-g 小乳a-c"
+            ;                 . "{1}臀部｜蜜桃臀 美丰臀 扁臀"
+            ;                 . "{1}身材｜丰满 苗条 骨感"
+            ;                 . "{1}年龄｜熟女 少妇 萝莉 xx后"
+            ;                 . "{1}演技｜风骚 活泼 生硬"
+            ;                 . "{1}技能｜湿吻 舌舔 腰振 口交 乳交 肛交 自摸 女同 sm (任何主动性动作 或 能承受的东西)"
+            ;                 . "{1}特点｜呻吟 母乳 痉挛 潮吹 淫荡 (任何被动性 或 表现出来的东西)"
+            ;                 . "{1}诱惑｜极品诱惑 诱惑 无"
+            ;                 . "{1}星评｜精品女优 无"
+            ;                 , _tags_行间隔符)
+
+        }
+        Return _return
+    }
+
+    ; 返回tags json对象
+    get_tags_json(_type){
+        return (JsonFile.read(Config.upath("tags_av")))[_type]
+    }
+
     ; static pubic 模板(_type)
     模板(_type){
         av := new Av()

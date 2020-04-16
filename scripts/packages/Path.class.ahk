@@ -18,10 +18,10 @@ class Path {
     parse(_filePath){
         SplitPath, _filePath, _file, _dir, _ext, _fileNoExt, _drive
         return {path: _filePath
-                , file: _file
+                , file: SubStr(_filePath, InStr(_filePath, "\", false, 0, 1) + 1)
                 , dir: _dir
-                , ext: _ext
-                , fileNoExt: _fileNoExt
+                , ext: Path.isDir(_filePath) ? "" : _ext
+                , fileNoExt: Path.getFileNoExt(_filePath)
                 , drive: _drive
                 , 当前目录名: SubStr(_dir, InStr(_dir, "\", false, 0, 1) + 1)
                 , isDir: Path.isDir(_filePath)
@@ -45,5 +45,19 @@ class Path {
             return true         ; 有扩展名
         else
             return false        ; 无扩展名
+    }
+
+    ; static 获取文件名, 含扩展名
+    getFile(_filePath){
+        _file:=  SubStr(_filePath, InStr(_filePath, "\", false, 0, 1) + 1)
+    }
+
+    ; static getFileNoExt
+    getFileNoExt(_filePath){
+        _file:=  SubStr(_filePath, InStr(_filePath, "\", false, 0, 1) + 1)
+        if(Path.isDir(_filePath))
+            Return _file
+        Else
+            return SubStr(_file, 1, InStr(_file, ".", false, 0, 1)-1)
     }
 }
