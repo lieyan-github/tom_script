@@ -7,6 +7,11 @@
 ; ==========================================================
 
 ; class Av
+class 符号 {
+    static avtags间隔符:= "｜"
+}
+
+
 ; ==========================================================
 class Av {
     _模板 := {}
@@ -22,6 +27,41 @@ class Av {
                                     , "i)(\d{6}[-_]\d{3}[-_]1pon[a-z]*)"]
                     , "欧美作品": ["\S{3,}\s-\s.+\s-\s(.+)\s(tags)?\(.+\)"
                                     , "\S{3,}\s-\s.+\s-\s(.+)"]}
+
+    获取特征库(){
+        _ret := {}
+
+        _ret["女优"] := []
+        _ret["女优"].push({"match": "^#av女优#\s★*\s(\S+?)\s", "replace": ""})
+        _ret["女优"].push({"match": "^(\S+)\s-\s演員", "replace": ""})
+        _ret["女优"].push({"match": "演员\((.*?)\)", "r": ""})
+        _ret["女优"].push({"match": "(?:類別 正體中文 |類別 )(\S+)", "replace": ""})
+
+        ; ----------------------------------------------------------
+        _ret["有码作品"] := []
+        _ret["有码作品"].push({"match": "i)([a-z]{2,6}-\d{2,5})\s", "replace": ""})
+
+        ; ----------------------------------------------------------
+        _ret["无码作品"] := {}
+        _ret["无码作品"].push({"match": "i)(carib[a-z]*[-_](\d{6})[-_](\d{3}))", "replace": "carib-$2-$3"})
+        _ret["无码作品"].push({"match": "i)((\d{6})[-_](\d{3})[-_]carib[a-z]*)", "replace": "carib-$2-$3"})
+
+        _ret["无码作品"].push({"match": "i)(1pon[a-z]*[-_](\d{6})[-_](\d{3}))", "replace": "1pon-$2-$3"})
+        _ret["无码作品"].push({"match": "i)((\d{6})[-_](\d{3})[-_]1pon[a-z]*)", "replace": "1pon-$2-$3"})
+
+        _ret["无码作品"].push({"match": "i)(CAPPV[a-z]*[_-](\d{6})[_-](\d{3}))", "replace": "CAPPV-$2-$3"})
+        _ret["无码作品"].push({"match": "i)((\d{6})[-_](\d{3})[-_]CAPPV[a-z]*)", "replace": "CAPPV-$2-$3"})
+
+        _ret["无码作品"].push({"match": "i)(heyzo[a-z]*[_-](\d{6})[_-](\d{3}))", "replace": "heyzo-$2-$3"})
+        _ret["无码作品"].push({"match": "i)((\d{6})[-_](\d{3})[-_]heyzo[a-z]*)", "replace": "heyzo-$2-$3"})
+
+        ; ----------------------------------------------------------
+        _ret["欧美作品"] := []
+        _ret["欧美作品"].push({"match": "\S{3,}\s-\s.+\s-\s(.+)\s(tags)?\(.+\)", "replace": ""})
+        _ret["欧美作品"].push({"match": "\S{3,}\s-\s.+\s-\s(.+)", "replace": ""})
+
+        return _ret
+    }
 
     _init(){
         this._模板["作品标签"] := "#av作品#"
@@ -84,6 +124,16 @@ class Av {
 
         }
         Return _return
+    }
+
+    ; 返回指定类型的默认值, 比如返回av女优的默认值为第三个"好看"
+    get_tags默认值(a_type, a_item){
+        _tags_av := Av.get_tags_json(a_type)
+        Loop % _tags_av.Length() {
+            if(_tags_av[A_Index]["item"] == a_item)
+                return _tags_av[A_Index]["默认值"]
+        }
+        return ""
     }
 
     ; 返回tags json对象
@@ -179,7 +229,7 @@ class Av {
                                                 , Av.模板("评级")
                                                 , "$1"
                                                 , _生日
-                                                , 模板_tags_create("美颜", _罩杯)
+                                                , 模板_tags_create("脸" . Av.get_tags默认值("av女优", "长相"), _罩杯)
                                                 , Av.模板("日期")
                                                 , "$2")
                     _result := 重命名.do()
@@ -471,7 +521,7 @@ class AvInfo {
 
     ; 识别av字符串是否属于某种类型, 比如av女优, av有码作品, av无码作品 ...
     识别特征(in_avStr){
-        return 匹配特征库(in_avStr, this.识别特征库())
+        return 匹配特征库含重命名(in_avStr, this.识别特征库())
     }
     ; 识别特征() 配套的特征库
     识别特征库(){
@@ -573,10 +623,7 @@ class AvGirlInfo extends AvInfo {
 
     ; 识别特征() 配套的特征库
     识别特征库(){
-        return  ["^#av女优#\s★*\s(\S+?)\s"
-                    , "^(\S+)\s-\s演員"
-                    , "演员\((.*?)\)"
-                    , "(?:類別 正體中文 |類別 )(\S+)"]
+        return  (Av.获取特征库())["女优"]
     }
 
     ; public 提取全部(in_avStr)
@@ -623,7 +670,7 @@ class AvGirlInfo extends AvInfo {
                         , this.info["评级"]
                         , this.info["生日"]
                         , this.info["bra"]
-                        , arrayJoin(this.info["tags"], " "))
+                        , arrayJoin(this.info["tags"], 符号.avtags间隔符))
         return _str
     }
 
@@ -724,7 +771,7 @@ class Av作品日本有码Info extends AvInfo {
 
     ; 识别特征() 配套的特征库
     识别特征库(){
-        return ["i)([a-z]{2,6}-\d{2,5}\s)"]
+        return  (Av.获取特征库())["有码作品"]
     }
 
     ; public 提取全部(in_avStr)
@@ -783,7 +830,7 @@ class Av作品日本有码Info extends AvInfo {
                         , this.info["编号"]
                         , this.info["评级"]
                         , arrayJoin(this.info["演员"], " ")
-                        , arrayJoin(this.info["tags"], " "))
+                        , arrayJoin(this.info["tags"], 符号.avtags间隔符))
         return _str
     }
 
@@ -791,12 +838,10 @@ class Av作品日本有码Info extends AvInfo {
     ; public static 提取av作品的相关信息, 第一个特征都设置为标准模式
     ; ----------------------------------------------------------
     提取编号(in_avStr){
-        _特征库 := ["i)([a-z]{2,6}-\d{2,5})"]
+        _特征库 := (Av.获取特征库())["有码作品"]
         _编号   := ""
         ; 匹配特征
-        _编号 := 按特征库提取字符串(in_avStr, _特征库)
-        ; 修正无码作品编号格式 carib-000000-000, 1pon-000000-000
-        ; 返回结果
+        _编号 := format("{:L}", 按特征库提取字符串含重命名(in_avStr, _特征库))
         return _编号
     }
 
@@ -943,10 +988,7 @@ class Av作品日本无码Info extends AvInfo {
 
     ; 识别特征() 配套的特征库
     识别特征库(){
-        return ["i)(carib[a-z]*[-_]\d{6}[-_]\d{3})"
-                    , "i)(\d{6}[-_]\d{3}[-_]carib)"
-                    , "i)(1pon[a-z]*[-_]\d{6}[-_]\d{3})"
-                    , "i)(\d{6}[-_]\d{3}[-_]1pon[a-z]*)"]
+        return  (Av.获取特征库())["无码作品"]
     }
 
     ; public 提取全部(in_avStr)
@@ -1005,7 +1047,7 @@ class Av作品日本无码Info extends AvInfo {
                         , this.info["编号"]
                         , this.info["评级"]
                         , arrayJoin(this.info["演员"], " ")
-                        , arrayJoin(this.info["tags"], " "))
+                        , arrayJoin(this.info["tags"], 符号.avtags间隔符))
         return _str
     }
 
@@ -1013,40 +1055,11 @@ class Av作品日本无码Info extends AvInfo {
     ; public static 提取av作品的相关信息, 第一个特征都设置为标准模式
     ; ----------------------------------------------------------
     提取编号(in_avStr){
-        _特征库 := ["i)(carib[a-z]*[-_]\d{6}[-_]\d{3})"
-                    , "i)(\d{6}[-_]\d{3}[-_]carib)"
-                    , "i)(1pon[a-z]*[-_]\d{6}[-_]\d{3})"
-                    , "i)(\d{6}[-_]\d{3}[-_]1pon[a-z]*)"
-                    , "i)([a-z]{2,6}-\d{2,5})"]
+        _特征库 := (Av.获取特征库())["无码作品"]
         _编号   := ""
-        ; 匹配特征
-        _编号 := this.无码编号格式化(按特征库提取字符串(in_avStr, _特征库))
-        ; 修正无码作品编号格式 carib-000000-000, 1pon-000000-000
-        ; 返回结果
+        ; 匹配特征, 并按特征replace进行重命名结构
+        _编号 := format("{:L}", 按特征库提取字符串含重命名(in_avStr, _特征库))
         return _编号
-    }
-
-    无码编号格式化(_无码编号){
-        _out := ""
-        if(InStr(_无码编号, "carib") or InStr(_无码编号, "加勒比")){
-            ; 如果是carib作品
-            _out .= "carib-"
-            RegExMatch(_无码编号, "(\d{6})", _match)
-            _out .= _match1 . "-"
-            RegExMatch(_无码编号, "\d{6}[-_](\d{3})", _match)
-            _out .= _match1
-        }
-        else if(InStr(_无码编号, "1pon") or InStr(_无码编号, "一本道")){
-            ; 如果是carib作品
-            _out .= "1pon-"
-            RegExMatch(_无码编号, "(\d{6})", _match)
-            _out .= _match1 . "-"
-            RegExMatch(_无码编号, "\d{6}[-_](\d{3})", _match)
-            _out .= _match1
-        }
-        else
-            _out := _无码编号
-        Return _out
     }
 
     提取标题(in_avStr){
@@ -1063,6 +1076,7 @@ class Av作品日本无码Info extends AvInfo {
     提取演员(in_avStr){
         _特征库 := ["演员\((.*?)\)"
                     , "^#av\S+#\s★*\s\S+\s\S+\s(.+)\s(tags)?\(.+\)"
+                    , "^#av\S+#\s★*\s\S+\s\S+\s(.+)"
                     , "^(\S+)\s-\s演員"
                     , "推薦 演員.(.+?).(?:樣品圖像|下載)"
                     , "\S+-\S+-\S+ \S+ (.+)"]
@@ -1192,8 +1206,7 @@ class Av作品欧美无码Info extends AvInfo {
 
     ; 识别特征() 配套的特征库
     识别特征库(){
-        return ["\S{3,}\s-\s.+\s-\s(.+)\s(tags)?\(.+\)"
-                    , "\S{3,}\s-\s.+\s-\s(.+)"]
+        return  (Av.获取特征库())["欧美作品"]
     }
 
     ; public 提取全部(in_avStr)
@@ -1302,25 +1315,83 @@ class AvInfoAnalysis{
     ; 4. 欧美无码
     parse(in_avStr){
         _avinfo := new AvInfoAnalysis()
+        _ret := ""
         if(_avinfo.avGirlInfo.识别特征(in_avStr))
-            return _avinfo.avGirlInfo
-        if(_avinfo.av作品日本无码Info.识别特征(in_avStr))
-            return _avinfo.av作品日本无码Info
-        if(_avinfo.av作品日本有码Info.识别特征(in_avStr))
-            return _avinfo.av作品日本有码Info
-        if(_avinfo.av作品欧美无码Info.识别特征(in_avStr))
-            return _avinfo.av作品欧美无码Info
-        return ""
+            _ret :=  _avinfo.avGirlInfo
+        else if(_avinfo.av作品日本无码Info.识别特征(in_avStr))
+            _ret :=  _avinfo.av作品日本无码Info
+        else if(_avinfo.av作品日本有码Info.识别特征(in_avStr))
+            _ret :=  _avinfo.av作品日本有码Info
+        else if(_avinfo.av作品欧美无码Info.识别特征(in_avStr))
+            _ret :=  _avinfo.av作品欧美无码Info
+        return _ret
     }
 }
 
 按特征库提取字符串(in_avStr, in_特征库){
     _特征库 := in_特征库
-    _result := ""
+    _ret := ""
     ; 匹配特征
-    for _i, _特征 in _特征库 {
+    loop % _特征库.Length() {
+        _特征 := _特征库[A_Index]
         if(RegExMatch(in_avStr, _特征, _match)>0){
-            _result := _match1
+            _ret := _match1
+            Break
+        }
+    }
+    ; 返回结果
+    return _ret
+}
+
+; 按特征库提取字符串
+; 特征库的replace选项, 提供字符串的结构调整
+; in_特征库 = [{"match": "匹配特征", "replace": "重命名模式"}, ....]
+按特征库提取字符串含重命名(in_avStr, in_特征库){
+    _特征库 := in_特征库
+
+    _ret := ""
+    ; 匹配特征
+    loop % _特征库.Length() {
+        _特征 := _特征库[A_Index]
+        if(RegExMatch(in_avStr, _特征["match"], _match)>0){
+            _ret := _match1
+
+            ; 如果需要重命名, 则按正则进行替换
+            if(_特征["replace"] != ""){
+                _ret := RegExReplace(_ret, _特征["match"], _特征["replace"])
+            }
+
+            Break
+        }
+    }
+    ; 返回结果
+    return _ret
+}
+
+匹配特征库(in_avStr, in_特征库){
+    _特征库 := in_特征库
+    _ret := false
+    ; 匹配特征
+    loop % _特征库.Length() {
+        _特征 := _特征库[A_Index]
+        if(RegExMatch(in_avStr, _特征, _match)>0){
+            _ret := true
+            Break
+        }
+    }
+    ; 返回结果
+    return _ret
+}
+
+; in_特征库 = [{"match": "匹配特征", "replace": "重命名模式"}, ....]
+匹配特征库含重命名(in_avStr, in_特征库){
+    _特征库 := in_特征库
+    _result := false
+    ; 匹配特征
+    loop % _特征库.Length() {
+        _特征 := _特征库[A_Index]
+        if(RegExMatch(in_avStr, _特征["match"], _match)>0){
+            _result := true
             Break
         }
     }
@@ -1335,24 +1406,12 @@ class AvInfoAnalysis{
     ; 优先以下划线分割tags, 标准以空格分隔
     if(InStr(_tagsStr,"_"))
         _tags := str_Split(_tagsStr, "_")
+    else if(InStr(_tagsStr,"｜"))
+        _tags := str_Split(_tagsStr, "｜")
     else
         _tags := str_Split(_tagsStr, " ")
     ; 返回结果
     return _tags
-}
-
-匹配特征库(in_avStr, in_特征库){
-    _特征库 := in_特征库
-    _result := false
-    ; 匹配特征
-    for _i, _特征 in _特征库 {
-        if(RegExMatch(in_avStr, _特征, _match)>0){
-            _result := true
-            Break
-        }
-    }
-    ; 返回结果
-    return _result
 }
 
 ; ----------------------------------------------------------
@@ -1377,7 +1436,8 @@ class AvInfoAnalysis{
         _tagsStr := _match.value(1)
         _result := ""
         _tags := SubStr(_tagsStr, InStr(_tagsStr, "(")+1, -1)
-        _tags := StrReplace(_tags, "_", " ")
+        _tags := StrReplace(_tags, "_", 符号.avtags间隔符)
+        _tags := StrReplace(_tags, "美颜", "脸" . Av.get_tags默认值("av女优", "长相"))
         _result := "tags(" . _tags . ")"
         ;替换源字符串中的tags内容
         _result := StrReplace(_avStr, _tagsStr, _result)
@@ -1410,7 +1470,8 @@ av查询_作品(_in查询av编号){
                         , "av作品"
                         , Config.upath("db_av作品")
                         , "编辑格式:`n av编号(key), 评级(0烂片-3精品), 演员(可空 空格间隔), 标签(可空 空格间隔)"
-                        , "分析_av查询_作品_输入内容")
+                        , "分析_av查询_作品_输入内容"
+                        , "检查_av查询_作品_行关键字")
 }
 
 分析_av查询_作品_输入内容(_str){
@@ -1421,7 +1482,15 @@ av查询_作品(_in查询av编号){
         _avInfo.提取全部(_str)
         _result := _avInfo.toCsvStr()
     }
+
     return _result
+}
+
+检查_av查询_作品_行关键字(a_rowkey){
+    if(a_rowkey ~= "\d")
+        return True
+    Else
+        Return False
 }
 
 ; av查询_女优(_in查询av女优名)
@@ -1431,7 +1500,8 @@ av查询_女优(_in查询av女优名){
                         , "av女优"
                         , Config.upath("db_av女优")
                         , "编辑格式:`n 女优名(key), 评分(0烂-3精品), 生日(可空), 罩杯(a-z), 标签(可空 空格间隔)"
-                        , "分析_av查询_女优_输入内容")
+                        , "分析_av查询_女优_输入内容"
+                        , "检查_av查询_女优_行关键字")
 }
 
 分析_av查询_女优_输入内容(_str){
@@ -1444,20 +1514,28 @@ av查询_女优(_in查询av女优名){
     return _result
 }
 
+检查_av查询_女优_行关键字(a_rowkey){
+    if(a_rowkey ~= "\d")
+        return False
+    Else
+        Return True
+}
+
 ; av_csv查询(...)
 ; 返回值: -1 失败, >0 存在
 ; 参数:
 ; _in分析函数名(要分析的字符串), 返回分析取得的内容, 否则返回""
-av_csv查询(_in查询关键字, _in查询类型, _in查询文件, _in编辑格式提示信息, _in分析函数名:=""){
+av_csv查询(_in查询关键字, _in查询类型, _in查询文件, _in编辑格式提示信息, _in分析函数名:="", a_行关键字合法性检查函数名:=""){
     _result := -1
     _查询类型 := Format("{:L}", _in查询类型)
 ; 1.清洗av女优名: 全部小写,包含"-_"
     _查询关键字 := Format("{:L}", _in查询关键字)
 ; 2.从_查询文件"已看过的_精品av女优.txt"文件中, 读取所有非空行到_查询列表
-    _编辑格式提示 := _in编辑格式提示信息
-    _查询文件 := _in查询文件
-    _查询列表 := []
-    _分析函数名 := trim(_in分析函数名)
+    _编辑格式提示               := _in编辑格式提示信息
+    _查询文件                   := _in查询文件
+    _查询列表                   := []
+    _分析函数名                 := trim(_in分析函数名)
+    _行关键字合法性检查函数名    := trim(a_行关键字合法性检查函数名)
 
     ; 添加一个对查询关键字的过滤处理
     ; 过滤一 如果是一个文件路径, 则取出文件名, 不含扩展名
@@ -1470,8 +1548,7 @@ av_csv查询(_in查询关键字, _in查询类型, _in查询文件, _in编辑格�
     ; 如果查询关键字包含"#av"特征, 则先进行分析找出对应的内容关键字
     if(InStr(_查询关键字, "#av") == 1){
         if(_分析函数名 != ""){
-            _func分析 := Func(_分析函数名)
-            _分析后的关键字 := _func分析.Call(_查询关键字)
+            _分析后的关键字 := (Func(_分析函数名)).Call(_查询关键字)
             ; 取第一个逗号前的关键字
             _分析后的关键字 := SubStr(_分析后的关键字, 1, InStr(_分析后的关键字, ",")-1)
             if(_分析后的关键字 != "")
@@ -1556,8 +1633,7 @@ av_csv查询(_in查询关键字, _in查询类型, _in查询文件, _in编辑格�
     }
     ; 分析内容1, 对格式化形式的输入内容进行提取
     if(_分析函数名 != ""){
-        _func分析 := Func(_分析函数名)
-        _分析后的内容 := _func分析.Call(_修改后的行内容)
+        _分析后的内容 := (Func(_分析函数名)).Call(_修改后的行内容)
         if(_分析后的内容 != "")
             _修改后的行内容 := _分析后的内容
     }
@@ -1592,6 +1668,15 @@ av_csv查询(_in查询关键字, _in查询类型, _in查询文件, _in编辑格�
     ; 用户在inputbox编辑内容 - end
     ; ----------------------------------------------------------
 
+    ; 对修改后的数据行, 进行关键字合法性检查, 防止非法关键字
+    if(_行关键字合法性检查函数名 != ""){
+        _行主关键字 := SubStr(_修改后的行内容, 1, InStr(_修改后的行内容, ",")-1)
+        if(! (Func(_行关键字合法性检查函数名)).Call(_行主关键字)){
+            show_debug(format("查询类型:`n{1}`n`n提示信息:`n操作取消, 用户输入关键字不合法! `n当前输入关键字为: {2}", _查询类型, _行主关键字))
+            return -1
+        }
+    }
+
     ; 保存修改后的数据行
     ; 保存到列表
     ; 区别对待, 根据是否存在已有数据行
@@ -1616,7 +1701,7 @@ av_csv查询(_in查询关键字, _in查询类型, _in查询文件, _in编辑格�
 ; 参数:
 ; _in分析函数名(要分析的字符串), 返回分析取得的内容, 否则返回""
 ; _in操作类型 "add"只添加新数据行, "update"有则修改无则添加;
-av_csv数据行修改_api(_in输入数据行, _in数据表类型, _in数据表文件, _in操作类型, _in分析函数名:=""){
+av_csv数据行修改_api(_in输入数据行, _in数据表类型, _in数据表文件, _in操作类型, _in分析函数名:="", a_行关键字合法性检查函数名:=""){
     _result     := -1
     _数据表类型  := Format("{:L}", _in数据表类型)
 ; 1.清洗数据行: 全部小写,包含"-_"
@@ -1625,12 +1710,12 @@ av_csv数据行修改_api(_in输入数据行, _in数据表类型, _in数据表�
     _数据表文件   := _in数据表文件
     _数据列表     := []
     _分析函数名   := trim(_in分析函数名)
+    _行关键字合法性检查函数名 := a_行关键字合法性检查函数名
 
     ; 分析内容1, 对格式化形式的输入内容进行提取
     _分析后的csv行 := _输入数据行
     if(_分析函数名 != ""){
-        _func分析      := Func(_分析函数名)
-        _分析后的csv行 := _func分析.Call(_输入数据行)
+        _分析后的csv行 := (Func(_分析函数名)).Call(_输入数据行)
     }
 
     ; 获取 _行主关键字, _第一个逗号前的内容
@@ -1657,6 +1742,15 @@ av_csv数据行修改_api(_in输入数据行, _in数据表类型, _in数据表�
     }
     else{
         MsgBox %_数据表类型% `n`n指定文件路径不存在: `n%_数据表文件% `n`n下一步将新建文件
+    }
+
+    ; 对修改后的数据行, 进行关键字合法性检查, 防止非法关键字
+    if(_行关键字合法性检查函数名 != ""){
+        _行主关键字 := SubStr(_分析后的csv行, 1, InStr(_分析后的csv行, ",")-1)
+        if(! (Func(_行关键字合法性检查函数名)).Call(_行主关键字)){
+            show_debug(format("查询类型:`n{1}`n`n提示信息:`n操作取消, 用户输入关键字不合法! `n当前输入关键字为: {2}", _数据表类型, _行主关键字))
+            return -1
+        }
     }
 
     ; 保存修改后的数据行, 到数据列表
@@ -1713,7 +1807,8 @@ av作品_csv数据行修改_api(_in输入数据, _in操作类型){
                         , "av作品"
                         , Config.upath("db_av作品")
                         , _in操作类型
-                        , "分析_av查询_作品_输入内容")
+                        , "分析_av查询_作品_输入内容"
+                        , "检查_av查询_作品_行关键字")
 }
 
 ; av女优_csv数据行修改_api(_in输入数据)
@@ -1724,7 +1819,8 @@ av女优_csv数据行修改_api(_in输入数据, _in操作类型){
                         , "av女优"
                         , Config.upath("db_av女优")
                         , _in操作类型
-                        , "分析_av查询_女优_输入内容")
+                        , "分析_av查询_女优_输入内容"
+                        , "检查_av查询_女优_行关键字")
 }
 
 ; _in操作类型 "add"只添加新数据行, "update"有则修改无则添加;

@@ -25,8 +25,10 @@ ffmpeg视频处理gui(){
         _文件名      := SubStr(源文件路径, _end_pos + 1, _dot_pos - _end_pos - 1)
         _扩展名      := SubStr(源文件路径, _dot_pos + 1)
         _当前目录名  := SubStr(源文件路径, _begin_pos + 1, _end_pos - _begin_pos - 1)
-        if(InStr(_当前目录名, "#") == 1 and not(InStr(_文件名, "#")))
+        if(InStr(_当前目录名, "#") == 1 and not(InStr(_文件名, "#"))){
             输出文件名   := _当前目录名
+            输出文件名   := StrReplace(输出文件名, "#av作品#", "#av剪辑#")
+        }
         else
             输出文件名   := _文件名
     }

@@ -93,4 +93,36 @@ class Config {
 }
 
 
+class Log{
+    static list         := []
 
+    add(a_info){
+        Log.list.push(a_info)
+    }
+
+    print(){
+        arrayPrint(Log.list)
+        Log.clear()
+    }
+
+    clear(){
+        arrayClear(Log.list)
+    }
+}
+
+class Debug{
+    static list         := []
+
+    add(a_info){
+        Debug.list.push(a_info)
+    }
+
+    print(){
+        arrayPrint(Debug.list)
+        Debug.clear()
+    }
+
+    clear(){
+        arrayClear(Debug.list)
+    }
+}

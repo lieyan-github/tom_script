@@ -12,26 +12,35 @@
 ; ----------------------------------------------------------
 ; [针对av管理]360浏览器自定义修改av收藏
 ; ----------------------------------------------------------
-^#a::
-:x*:;avny::write("#av女优# ★★★ ")               ; 输出"#av女优# ★★★ "
+^#a::write("#av女优# ★★★ ")               ; 输出"#av女优# ★★★ "
 
+; 快速输入tags格式字符串
 #+a::
     write(format("tags({1})", Av.get_tags格式("av女优", false)))
     send {left 1}
     ; 帮助提示
-    show_msg(Av.get_tags格式("av女优", true),,5000)
+    show_msg(Av.get_tags格式("av女优", true),,8000)
     Return
 
-^#z::
-:x*:;avzp::write("#av作品# ★★★ ")               ; 输出"#av作品# ★★★ "
+^#+a::
+    ; 帮助提示
+    show_text(Av.get_tags格式("av女优", true))
+    Return
 
+
+^#z::write("#av作品# ★★★ ")               ; 输出"#av作品# ★★★ "
+
+; 快速输入tags格式字符串
 #+z::
-:x*:;ta::
     write(format("tags({1})", Av.get_tags格式("av作品", false)))
     send {left 1}
     ; 帮助提示
-    show_msg(Av.get_tags格式("av作品", true), , 5000)
+    show_msg(Av.get_tags格式("av作品", true), , 8000)
     Return
+
+^#+z::
+    ; 帮助提示
+    show_text(Av.get_tags格式("av作品", true))
     Return
 
 ; ----------------------------------------------------------

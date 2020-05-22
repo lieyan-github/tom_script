@@ -41,6 +41,19 @@
                     _obj.分组  := []
                     _obj.分组.push(_in待分组字符串列表[A_Index])
                     _obj.说明  := _in待分组字符串列表[A_Index]
+                    ; 清除扩展名
+                    if(InStr(_obj.说明, ".")){
+                        _obj.说明  := SubStr(_obj.说明
+                                            , 1
+                                            , InStr(_obj.说明, ".", false, 0) - 1)
+                    }
+                    ; 清除序号"_1 _2.._10"
+                    if(_obj.说明 ~= "i)^.*?_\d{1,3}$"){
+                        _obj.说明  := SubStr(_obj.说明
+                                            , 1
+                                            , InStr(_obj.说明, "_", false, 0) - 1)
+                    }
+                    ; 存入特征组对象
                     _特征组列表.push(_obj)
                 }
                 else{
@@ -81,12 +94,11 @@ av_收集特征文件到目录_单目录(_in特征, _in收集目录, _in存储�
     ; 特征用正则匹配
     _特征组列表 := 根据特征分组(_in特征, _当前目录文件列表)
     _存储文件列表     := []
+
     Loop % _特征组列表.Length(){
         _特征     := _特征组列表[A_Index].特征
         _文件列表 := _特征组列表[A_Index].分组
-        _目录名   := SubStr(_特征组列表[A_Index].说明
-                            , 1
-                            , InStr(_特征组列表[A_Index].说明, ".", false, 0) - 1)
+        _目录名   := _特征组列表[A_Index].说明
         _存储目录 := _in存储目录 . "\" . _目录名
         ; ; 收集捕捉新的av作品信息
         av数据捕捉_api(_目录名, "add")
@@ -105,7 +117,7 @@ av_收集特征文件到目录_单目录(_in特征, _in收集目录, _in存储�
                 _新文件路径 := _存储目录 . "\" . _特征 . "." . _扩展名
                 while(FileExist(_新文件路径)){
                     _count++
-                    _新文件路径 := _存储目录 . "\" . _特征 . " -" . _count . "." . _扩展名
+                    _新文件路径 := _存储目录 . "\" . _特征 . "_" . _count . "." . _扩展名
                 }
                 _存储文件列表.push(_新文件路径)
                 FileMove, % _旧文件路径, % _新文件路径
@@ -448,20 +460,49 @@ av_收集特征文件到目录_单目录(_in特征, _in收集目录, _in存储�
 ; _type="undo", 则恢复修改前的内容, 进行undo操作;
 ; debug 此函数已被 自动重命名单文件或目录() 替代待删除, 清理
 ; ----------------------------------------------------------
-f2自动重命名(_type, _regexMatch:="", _regexReplace:=""){
-    快捷批量重命名文件或目录(_type, _regexMatch, _regexReplace)
+f2自动重命名(a_type, a_regexMatch:="", a_regexReplace:=""){
+    快捷批量重命名文件或目录(a_type, a_regexMatch, a_regexReplace)
 }
 
 ; 使用方法
 ; 先鼠标选取要重命名的文件或目录, 然后按下快捷键直接批量复制路径, 开始重命名
-快捷批量重命名文件或目录(_type, _regexMatch:="", _regexReplace:=""){
+快捷批量重命名文件或目录(a_type, a_regexMatch:="", a_regexReplace:=""){
     _源文件路径列表 := []
     _剪贴板 := Clipboarder.get("copy")
     Loop, parse, _剪贴板, `n, `r
     {
         _源文件路径列表.push(A_LoopField)
     }
-    批量重命名文件或目录(_源文件路径列表, _type, _regexMatch, _regexReplace, Clipboarder.undoList)
+    if(isArray(a_regexMatch)){
+        正则列表匹配_批量重命名文件或目录(_源文件路径列表, a_type, a_regexMatch, a_undoList)
+    }
+    else{
+        批量重命名文件或目录(_源文件路径列表, a_type, a_regexMatch, a_regexReplace, Clipboarder.undoList)
+    }
+}
+
+; ----------------------------------------------------------
+; 批量重命名文件或目录(_in源文件路径列表, _type:="regExp", a_regexMatch_Replace_list, _undoList)
+; a_regexMatch_Replace_list := [{"match": "匹配模式", "replace":"替换内容"},[....]]
+; 只要发现列表一次匹配就替换并跳出正则列表
+; ----------------------------------------------------------
+正则列表匹配_批量重命名文件或目录(a_源文件路径列表, a_type, a_regexMatch_Replace_list, a_undoList){
+    _新文件路径列表 := []
+    loop % a_源文件路径列表.Length(){
+        _源文件路径 := a_源文件路径列表[A_Index]
+        loop % a_regexMatch_Replace_list.Length(){
+            _新文件路径 := 自动重命名单文件或目录(_源文件路径
+                                                    , a_type
+                                                    , a_regexMatch_Replace_list[A_Index]["match"]
+                                                    , a_regexMatch_Replace_list[A_Index]["replace"]
+                                                    , a_undoList)
+            if(_新文件路径 != _源文件路径){
+                _新文件路径列表.push(_新文件路径)
+                break
+            }
+        }
+    }
+    批量检验文件是否存在(_新文件路径列表)
 }
 
 ; ----------------------------------------------------------
