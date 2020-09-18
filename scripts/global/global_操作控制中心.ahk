@@ -8,6 +8,10 @@
 ;
 ; ==========================================================
 
+^Tab::
+    send {Space 4}
+Return
+
 ;debug 临时测试
 !f1::
     Log.print()
@@ -20,7 +24,7 @@ return
 
 ; av目录文件收集整理
 ^+#f::
-    快速收集特征文件到目录_单目录(format("i)#av.*?({1}|{2}|{3}|{4}|{5}).*"
+    快速收集特征文件到目录_单目录(format("i)#av.*?({1}|{2}|{3}|{4}|{5}|{6}).*"
                                         , "carib[^-]*[_-]\d{6}[_-]\d{3}"
                                         , "1pon[^-]*[_-]\d{6}[_-]\d{3}"
                                         , "CAPPV[^-]*[_-]\d{6}[_-]\d{3}"
@@ -72,7 +76,7 @@ return
 }
 
 ; 快捷复制窗口标题
-!RButton::
+#!RButton::
     _复制窗口标题 := (获取窗口信息()).window.title
     Clipboard := _复制窗口标题
     show_msg("窗口标题:`n" . _复制窗口标题 . "`n`n===== 已复制到剪贴板 =====")
@@ -292,17 +296,34 @@ Launch_App2::提示热键无操作()
 ; ----------------------------------------------------------
 ; 剪贴板数组
 ; ----------------------------------------------------------
-#z::
+; 打开
+; Capslock用ESC + Capslock代替
+$Capslock::
+    show_msg("键屏蔽, 用ESC + Capslock代替.")   ; 屏蔽Capslock键
+    打开剪贴板菜单()
+    Return
+
+; Capslock 操作剪贴板数组
+; 方案一
+^Capslock::清空并复制到剪贴板数组()
+#Capslock::复制到剪贴板数组()
+!Capslock::剪贴板数组拼接并粘贴()
++Capslock::Clipboarder.clean()
+^!Capslock::
+^#Capslock::
     Clipboarder.clean()
     剪贴板数组拼接并粘贴()
-return
-#x::清空并复制到剪贴板数组()
-#c::复制到剪贴板数组()
-#v::剪贴板数组拼接并粘贴()
-^#v::粘贴来自剪贴板数组()
-#space::打开剪贴板菜单()
+    Return
+; 方案二
+Capslock & x::清空并复制到剪贴板数组()
+Capslock & c::复制到剪贴板数组()
+Capslock & v::剪贴板数组拼接并粘贴()
+Capslock & z::
+    Clipboarder.clean()
+    剪贴板数组拼接并粘贴()
+    Return
 
-;快捷选择复制到剪贴板
+; 设置: 复制到剪贴板
 ^#`::清空并复制到剪贴板数组()
 ^#1::复制到剪贴板数组(1)
 ^#2::复制到剪贴板数组(2)
@@ -311,24 +332,8 @@ return
 ^#5::复制到剪贴板数组(5)
 ^#6::复制到剪贴板数组(6)
 
-; Capslock 组合键
-; Capslock用ESC + Capslock代替
-$Capslock::
-    show_msg("键屏蔽, 用ESC + Capslock代替.")   ; 屏蔽Capslock键
-    打开剪贴板菜单()
-    Return
-^Capslock::清空并复制到剪贴板数组()
-#Capslock::复制到剪贴板数组()
-+Capslock::粘贴来自剪贴板数组()
-!Capslock::剪贴板数组拼接并粘贴()
-^!Capslock::
-^#Capslock::
-    Clipboarder.clean()
-    剪贴板数组拼接并粘贴()
-    Return
-
-;快捷选择剪贴板粘贴
-Capslock & `::剪贴板数组拼接并粘贴()
+; 获取: 粘贴自剪贴板
+Capslock & `::粘贴来自剪贴板数组()   ;获取最新一个内容
 Capslock & 1::粘贴来自剪贴板数组(1)
 Capslock & 2::粘贴来自剪贴板数组(2)
 Capslock & 3::粘贴来自剪贴板数组(3)
@@ -372,7 +377,35 @@ return
 ; ----------------------------------------------------------
 ; 资源管理器窗口 - 重命名操作
 ; ---------------------------------------
+; 快速打开字符串目录, 根据选中的路径字符串
++#Enter::
+    _路径 := Clipboarder.get("copy")
+    if(instr(_路径, "`r`n"))
+        _路径 := trim(_路径, "`r`n")
+    _路径 := Path.parse(trim(_路径, """"))
 
+    if(FileExist(_路径.dir))
+        run, % """" . _路径.dir . """"
+    Else
+        msgbox, % "指定目录路径不存在!`n" . _路径.dir
+return
+
+; 快速打开字符串文件, 根据选中的路径字符串
+#Enter::
+    _路径 := Clipboarder.get("copy")
+    if(instr(_路径, "`r`n"))
+        _路径 := trim(_路径, "`r`n")
+    _路径 := trim(_路径, """")
+
+    if(FileExist(_路径))
+        run, % """" . _路径 . """"
+    Else
+        msgbox, % "指定文件路径不存在!`n" . _路径
+return
+
+
+; 资源管理器窗口 - 重命名操作
+; ---------------------------------------
 $^r::
     if(inWinList(Config.get("资源管理器"))){
         ; 资源管理器窗口, 按ctrl+r,

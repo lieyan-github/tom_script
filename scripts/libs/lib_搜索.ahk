@@ -66,7 +66,7 @@ search_menu()
     ; ----------------------------------------------------------
     ; 加载数据文件, 生成相应数组
     ; ----------------------------------------------------------
-    _searchersJson  := JsonFile.read(Config.path("searchersFile"))
+    _searchersJson  := JsonFile.read(Config.upath("searchersFile"))
     _searchers      := _searchersJson["searchers"]
     _localSearcher  := _searchersJson["localSearcher"]
 
@@ -216,7 +216,7 @@ search_menu()
     return
 
     lab_SearchMenu_Edit:
-        Run, % "Notepad.exe " . Config.path("searchersFile")
+        Run, % "Notepad.exe " . Config.upath("searchersFile")
     return
 
     lab_SearchMenu_End:
