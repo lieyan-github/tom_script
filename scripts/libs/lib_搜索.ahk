@@ -14,73 +14,133 @@ cleanSearchKey(_searchKey, _RegEx:="[,\n\r]", _replace:=""){
 }
 
 ; ----------------------------------------------------------
-; [快捷搜索]搜索选中内容_new
-; ----------------------------------------------------------
-简单搜索(_searchKey, _searcher, _replaceSearchStr:= "%s")
-{
-    _搜索器:= StrReplace(_searcher["cmd"], _replaceSearchStr, _searchKey)
-    run %_搜索器%
-}
-; ----------------------------------------------------------
-; [快捷搜索]搜索选中内容_new
+; [快捷搜索] 运行搜索器 - 搜索指定内容
+;
 ; 参数: _searchKey
-; 参数: _searcher  {name:.., cmd:.., tag:[..]}
-; 无搜索关键字, 则直接打开everything
+; 参数: _searcher  {name:""..."", cmd:"...", args:"...", log:true}
+; 参数中关键字用 "{1}" 代替
+; 无搜索关键字, 则只打开cmd路径或url
 ; ----------------------------------------------------------
-简单搜索_tag_history(_searchKey, _searcherTag, _searcher)
-{
-    if(_searcherTag=="run"){
-        ; 仅仅是打开软件的指令类型, 则只打开软件, 不记入历史记录
-        run % _searcher["cmd"]
-        return
-    }
-    搜索关键字           := cleanSearchKey(_searchKey)
-    _replaceSearchStr   := "%s"
-    ; ---------------------------------
-    ; 如果获取的是路径, 则搜文件名
-    if(InStr(搜索关键字, "\")>0){
-        _tmplist := StrSplit(搜索关键字, "\")
-        搜索关键字 := trim(_tmplist.pop(), " `t")
-        _tmplist := ""
-    }
+运行搜索器(_searchKey, _searcher){
+
+    _搜索命令    := ""
+    _搜索关键字  := cleanSearchKey(_searchKey)
+    _搜索name   := _searcher["name"]
+
     ; ---------------------------------
     ; 如果没有指定搜索内容, 则仅仅启动默认搜索器
-    if(搜索关键字 == ""){
-        show_msg("搜索关键字空白, 无效搜索!")
-        return
+    if(_搜索关键字 == ""){
+
+        show_msg("搜索关键字空白, 仅打开对应搜索工具或网址!")
+
+        _搜索命令 :=  _searcher["cmd"]
+
+        run %_搜索命令%
+
     }
-    ; 执行单次搜索任务
-    简单搜索(搜索关键字, _searcher)
-    ; 写入搜索历史文件
-    ; CsvFile.append(Config.upath("searchHistoryFile"), _searcherTag, 搜索关键字, Sys.now())
-    ;--- end
+    else{
+
+        ; 如果获取的是路径, 则搜文件名, 含扩展名
+        if(InStr(_搜索关键字, ":\") >0 ){
+
+            ; 取 文件名.扩展名
+            ; SubStr(String, StartingPos [, Length])
+            _pos := InStr(_搜索关键字, "\", false, 0)
+            _fileAndExt := SubStr(_搜索关键字, _pos + 1)
+
+            ; 取 文件名 不含扩展名
+            _pos := InStr(_fileAndExt, ".", false, 0)
+            _搜索关键字 := SubStr(_fileAndExt, 1, _pos - 1)
+
+        }
+
+        _搜索命令 :=  format(_searcher["cmd"] . _searcher["args"]
+                            , _搜索关键字)
+    
+        run %_搜索命令%
+
+        ; 写入搜索历史文件, 只记录有搜索内容的操作
+        if(_searcher["log"]){
+            CsvFile.append(Config.upath("searchHistoryFile")
+                            , Format("[{1}],{2},{3},{4}"
+                                , Sys.now()
+                                , _搜索name
+                                , _搜索关键字
+                                , _搜索命令))
+        }    
+    }
+
+    ; end
 }
 
-; ----------------------------------------------------------
-; search_menu
-; 主菜单
-; ----------------------------------------------------------
-search_menu()
+; 保存更改到搜索器文件
+; _valueObjSearcher 搜索器结构同一般搜索器结构, 仅作为备份信息
+; {name:""..."", path:"...", args:"..." tag:[..]}
+保存更改到搜索器文件(_key, _valueObjSearcher, _jsonPath){
+
+    _searchersJson  := JsonFile.read(_jsonPath)
+
+    _searchersJson[_key] := _valueObjSearcher
+
+    ; 将更新过的搜索器信息, 保存到searchers.json
+    JsonFile.write(_searchersJson, _jsonPath)
+
+}
+
+; 打开搜索菜单
+打开搜索菜单(){
+    if(inWinList(Config.get("视频播放器"))){
+
+        ; 如果是视频播放器, 则通过标题搜索当前播放文件
+        WinGetTitle, path, A
+
+        _pos := InStr(path, " - ", False, 0)
+        if(_pos > 0){
+            _fileExtName := SubStr(path, 1, _pos-1)
+            search_menu(_fileExtName)        
+        }
+        Else
+            msgbox, 当前播放器标题中的文件名不能识别! `n`n标题内容: %path%
+
+    }
+    else{
+
+        search_menu()
+    
+    }
+}
+
+; 修改搜索器命令和参数
+; 只修改, 需另外保存到文件
+修改搜索器命令和参数(_argSearcher){
+    
+    _searcherCmd := _argSearcher["cmd"] . "," . _argSearcher["args"]
+
+    if(用户修改变量(_searcherCmd
+                , "编辑搜索器 - " . _argSearcher["name"]
+                , _searcherCmd) 
+        and InStr(_searcherCmd,",")){
+        _tmpCmd := StrSplit(_searcherCmd, ",")
+        _argSearcher["cmd"] := _tmpCmd[1]
+        _argSearcher["args"] := _tmpCmd[2]
+        ; 发生修改, 返回true
+        return true
+    }    
+    return false
+}
+
+; search_menu 打开搜索主菜单
+search_menu(_argSearchKey:="")
 {
-    _searchKey := trim(Clipboarder.get("copy"), " `t")
+    _searchKey := _argSearchKey != "" ? _argSearchKey : trim(Clipboarder.get("copy"), " `t")
     ; ----------------------------------------------------------
     ; 加载数据文件, 生成相应数组
     ; ----------------------------------------------------------
     _searchersJson  := JsonFile.read(Config.upath("searchersFile"))
     _searchers      := _searchersJson["searchers"]
     _localSearcher  := _searchersJson["localSearcher"]
+    _recentSearcher := _searchersJson["recentSearcher"]["cmd"] == "" ? _localSearcher : _searchersJson["recentSearcher"]
 
-    ; ---------------------------------------
-    ; 1. 收集所有tags到数组 arrayCollect
-    ; ---------------------------------------
-    ; 2. 制作关系数组, 标签-搜索器 关系数组
-    ;    arrayAssociate
-    ; [{"tag": [搜索器]}, {"tag": [搜索器]}]
-    ; ---------------------------------------
-    _tagToSearchers := arrayAssociate(arrayCollect(_searchers, "tag")
-                                    , _searchers
-                                    , "tag"
-                                    , "_self")
     ; ----------------------------------------------------------
     ; 菜单部分
     ; ----------------------------------------------------------
@@ -99,17 +159,23 @@ search_menu()
         Menu, SearchMenu, disable, % strLimitLen(_searchKey, 1, 50, "...")
         Menu, SearchMenu, Add
     }
-    ; [菜单] tag分类搜索
-    for k,v in _tagToSearchers {
+
+    ; 主菜单 - 选择搜索引擎
+    Loop % _searchers.Length(){
         Menu, SearchMenu
             , Add
-            , % "&" . A_Index . ". " . k
+            , % "&" . A_Index . ". " . _searchers[A_Index]["name"]
             , lab_SearchMenu_tagsMenuSelected
     }
+
+
     ; 提示信息
-    Menu, SearchMenu, Add, [按住Shift显示序号 | 按住Ctrl显示项目], lab_SearchMenu_End
-    Menu, SearchMenu, disable, [按住Shift显示序号 | 按住Ctrl显示项目]
+    Menu, SearchMenu, Add, [按住Shift修改搜索器 | 按住Ctrl显示搜索器], lab_SearchMenu_End
+    Menu, SearchMenu, disable, [按住Shift修改搜索器 | 按住Ctrl显示搜索器]
     Menu, SearchMenu, Add
+    Menu, SearchMenu, Add, % "&``. 使用最近的搜索器: " . _recentSearcher["name"], lab_使用最近的搜索器
+    Menu, SearchMenu, Add
+
     ; ----------------------------------------------------------
     ; AV菜单内容
     ; ----------------------------------------------------------
@@ -122,7 +188,9 @@ search_menu()
     ; AV分支选项
     Menu, SearchMenu, add, &a. 查询AV资料, :menu_av
     Menu, SearchMenu, Add
-    Menu, SearchMenu, Add, &q. 打开本地搜索器, lab_打开本地搜索器
+
+    ; 其他搜索功能
+    Menu, SearchMenu, Add, &q. 使用本地搜索器, lab_使用本地搜索器
     Menu, SearchMenu, Add
     Menu, SearchMenu, Add, &h. 查看搜索历史, lab_SearchMenu_History
     Menu, SearchMenu, Add
@@ -139,42 +207,37 @@ search_menu()
     ; 菜单执行部分
     ; ==========================================================
     lab_SearchMenu_tagsMenuSelected:
-        If GetKeyState("Shift")         ;[按住 Shift 删除选中条目]
-        {
-            msgbox % A_ThisMenuItemPos
-            Return
-        }
-        If GetKeyState("Ctrl")          ;[按住 Ctrl 自动置顶并粘贴]
-        {
-            ; 最后使用过的排最前面
-            msgbox % A_ThisMenuItem
-            Return
-        }
-        ; 显示选项内容
-        _select_tag:= StrSplit(A_ThisMenuItem, ".", " `t")[2]
-        ; 执行批量搜索
-        ;搜索_tag(_searchKey, _select_tag, _tagToSearchers[_tagIndex][2])
-        for _index, _searcher in _tagToSearchers[_select_tag] {
-            简单搜索_tag_history(_searchKey, _select_tag, _searcher)
-            sleep 200
-        }
-    return
 
-    lab_SearchMenu_MenuSelected:
-        If GetKeyState("Shift")         ;[按住 Shift 删除选中条目]
-        {
-            msgbox % A_ThisMenuItem
+        _searcherSelectIndex := A_ThisMenuItemPos - 4
+
+        If GetKeyState("Ctrl"){         
+            ;[按住 Ctrl 显示searcher对象信息]
+
+            arrayPrint(_searchers[_searcherSelectIndex])
+            
+            ; end
             Return
         }
-        If GetKeyState("Ctrl")          ;[按住 Ctrl 自动置顶并粘贴]
-        {
-            ; 最后使用过的排最前面
-            msgbox % A_ThisMenuItemPos
+
+        If GetKeyState("Shift"){          
+            ;[按住 Shift 修改当前searcher命令和参数]
+
+            if(修改搜索器命令和参数(_searchers[_searcherSelectIndex])){
+                ; 保存更改到搜索器文件
+                保存更改到搜索器文件("searchers", _searchers, Config.upath("searchersFile"))
+            }
+            ; end
             Return
         }
-        ;[普通粘贴]
-        write(Clipboarder.item(A_ThisMenuItemPos))
-    Return
+
+        ; 执行搜索
+        运行搜索器(_searchKey, _searchers[_searcherSelectIndex])
+        sleep 200
+
+        ; 保存更改到搜索器文件
+        保存更改到搜索器文件("recentSearcher", _searchers[_searcherSelectIndex], Config.upath("searchersFile"))
+
+    return
 
     lab_SearchMenu_Clipboard:
         write(Clipboard)
@@ -203,23 +266,57 @@ search_menu()
     return
     ; ----------------------------------------------------------
 
+    lab_使用最近的搜索器:
+        运行搜索器(_searchKey, _recentSearcher)
+    return
 
-    lab_打开本地搜索器:
-        run % _localSearcher["cmd"]
+    lab_使用本地搜索器:
+
+        If GetKeyState("Ctrl"){         
+            ;[按住 Ctrl 显示searcher对象信息]
+
+            arrayPrint(_localSearcher)
+            
+            ; end
+            Return
+        }
+
+        If GetKeyState("Shift"){          
+            ;[按住 Shift 修改当前searcher命令和参数]
+
+            if(修改搜索器命令和参数(_localSearcher)){
+                ; 保存更改到搜索器文件
+                保存更改到搜索器文件("localSearcher", _localSearcher, Config.upath("searchersFile"))
+            }
+            ; end
+            Return
+        }
+
+        运行搜索器(_searchKey, _localSearcher)
+        sleep 200
+
+        ; 保存更改到搜索器文件
+        保存更改到搜索器文件("recentSearcher", _localSearcher, Config.upath("searchersFile"))
+        
     return
 
     lab_SearchMenu_History:
         if(FileExist(Config.upath("searchHistoryFile")))
-            run % Config.upath("searchHistoryFile")
+            Run, % "Notepad.exe " . Config.upath("searchHistoryFile")
         Else
             msgbox, searchHistoryFile 文件不存在!
     return
 
     lab_SearchMenu_Edit:
-        Run, % "Notepad.exe " . Config.upath("searchersFile")
+        if(FileExist(Config.upath("searchersFile")))
+            Run, % "Notepad.exe " . Config.upath("searchersFile")
+        Else
+            msgbox, searchersFile 文件不存在!
     return
 
     lab_SearchMenu_End:
         Gui, Destroy
     return
 }
+
+

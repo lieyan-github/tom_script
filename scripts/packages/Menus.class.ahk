@@ -54,8 +54,8 @@ class Menus {
       ; ----------------------------------------------------------
       ; [托盘菜单]ahk自身管理
       ; ----------------------------------------------------------
-      Menu, MainMenu, add, 刷新(Win+F12),刷新_func
-      Menu, MainMenu, Default, 刷新(Win+F12)
+      Menu, MainMenu, add, 刷新(Win+F5),刷新_func
+      Menu, MainMenu, Default, 刷新(Win+F5)
       Menu, MainMenu, add, 编辑脚本(&E),编辑_func
       Menu, MainMenu, add, 打开脚本目录(Win+End),打开脚本目录_func
       Menu, MainMenu, add, 帮助(Ctrl+Win+F1),帮助_func

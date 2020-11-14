@@ -15,17 +15,14 @@
         "批量关闭程序": "批量关闭程序.json",
         "批量启动程序": "批量启动程序.json",
         "tags_av": "tags_av.json",
-        "db_av作品": "db_av作品.txt",
-        "db_av女优": "db_av女优.txt",
-        "db_av制作商": "db_av制作商.txt",
-        "db_av发行商": "db_av发行商.txt",
-        "db_av导演": "db_av导演.txt"
+        "db_av作品": "db_av作品.csv",
+        "db_av女优": "db_av女优.csv",
+        "db_av制作商": "db_av制作商.csv",
+        "db_av发行商": "db_av发行商.csv",
+        "db_av导演": "db_av导演.csv"
     },
     "wrapBorderLine1": "----------------------------------------------------------",
     "wrapBorderLine2": "==========================================================",
-    "资源管理器": [
-        "explorer.exe",
-        "Everything.exe",
-        "Q-Dir.exe"
-    ]
+    "资源管理器": ["explorer.exe", "Everything.exe", "Q-Dir.exe"],
+    "视频播放器": ["PotPlayerMini64.exe", "LosslessCut.exe", "vlc.exe"]
 }

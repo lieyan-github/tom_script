@@ -3,6 +3,21 @@
 ; ----------------------------------------------------------
 #IfWinActive ahk_class TdxW_MainFrame_Class
     
+    ; 从版块中删除股票
+    Capslock & d::
+    ^del::
+        从版块中删除股票(){
+            send !d
+            Sleep, 400
+            Send, {enter}
+        }
+
+    ; 加入到版块
+    Capslock & a::
+    ^insert::
+        加入到版块(){
+            send ^z
+        }
     
     ; ----------------------------------------------------------
     ; 放大缩小键保持与MT4统一
@@ -24,10 +39,15 @@
     ; ----------------------------------------------------------
     ^q::
         send ^q
-        sleep 150
+        sleep 200
         send {home}
-        FormatTime, CurrentDateTime,, yyyy年MM月dd日 HH:mm:ss tt  ;看起来将是 9/1/2005 3:53 PM 这样
-        SendInput [%CurrentDateTime%]`n
+        FormatTime, CurrentDateTime,, yyyy-MM-dd HH:mm:ss  ;看起来将是 9/1/2005 3:53 这样
+        _Clipboard_tmp = Clipboard
+        Clipboard = [%CurrentDateTime%]`n 
+        sleep 150
+        send ^v
+        Sleep 100
+        Clipboard = _Clipboard_tmp
     return
     
     ; ----------------------------------------------------------

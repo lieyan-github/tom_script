@@ -8,14 +8,16 @@
 ;
 ; ==========================================================
 
-^Tab::
-    send {Space 4}
+^#Tab::
+    ;send {Space 4}
+    keyPress_event()
 Return
 
-;debug 临时测试
-!f1::
-    Log.print()
-Return
+keyPress_event(){
+        _hotkey := A_ThisHotkey
+        MsgBox, % _hotkey
+    }
+
 
 !#f::
     ; 用于收集多个带有序号_xxx的图片到同一个作品编号名目录下
@@ -100,6 +102,7 @@ Return
 打开ahk在线帮助(){
     run "https://wyagd001.github.io/zh-cn/docs/AutoHotkey.htm"
 }
+
 打开ahk帮助(){
     run "D:\_home_\tom\program\green_program\辅助工具\AutoHotkey\AutoHotkey.chm"
 }
@@ -111,27 +114,36 @@ Return
 打开计算器(){
     运行程序("D:\_home_\tom\program\green_program\开发工具\辅助工具\SpeQ Mathematics┊计算任意定义变量、复杂数学公式┊多国语言绿色免费版\SpeQ Mathematics.exe")
 }
+
 打开截图(){
     运行程序("D:\_home_\tom\program\green_program\图形图像\FastStone Capture\FSCapture.exe")
 }
+
 打开文件比较(){
     运行程序("D:\_home_\tom\program\green_program\应用软件\文件管理\Beyond Compare┊专业级文件及文件夹比较工具\Beyond Compare\BCompare.exe")
 }
+
 打开路由器(){
     run "http://10.0.0.1"
 }
+
 web网购(){
     run "http://www.taobao.com"
 }
+
+;注释 web下载软件()
 web下载软件(){
     run "http://www.downg.com"
 }
+
 web查报价(){
     run "http://detail.zol.com.cn"
 }
+
 web微博(){
     run "http://blog.sina.com.cn/u/1712177201"
 }
+
 web财经(){
     run "http://rl.fx678.com"
     sleep 200
@@ -139,9 +151,11 @@ web财经(){
     sleep 200
     run "https://wallstreetcn.com/markets/home"
 }
+
 打开正则表达式编辑器(){
     运行程序("D:\_home_\tom\program\green_program\开发工具\[正则表达式]RegexBuddy\RegexBuddy.exe")
 }
+
 打开音速启动(){
     if WinExist("ahk_exe VStart.exe")
         send !``
@@ -202,34 +216,100 @@ $!`::打开音速启动()
 #9::提示热键无操作()
 #0::打开路由器()
 ; ----------------------------------------------------------
-; [全局]AppsKey & F1-F12    打开软件
+; [全局] Capslock  组合键
+;
+; 帮助参考 基本用法/热键/"Alt-Tab 热键"
 ; ----------------------------------------------------------
-AppsKey & f1::提示热键无操作()
-AppsKey & f2::提示热键无操作()
-AppsKey & f3::提示热键无操作()
-AppsKey & f4::提示热键无操作()
-AppsKey & f5::提示热键无操作()
-AppsKey & f6::提示热键无操作()
-AppsKey & f7::提示热键无操作()
-AppsKey & f8::提示热键无操作()
-AppsKey & f9::提示热键无操作()
-AppsKey & f10::提示热键无操作()
-AppsKey & f11::提示热键无操作()
-AppsKey & f12::提示热键无操作()
-; ----------------------------------------------------------
-; [全局]AppsKey & 数字      打开web
-; ----------------------------------------------------------
-AppsKey & `::提示热键无操作()
-AppsKey & 1::提示热键无操作()
-AppsKey & 2::提示热键无操作()
-AppsKey & 3::提示热键无操作()
-AppsKey & 4::提示热键无操作()
-AppsKey & 5::提示热键无操作()
-AppsKey & 6::提示热键无操作()
-AppsKey & 7::提示热键无操作()
-AppsKey & 8::提示热键无操作()
-AppsKey & 9::提示热键无操作()
-AppsKey & 0::提示热键无操作()
+; Capslock & F1-F12
+Capslock & f1::Log.print()
+Capslock & f2::提示热键无操作()
+Capslock & f3::提示热键无操作()
+Capslock & f4::提示热键无操作()
+Capslock & f5::提示热键无操作()
+Capslock & f6::提示热键无操作()
+Capslock & f7::提示热键无操作()
+Capslock & f8::提示热键无操作()
+Capslock & f9::提示热键无操作()
+Capslock & f10::提示热键无操作()
+Capslock & f11::提示热键无操作()
+Capslock & f12::提示热键无操作()
+
+; Capslock & ` 1-9 0
+Capslock & `::粘贴来自剪贴板数组()   ;获取最新一个内容
+Capslock & 1::粘贴来自剪贴板数组(1)
+Capslock & 2::粘贴来自剪贴板数组(2)
+Capslock & 3::粘贴来自剪贴板数组(3)
+Capslock & 4::提示热键无操作()
+Capslock & 5::提示热键无操作()
+Capslock & 6::提示热键无操作()
+Capslock & 7::提示热键无操作()
+Capslock & 8::提示热键无操作()
+Capslock & 9::提示热键无操作()
+Capslock & 0::提示热键无操作()
+
+; Capslock & a - z
+Capslock & a::提示热键无操作()
+Capslock & b::提示热键无操作()
+Capslock & c::提示热键无操作()
+Capslock & d::提示热键无操作()
+Capslock & e::提示热键无操作()
+Capslock & f::提示热键无操作()
+Capslock & g::提示热键无操作()
+Capslock & h::提示热键无操作()
+Capslock & i::提示热键无操作()
+Capslock & j::提示热键无操作()
+Capslock & k::提示热键无操作()
+Capslock & l::提示热键无操作()
+Capslock & m::提示热键无操作()
+Capslock & n::提示热键无操作()
+Capslock & o::提示热键无操作()
+Capslock & p::提示热键无操作()
+Capslock & q::提示热键无操作()
+Capslock & r::提示热键无操作()
+Capslock & s::提示热键无操作()
+Capslock & t::提示热键无操作()
+Capslock & u::提示热键无操作()
+Capslock & v::提示热键无操作()
+Capslock & w::提示热键无操作()
+Capslock & x::提示热键无操作()
+Capslock & y::提示热键无操作()
+Capslock & z::提示热键无操作()
+
+; Capslock & 常用符号
+Capslock & -::提示热键无操作()
+Capslock & =::提示热键无操作()
+Capslock & [::提示热键无操作()
+Capslock & ]::提示热键无操作()
+Capslock & \::提示热键无操作()
+Capslock & `;::提示热键无操作()
+Capslock & '::提示热键无操作()
+Capslock & ,::提示热键无操作()
+Capslock & .::提示热键无操作()
+Capslock & /::提示热键无操作()
+
+; Capslock & 功能键
+Capslock & Esc::提示热键无操作()
+Capslock & Tab::提示热键无操作()
+Capslock & Space::提示热键无操作()
+Capslock & Backspace::提示热键无操作()
+Capslock & Enter::提示热键无操作()
+
+Capslock & Home::提示热键无操作()
+Capslock & End::提示热键无操作()
+Capslock & PgUp::提示热键无操作()
+Capslock & PgDn::提示热键无操作()
+
+Capslock & Up::提示热键无操作()
+Capslock & Down::提示热键无操作()
+Capslock & Left::提示热键无操作()
+Capslock & Right::提示热键无操作()
+
+Capslock & Delete::提示热键无操作()
+Capslock & Insert::提示热键无操作()
+
+Capslock & Pause::提示热键无操作()
+Capslock & PrintScreen::提示热键无操作()
+
 ; ----------------------------------------------------------
 ; [全局]Ctrl & 小键盘数字       打开软件
 ; ----------------------------------------------------------
@@ -290,7 +370,7 @@ Launch_App2::提示热键无操作()
 ; ----------------------------------------------------------
 ; [lib_搜索]快捷搜索
 ; ----------------------------------------------------------
-#q::search_menu()                   ;搜索菜单
+#q::打开搜索菜单()                   ;搜索菜单
 ^#q::运行程序("D:\Program Files\Listary\Listary.exe")
 
 ; ----------------------------------------------------------
@@ -314,14 +394,7 @@ $Capslock::
     Clipboarder.clean()
     剪贴板数组拼接并粘贴()
     Return
-; 方案二
-Capslock & x::清空并复制到剪贴板数组()
-Capslock & c::复制到剪贴板数组()
-Capslock & v::剪贴板数组拼接并粘贴()
-Capslock & z::
-    Clipboarder.clean()
-    剪贴板数组拼接并粘贴()
-    Return
+
 
 ; 设置: 复制到剪贴板
 ^#`::清空并复制到剪贴板数组()
@@ -333,13 +406,7 @@ Capslock & z::
 ^#6::复制到剪贴板数组(6)
 
 ; 获取: 粘贴自剪贴板
-Capslock & `::粘贴来自剪贴板数组()   ;获取最新一个内容
-Capslock & 1::粘贴来自剪贴板数组(1)
-Capslock & 2::粘贴来自剪贴板数组(2)
-Capslock & 3::粘贴来自剪贴板数组(3)
-Capslock & 4::粘贴来自剪贴板数组(4)
-Capslock & 5::粘贴来自剪贴板数组(5)
-Capslock & 6::粘贴来自剪贴板数组(6)
+
 
 ; ----------------------------------------------------------
 ; [字符串类]加密/解密字符串
@@ -372,38 +439,45 @@ $^!f8::
         send ^!{f8}
     }
 return
+
 ; ----------------------------------------------------------
 ; [功能实现部分] 文件目录类
 ; ----------------------------------------------------------
-; 资源管理器窗口 - 重命名操作
-; ---------------------------------------
-; 快速打开字符串目录, 根据选中的路径字符串
-+#Enter::
-    _路径 := Clipboarder.get("copy")
-    if(instr(_路径, "`r`n"))
-        _路径 := trim(_路径, "`r`n")
-    _路径 := Path.parse(trim(_路径, """"))
-
-    if(FileExist(_路径.dir))
-        run, % """" . _路径.dir . """"
-    Else
-        msgbox, % "指定目录路径不存在!`n" . _路径.dir
-return
 
 ; 快速打开字符串文件, 根据选中的路径字符串
 #Enter::
-    _路径 := Clipboarder.get("copy")
-    if(instr(_路径, "`r`n"))
-        _路径 := trim(_路径, "`r`n")
-    _路径 := trim(_路径, """")
+    打开字符串文件(){
+        _路径 := Clipboarder.get("copy")
+        if(instr(_路径, "`r`n"))
+            _路径 := trim(_路径, "`r`n")
+        _路径 := trim(_路径, """")
 
-    if(FileExist(_路径))
-        run, % """" . _路径 . """"
-    Else
-        msgbox, % "指定文件路径不存在!`n" . _路径
-return
+        if(FileExist(_路径))
+            run, % """" . _路径 . """"
+        Else
+            msgbox, % "指定文件路径不存在!`n" . _路径
+    }
+
+; 快速打开字符串目录, 根据选中的路径字符串
++#Enter::
+    打开字符串目录(){
+        _路径 := Clipboarder.get("copy")
+        if(instr(_路径, "`r`n"))
+            _路径 := trim(_路径, "`r`n")
+        _路径 := Path.parse(trim(_路径, """"))
+
+        if(FileExist(_路径.dir))
+            run, % """" . _路径.dir . """"
+        Else
+            msgbox, % "指定目录路径不存在!`n" . _路径.dir
+    }
+
+; 快速编辑字符串文件, 根据选中的路径字符串
+!#Enter::
+    提示热键无操作()
 
 
+; ---------------------------------------
 ; 资源管理器窗口 - 重命名操作
 ; ---------------------------------------
 $^r::
@@ -554,7 +628,7 @@ return
 
 ; 按ctrl+鼠标中键, 窗口纵向最大化
 $MButton::
-    if(inWinList(["PotPlayerMini64.exe"])){                 ;视频播放器自动居中1440*720
+    if(inWinList(Config.get("视频播放器"))){                 ;视频播放器自动居中1440*720
         快捷操作_移动当前窗口(5, {"w":1440, "h":797})
     }
     else if(inWinList(允许调整窗口白名单())){

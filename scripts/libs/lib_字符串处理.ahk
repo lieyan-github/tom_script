@@ -207,7 +207,6 @@ strFill(_inFillTarget, _inTotalLen, _inFillChar:="0", _inFillLeft:="left")
 }
 
 ;产生指定长度的随机数字字符串
-;========================================================
 strRandom(_min, _max, _length){
     Random, rand, _min, _max
     tmp_str := ""
@@ -217,15 +216,18 @@ strRandom(_min, _max, _length){
     return tmp_str . rand
 }
 
-;产生14位短id -- "日期时分秒字符串"
-;=========================================================
-strTime(_format:="yyyy/MM/dd HH:mm:ss"){
+; 获取指定格式的时间字符串 -- "yyyy-MM-dd HH:mm:ss"
+strTime(_format := "yyyy-MM-dd HH:mm:ss"){
     FormatTime, _result,, %_format%
     return _result
 }
 
-;输出17位id -- "14位时间字符串+3位随机数字"
-;========================================================
+; 获取指定格式的日期字符串 -- "yyyy-MM-dd"
+strDate(_format:="yyyy-MM-dd"){
+    return strTime(_format)
+}
+
+; 获取17位id -- "yyyyMMdd_HHmmss_ + 3位随机数字"
 strId(_format:="yyyyMMdd_HHmmss_"){
     return strTime(_format) . strRandom(0,999,3)
 }

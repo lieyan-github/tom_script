@@ -94,8 +94,8 @@ show_textToRightDown(_text, _title:="显示文本在右下角", _w:=330, _h:=220
 {
     ; 从输入框获取修改后的新变量值, 用户输入为空则退出
     if(获取用户输入(_OutputVar
-        , "编辑[" . _userVarTitle . "]"
-        , "当前[" . _userVarTitle . "]为对象"
+        , "编辑【" . _userVarTitle . "】"
+        , "当前【" . _userVarTitle . "】为对象"
         , _default
         , _hide)
         = false)
@@ -113,8 +113,8 @@ show_textToRightDown(_text, _title:="显示文本在右下角", _w:=330, _h:=220
 {
     ; 从输入框获取修改后的新变量值, 用户输入为空则退出
     if(获取用户输入(_OutputVar
-        , "编辑[" . _userVarTitle . "]"
-        , "当前[" . _userVarTitle . "]= " . _userVar
+        , "编辑【" . _userVarTitle . "】"
+        , "当前【" . _userVarTitle . "】的值: `n`n" . _userVar
         , _default
         , _hide)
         = false)
@@ -156,8 +156,8 @@ show_textToRightDown(_text, _title:="显示文本在右下角", _w:=330, _h:=220
 用户修改ini变量(ByRef _userVar, _userVarTitle, _file, _Section, _Key){
     ; 从输入框获取修改后的新变量值, 用户输入为空则退出
     if(获取用户输入(_OutputVar
-        , "编辑[" . _userVarTitle . "]"
-        , "当前[" . _userVarTitle . "]= " . _userVar
+        , "编辑【" . _userVarTitle . "】"
+        , "当前【" . _userVarTitle . "】的值: `n`n" . _userVar
         , _userVar)
         = false)
         return false
