@@ -216,7 +216,7 @@ strRandom(_min, _max, _length){
     return tmp_str . rand
 }
 
-; 获取指定格式的时间字符串 -- "yyyy-MM-dd HH:mm:ss"
+; 获取时间字符串, 指定格式--"yyyy-MM-dd HH:mm:ss"
 strTime(_format := "yyyy-MM-dd HH:mm:ss"){
     FormatTime, _result,, %_format%
     return _result

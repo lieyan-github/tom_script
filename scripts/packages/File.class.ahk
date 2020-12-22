@@ -61,9 +61,9 @@ class JsonFile extends File{
     ; static 读文件
     ; 返回json对象
     read(_jsonPath){
-        if(! 文件存在(_jsonPath))
+        if(! FileExist(_jsonPath))
             return {}
-        _fileIn:= FileOpen(_jsonPath, "r", Config.items["fileEncoding"])
+        _fileIn:= FileOpen(_jsonPath, "r", "utf-8")
         _json_str:= _fileIn.read()
         fileIn.close()
         return JSON.Load(_json_str)
@@ -74,7 +74,7 @@ class JsonFile extends File{
         _json_str := JSON.Dump(_jsonObj,, 3)
         _json_str := StrReplace(_json_str, "`n", "`r`n") ; for display purposes only
         ; 输出结果到文件
-        _dump_file:= FileOpen(_jsonPath, "w", Config.items["fileEncoding"])
+        _dump_file:= FileOpen(_jsonPath, "w", "utf-8")
         _dump_file.write(_json_str)
         _dump_file.close()
     }

@@ -158,6 +158,29 @@ arrayClear(_array)
     _array.RemoveAt(1, _array.Length())
 }
 
+; ----------------------------------------------------------
+; 填充字符串(填充对象, 填充结果总长度, 填充字符)
+; ----------------------------------------------------------
+arrayStrFill(_inFillTarget, _inTotalLen, _inFillChar:="0", _inFillLeft:="left")
+{
+    _result         := ""
+    _fillString     := ""
+    _totalLen       := abs(_inTotalLen)
+    _fillCharLen    := _totalLen - StrLen(_inFillTarget)
+    ;--- 生成填充模版
+    Loop %_fillCharLen% {
+        _fillString .= _inFillChar
+    }
+    ;--- 对于填充字符大于一个时, 进行修正截取有效长度
+    _fillString:= SubStr(_fillString, 1, _fillCharLen)
+    ;--- 开始填充字符
+    if(_inFillLeft=="left")           ; 左侧填充, 否则右侧填充
+        _result := _fillString . _inFillTarget
+    else
+        _result := _inFillTarget . _fillString
+    return _result
+}
+
 ; arrayToStr()      可以识别数组或字典, 并分别做处理
 ; 将指定数组格式化, 返回字符串,
 ; 遍历内部的所有成员数组和字典
@@ -177,23 +200,23 @@ arrayToStr(_array, _indent:=true, _level:=0, _indentStr:="    ", _endStr:="`n")
     for k, v in _array {
         if(!IsObject(v)){   ; 如果非对象或一维数组
             _result .= Format("{1} : {2}"
-                        , _indent_str . strFill(k, _maxKeyWidth, " ", "right")
-                        , v . _endStr)
+                            , _indent_str . arrayStrFill(k, _maxKeyWidth, " ", "right")
+                            , v . _endStr)
         }
         else{
             if(isArray(v)){ ; 如果是多维数组
                 _result .= Format("{1} : {2}{3}{4}"
-                            , _indent_str . strFill(k, _maxKeyWidth, " ", "right")
-                            , "[" . _endStr
-                            , arrayToStr(v, _indent, _level+1, _indentStr, _endStr)
-                            , _indent_str . "]" . _endStr)
+                                , _indent_str . arrayStrFill(k, _maxKeyWidth, " ", "right")
+                                , "[" . _endStr
+                                , arrayToStr(v, _indent, _level+1, _indentStr, _endStr)
+                                , _indent_str . "]" . _endStr)
             }
             else{           ; 如果是字典
                 _result .= Format("{1} : {2}{3}{4}"
-                            , _indent_str . strFill(k, _maxKeyWidth, " ", "right")
-                            , "{" . _endStr
-                            , arrayToStr(v, _indent, _level+1, _indentStr, _endStr)
-                            , _indent_str . "}" . _endStr)
+                                , _indent_str . arrayStrFill(k, _maxKeyWidth, " ", "right")
+                                , "{" . _endStr
+                                , arrayToStr(v, _indent, _level+1, _indentStr, _endStr)
+                                , _indent_str . "}" . _endStr)
             }
         }
     }
