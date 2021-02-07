@@ -24,6 +24,24 @@ create_regexMatch(_instr, _inregExp){
         return ""
 }
 
+; 使用正则表达式分割指定字符串为三部分, 默认区分大小写
+; 比如: "aaabbbccc", 指定分割字符串为bbb, 
+; 则结果为{"left":"aaa", "mid":"bbb", "right":"ccc"}
+regex_cutThreeParts(arg_str, arg_正则分割字符串, arg_正则分割完整内容:="O)(.*?)({1})(.*)"){
+    ret := {"left":"", "mid":"", "right":""}
+
+    _regex_str := format(arg_正则分割完整内容, arg_正则分割字符串)
+    _foundPos  := RegExMatch(arg_str, _regex_str, _match)
+
+    if(_foundPos > 0){
+        ret["left"]     := _match[1]
+        ret["mid"]      := _match[2]
+        ret["right"]    := _match[3]
+    }
+    
+    Return  ret
+}
+
 ; 移除字符串的开始和/或末尾的某些字符, 例如, " abc " => "abc"
 ; _type in ["", "r", "l"]; ""首尾都清理
 strTrim(_instr, _OmitChars:=" `t", _type:=""){
@@ -230,6 +248,23 @@ strDate(_format:="yyyy-MM-dd"){
 ; 获取17位id -- "yyyyMMdd_HHmmss_ + 3位随机数字"
 strId(_format:="yyyyMMdd_HHmmss_"){
     return strTime(_format) . strRandom(0,999,3)
+}
+
+strLevel(_level:=3){
+    _strLevel:=["★☆☆☆☆"
+                , "★★☆☆☆"
+                , "★★★☆☆"
+                , "★★★★☆"
+                , "★★★★★"]
+    if(_level<1){
+        return "☆☆☆☆☆"
+    }
+    else if(_level>5){
+        return _strLevel[5]
+    }
+    else{
+        Return _strLevel[_level]
+    }
 }
 
 

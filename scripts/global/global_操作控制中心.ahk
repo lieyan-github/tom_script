@@ -8,6 +8,20 @@
 ;
 ; ==========================================================
 
+
+^#f2::
+    _test_items := {"源字符串":"", "处理结果":""}
+
+    _test_items["源字符串"] := Clipboard
+
+    _test_items["处理结果"] := 从图片文件名中获取AV作品编号(_test_items["源字符串"])
+
+    ; _test_items.push(regex_cutThreeParts("aaabbbccc", "bbb"))
+    ; _test_items.push(regex_cutThreeParts("mide00880jp-2", "[a-z]{2,5}\d+"))
+
+    arrayPrint(_test_items)
+Return
+
 ^#Tab::
     ;send {Space 4}
     keyPress_event()
@@ -208,8 +222,8 @@ $!`::打开音速启动()
 #`::run %A_WorkingDir%\scripts\专用脚本\[tom实用工具] ffmpeg视频处理GUI.ahk
 #1::打开编辑器()
 #2::打开计算器()
-#3::打开截图()
-#4::run %A_WorkingDir%\scripts\专用脚本\[tom实用工具] ffmpeg视频处理GUI.ahk
+#3::运行程序("D:\_home_\tom\program\green_program\图形图像\Snipaste\Snipaste.exe")
+#4::打开截图()
 #5::web微博()
 #6::提示热键无操作()
 #7::提示热键无操作()
@@ -562,10 +576,11 @@ $^#r::
     if(inWinList(Config.get("资源管理器"))){
         ; 资源管理器窗口, 按ctrl+r,
         ; 结果: 剪贴板 + 扩展名;
-        f2自动重命名("regExp", [{"match": "i).*?([a-zA-Z]{3,5})00(\d{3,5})jp-(\d+)"
-                                    , "replace": "$1-$2_$3"}
-                                , {"match": "i).*?([a-zA-Z]{3,5})00(\d{3,5})pl"
-                                    , "replace": "$1-$2"}])
+        ; f2自动重命名("regExp", [{"match": "i).*?([a-zA-Z]{3,5})00(\d{3,5})jp-(\d+)"
+        ;                             , "replace": "$1-$2_$3"}
+        ;                         , {"match": "i).*?([a-zA-Z]{3,5})00(\d{3,5})pl"
+        ;                             , "replace": "$1-$2"}])
+        f2自动重命名("function", "从图片文件名中获取AV作品编号", "")
     }
     else{
         send ^r

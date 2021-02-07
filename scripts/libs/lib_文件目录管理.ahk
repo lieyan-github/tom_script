@@ -549,6 +549,19 @@ f2自动重命名(a_type, a_regexMatch:="", a_regexReplace:=""){
             If InStr(_新文件名, "{id}")
                 _新文件名 := StrReplace(_新文件名, "{id}", strId())
     }
+    else if(_type == "function") {                          ; 使用函数替代新文件名
+        ; 使用方法
+        ; _regexMatch   为函数名字符串
+        ; _regexReplace 为函数参数数组
+        _funcObj := Func(_regexMatch)
+        
+        if(_regexReplace == ""){
+            _新文件名 := _funcObj.call(_源文件名)
+        }
+        else{
+            _新文件名 := _funcObj.call(_源文件名, _regexReplace)
+        }
+    }
     else{
         ; 新旧文件名一致, 则不进行操作
         _新文件名 := _源文件名
