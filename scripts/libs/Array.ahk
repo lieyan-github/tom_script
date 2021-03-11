@@ -454,3 +454,81 @@ arrayAssociate(_arrayTag, _arrayInfo, _keyField, _valueField:="_self"){
 ; array2 := arrayMap(array1, "_test_乘测试")
 ; arrayPrint(array1)
 ; arrayPrint(array2)
+
+
+; ----------------------------------------------------------
+; 以下是测试内容, 测试列表对象
+; ----------------------------------------------------------
+list(_args*){
+    ; 初始化列表
+    _list := []
+    _list.Push(_args)
+    ; 增加对象函数
+    _list.toStr := Func("base_arrayToStr")
+    _list.print := Func("base_arrayPrint")
+
+    Return _list
+}
+
+
+; arrayToStr()      可以识别数组或字典, 并分别做处理
+; 将指定数组格式化, 返回字符串,
+; 遍历内部的所有成员数组和字典
+; _array: 数组参数, 递归一定不能使用byRef;
+; _indent: 是否缩进, 默认缩进;
+; _level: 递推的层数;
+; _indentStr: 缩进字符;
+; _endStr: 行结束字符;
+base_arrayToStr(this, _indent:=true, _level:=0, _indentStr:="    ", _endStr:="`n")
+{
+    _result:= ""
+    _indent_str := ""
+
+    if(_indent)
+        loop %_level%
+            _indent_str .= _indentStr
+    _maxKeyWidth := arrayMaxKeyWidth(this)                ; 统计数组键字符的最大宽度, 等宽格式化用
+    for k, v in this {
+        
+        ; 如果键名是函数名, 则跳过
+        if(IsFunc(v)){
+            Continue
+        }
+
+        if(!IsObject(v)){   ; 如果非对象或一维数组
+            _result .= Format("{1} : {2}"
+                            , _indent_str . arrayStrFill(k, _maxKeyWidth, " ", "right")
+                            , v . _endStr)
+        }
+        else{
+            if(isArray(v)){ ; 如果是多维数组
+                _result .= Format("{1} : {2}{3}{4}"
+                                , _indent_str . arrayStrFill(k, _maxKeyWidth, " ", "right")
+                                , "[" . _endStr
+                                , base_arrayToStr(v, _indent, _level+1, _indentStr, _endStr)
+                                , _indent_str . "]" . _endStr)
+            }
+            else{           ; 如果是字典
+                _result .= Format("{1} : {2}{3}{4}"
+                                , _indent_str . arrayStrFill(k, _maxKeyWidth, " ", "right")
+                                , "{" . _endStr
+                                , base_arrayToStr(v, _indent, _level+1, _indentStr, _endStr)
+                                , _indent_str . "}" . _endStr)
+            }
+        }
+    }
+    return _result
+}
+
+; arrayPrint(_array, _w:=800, _h:=600)
+; ListVars调试界面显示
+base_arrayPrint(this, _w:=800, _h:=600){
+    ; 控制台显示
+    _text_out := this.toStr()
+    _text_out := StrReplace(_text_out, "`n", "`r`n") ; for display purposes only
+    ListVars
+    WinWaitActive ahk_class AutoHotkey
+    WinMove, ahk_class AutoHotkey, , , , %_w%, %_h%
+    ControlSetText Edit1, %_text_out%`r`n
+    WinWaitClose
+}

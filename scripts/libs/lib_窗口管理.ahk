@@ -235,9 +235,9 @@ inWinList(_winList, _winTitle_type:="exe"){
 }
 
 ; ----------------------------------------------------------
-; 快捷操作 - 鼠标快速向左调整窗口()
+; 快捷操作 - 向左调整窗口()
 ; ----------------------------------------------------------
-鼠标快速向左调整窗口()
+向左调整窗口()
 {
     WinGet, active_id, ID, A
     SysGet, monitor, MonitorWorkArea
@@ -259,9 +259,9 @@ inWinList(_winList, _winTitle_type:="exe"){
 }
 
 ; ----------------------------------------------------------
-; 快捷操作 - 鼠标快速向右调整窗口()
+; 快捷操作 - 向右调整窗口()
 ; ----------------------------------------------------------
-鼠标快速向右调整窗口()
+向右调整窗口()
 {
     WinGet, active_id, ID, A
     SysGet, monitor, MonitorWorkArea
@@ -283,9 +283,9 @@ inWinList(_winList, _winTitle_type:="exe"){
 }
 
 ; ----------------------------------------------------------
-; 快捷操作 - 鼠标单键切换窗口y轴大小()
+; 快捷操作 - 切换窗口y轴大小()
 ; ----------------------------------------------------------
-鼠标单键切换窗口y轴大小()
+切换窗口y轴大小()
 {
     WinGet, active_id, ID, A
     SysGet, monitor, MonitorWorkArea
@@ -312,9 +312,9 @@ inWinList(_winList, _winTitle_type:="exe"){
 }
 
 ; ----------------------------------------------------------
-; 快捷操作 - 鼠标单键切换窗口x轴大小()
+; 快捷操作 - 切换窗口x轴大小()
 ; ----------------------------------------------------------
-鼠标单键切换窗口x轴大小()
+切换窗口x轴大小()
 {
     WinGet, active_id, ID, A
     SysGet, monitor, MonitorWorkArea
@@ -323,18 +323,15 @@ inWinList(_winList, _winTitle_type:="exe"){
     ;---- 先将窗口从可能的最大化状态恢复
     WinRestore, A
     ;---- 划分响应处理方式
-    if(x==monitorRight/2+_空白宽度 && w==monitorRight/2-_空白宽度)
-    {
-        ;如果窗口在屏幕右半侧, 则把窗口调整到左半侧
-        WinMove, A, , 0, , monitorRight/2-_空白宽度
+    ; 如果窗口在最右边, 则开始向左移动
+    if(x+w >= monitorRight){
+        向左调整窗口()
     }
-    else if(w>=monitorRight)
-    {
-        ;如果窗口纵向最大化, 则将窗口调整到屏幕右半侧
-        WinMove, A, , monitorRight/2+_空白宽度, , monitorRight/2-_空白宽度
+    else if(x <= 0){
+        ; 如果窗口在最右边, 则开始向右移动
+        向右调整窗口()
     }
-    else
-    {
+    else{
         ;默认将屏幕横向最大化
         WinMove, A, , 0, , monitorRight
     }
@@ -428,7 +425,7 @@ inWinList(_winList, _winTitle_type:="exe"){
         }
         show_msg(tip_msg)
     }
-    if(方向=4)
+    if(方向=4 or 方向="left")
     {
         WinGetPos, x, y, w, h, A
 
@@ -456,7 +453,7 @@ inWinList(_winList, _winTitle_type:="exe"){
         }
         show_msg(tip_msg)
     }
-    if(方向=6)
+    if(方向=6 or 方向="right")
     {
         WinGetPos, x, y, w, h, A
         SysGet, monitor, MonitorWorkArea

@@ -51,7 +51,8 @@ show_textToRightDown(_text, _title:="显示文本在右下角", _w:=330, _h:=220
     winmove, ahk_id %Myhwnd%, , % _x, % _y
 }
 
-提示热键无操作(){
+; 提示按键无操作
+_nop_(){
     ; 未定义的窗体, 提示该窗体未定义ctrl+shift+r操作内容
     WinGetClass, _winclass, A
     WinGetTitle, _winTitle, A

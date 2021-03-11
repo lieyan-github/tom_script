@@ -70,9 +70,9 @@
 ; ----------------------------------------------------------
 ; [全局]用户热键管理
 ; ----------------------------------------------------------
-#include scripts\global\global_操作控制中心.ahk
-#include scripts\global\user_hotkeys.ahk
-#include scripts\global\user_编程快捷键.ahk
+#include scripts\global\global_按键绑定_函数.ahk
+#include scripts\global\global_按键绑定.ahk
+
 
 
 

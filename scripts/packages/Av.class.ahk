@@ -1848,19 +1848,19 @@ av数据捕捉_api(_in输入数据, _in操作类型){
     _序号       := ""
     _序号前缀    := "_"
 
-    _分割后obj := regex_cutThreeParts(arg_图片文件名, "[a-zA-Z]{2,}\d{3,}")
+    _分割后obj := cut3P(arg_图片文件名, "[a-zA-Z]{2,}\d{3,}")
 
     if(_分割后obj["mid"] != ""){
         
         _作品编号 := _分割后obj["mid"]     ; 这里采集的是混乱的格式"abcd00123"
         
         ; 对作品编号清洗格式化
-        _厂牌 := (regex_cutThreeParts(_作品编号, "[a-zA-Z]{2,}"))["mid"]
+        _厂牌 := (cut3P(_作品编号, "[a-zA-Z]{2,}"))["mid"]
 
-        _编号 := (regex_cutThreeParts(_作品编号, "\d{3}$"))["mid"]
+        _编号 := (cut3P(_作品编号, "\d{3}$"))["mid"]
 
         ; 开始检测序号
-        _序号部分obj := regex_cutThreeParts(_分割后obj["right"], "[_-]\d{1,3}")
+        _序号部分obj := cut3P(_分割后obj["right"], "[_-]\d{1,3}")
         ; 获取序号
         if(_序号部分obj["mid"] != ""){
             _序号 := _序号部分obj["mid"]
