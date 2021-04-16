@@ -25,22 +25,22 @@ class Flow {
     add(_location:=""){
         if(Flow.runState){
             if(_location == ""){
-                arrayPush(Flow.flowLog, "[File]" . A_LineFile
+                list_push(Flow.flowLog, "[File]" . A_LineFile
                                     . "  [Line]" . A_LineNumber
                                     . "  [Func]" . A_ThisFunc
                                     . "  [Label]" . A_ThisLabel)
             }
             else
-                arrayPush(Flow.flowLog, _location)
+                list_push(Flow.flowLog, _location)
         }
     }
     ; static
     clear(){
-        arrayClear(Flow.flowLog)
+        list_clear(Flow.flowLog)
     }
     ; static
     toStr(){
-        return arrayToStr(Flow.flowLog)
+        return list_to_str(Flow.flowLog)
     }
 }
 

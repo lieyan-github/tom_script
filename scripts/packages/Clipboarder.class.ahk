@@ -40,14 +40,14 @@ class Clipboarder{
     ; public static 在list指定索引插入内容
     insert(_ItemPos, _value)
     {
-        arrayInsert(Clipboarder.list, _ItemPos, _value)
+        list_insert(Clipboarder.list, _ItemPos, _value)
         Clipboarder.save()
     }
 
     ; public static 删除剪贴板list指定索引内容
     remove(_ItemPos)
     {
-        _return := arrayRemove(Clipboarder.list, _ItemPos)
+        _return := list_remove(Clipboarder.list, _ItemPos)
         Clipboarder.save()
         return _return
     }
@@ -55,20 +55,20 @@ class Clipboarder{
     ; public static 清空剪贴板list内容
     clear()
     {
-        arrayClear(Clipboarder.list)
+        list_clear(Clipboarder.list)
         Clipboarder.save()
     }
 
     ; public static 反转list数组内容
     reverse()
     {
-        arrayReverse(Clipboarder.list)
+        list_reverse(Clipboarder.list)
         Clipboarder.save()
     }
 
     ; static push() 向剪贴板数组加入新项目, 新添加内容排序在最后;
     push(_newItem){
-        arrayPush(Clipboarder.list, _newItem)
+        list_push(Clipboarder.list, _newItem)
         Clipboarder.save()
     }
 
@@ -76,7 +76,7 @@ class Clipboarder{
     pop(){
         _return := ""
         if(Clipboarder.list.MaxIndex() > 0)
-            _return:= arrayPop(Clipboarder.list)
+            _return:= list_pop(Clipboarder.list)
         else
         {
             show_msg("剪贴板数组为空! 无法pop数据")
@@ -172,18 +172,18 @@ class Clipboarder{
     ; static 备份剪贴板
     backup(){
         ;备份剪贴板的内容, 到backupList数组
-        arrayPush(Clipboarder.backupList, Clipboard)
+        list_push(Clipboarder.backupList, Clipboard)
     }
 
     ; static 恢复剪贴板内容
     restore(){
         ;恢复剪贴板的文字内容, 到clipboard
-        clipboard := arrayPop(Clipboarder.backupList)
+        clipboard := list_pop(Clipboarder.backupList)
     }
 
     ; static toStr()   打印剪贴板数组内容
     toStr(){
-        return arrayToStr(Clipboarder.list) . "`n`n剪贴板备份列表:`n" . arrayToStr(Clipboarder.backupList)
+        return list_to_str(Clipboarder.list) . "`n`n剪贴板备份列表:`n" . list_to_str(Clipboarder.backupList)
     }
 
     ; ----------------------------------------------------------
@@ -303,7 +303,7 @@ class Clipboarder{
             else
                 _参数:= {"连接符":" "}
             ; 重新以逗号连接字符串
-            _result:= arrayJoin(Clipboarder.list, _参数["连接符"]) . _参数["结束符"]
+            _result:= list_join(Clipboarder.list, _参数["连接符"]) . _参数["结束符"]
         }
         else
             show_msg("剪贴板数组为空, 无法进行连接字符串操作!")
@@ -325,9 +325,9 @@ class Clipboarder{
 }
 
 ; ----------------------------------------------------------
-; [快捷操作]清空并复制到剪贴板数组()
+; [快捷操作]剪贴板数组_清空_复制()
 ; ----------------------------------------------------------
-清空并复制到剪贴板数组(){
+剪贴板数组_清空_复制(){
     Clipboarder.clear()
     复制到剪贴板数组()
 }
@@ -349,9 +349,9 @@ class Clipboarder{
 }
 
 ; ----------------------------------------------------------
-; [快捷操作]剪贴板数组拼接并粘贴()
+; [快捷操作]剪贴板数组_拼接_粘贴()
 ; ----------------------------------------------------------
-剪贴板数组拼接并粘贴(){
+剪贴板数组_拼接_粘贴(){
     Clipboarder.write(Clipboarder.join())
 }
 
@@ -509,7 +509,7 @@ class Clipboarder{
                                                         , _参数["包裹开始"]
                                                         , _参数["包裹结束"])
             ; 重新以逗号连接字符串
-            _clipboard_tmp:= arrayJoin(_split_Array, _参数["连接符"])
+            _clipboard_tmp:= list_join(_split_Array, _参数["连接符"])
             Clipboard:= _clipboard_tmp
             show_msg("拼接字符串存入剪贴板:`n" . _clipboard_tmp)
         }
@@ -532,19 +532,19 @@ class Clipboarder{
     Lab_查看剪贴板对象内容:
         _剪贴板内容 := "[list] "
                         . "`n; =========================================================="
-                        . "`n" . arrayToStr(Clipboarder.list)
+                        . "`n" . list_to_str(Clipboarder.list)
                         . "`n"
                         . "`n[backupList] "
                         . "`n; =========================================================="
-                        . "`n" . arrayToStr(Clipboarder.backupList)
+                        . "`n" . list_to_str(Clipboarder.backupList)
                         . "`n`n"
                         . "`n[undoList] "
                         . "`n; =========================================================="
-                        . "`n" . arrayToStr(Clipboarder.undoList)
+                        . "`n" . list_to_str(Clipboarder.undoList)
                         . "`n`n"
                         . "`n[结束标志] "
                         . "`n; =========================================================="
-                        . "`n" . arrayToStr(Clipboarder.结束标志)
+                        . "`n" . list_to_str(Clipboarder.结束标志)
                         . "`n`n"
         _剪贴板内容 := StrReplace(_剪贴板内容, "`n", "`r`n")
         show_text(_剪贴板内容)

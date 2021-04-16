@@ -45,23 +45,23 @@ inWinList(_winList, _winTitle_type:="exe"){
     ;---
     if(_winTitle_type == "exe"){
         WinGet, _exe, ProcessName, A
-        _bool := arrayIndex(_winList, _exe) > 0
+        _bool := list_get_index(_winList, _exe) > 0
     }
     else if(_winTitle_type == "class"){
         WinGetClass, _class, A
-        _bool := arrayIndex(_winList, _class) > 0
+        _bool := list_get_index(_winList, _class) > 0
     }
     else if(_winTitle_type == "id"){
         WinGet, _hwnd, ID, A
-        _bool := arrayIndex(_winList, _hwnd) > 0
+        _bool := list_get_index(_winList, _hwnd) > 0
     }
     else if(_winTitle_type == "pid"){
         WinGet, _pid, PID, A
-        _bool := arrayIndex(_winList, _pid) > 0
+        _bool := list_get_index(_winList, _pid) > 0
     }
     else{
         WinGetTitle, _title, A
-        _bool := arrayIndex(_winList, _title) > 0
+        _bool := list_get_index(_winList, _title) > 0
     }
     ;---
     return _bool
@@ -74,7 +74,7 @@ inWinList(_winList, _winTitle_type:="exe"){
     ; 检测当前窗口是否已在白名单
     _allowResizeWins := 允许调整窗口白名单()
     _winName := _wininfo["window"]["exe"]
-    _exist := arrayIndex(_allowResizeWins, _winName) > 0
+    _exist := list_get_index(_allowResizeWins, _winName) > 0
     if(! _exist){
         ; 如果不存在 则提示添加, 设置窗口名称
         if(用户修改变量(_winName
@@ -101,12 +101,12 @@ inWinList(_winList, _winTitle_type:="exe"){
     ; 检测当前窗口是否已在白名单
     _allowResizeWins := 允许调整窗口白名单()
     _winName := _wininfo["window"]["exe"]
-    _exist := arrayIndex(_allowResizeWins, _winName) > 0
+    _exist := list_get_index(_allowResizeWins, _winName) > 0
     if(! _exist)
         show_msg("当前窗口不在白名单")
     else{
         ; 如果存在 则提准备删除, 先获取索引
-        arrayRemoveByValue(_allowResizeWins, _winName)
+        list_remove_by_value(_allowResizeWins, _winName)
         JsonFile.write(_allowResizeWins, Config.upath("allowResizeWinsFile"))
         show_msg("当前窗口已从白名单删除")
     }
@@ -183,7 +183,7 @@ inWinList(_winList, _winTitle_type:="exe"){
     WinGet, ActiveControlList, ControlList, ahk_id %this_id%
     Loop, Parse, ActiveControlList, `n
     {
-        arrayAppend(controlList_name, A_LoopField)
+        list_Append(controlList_name, A_LoopField)
     }
     _wininfo.controls := controlList_name
     ;--- ends
@@ -650,7 +650,7 @@ inWinList(_winList, _winTitle_type:="exe"){
         ;调试, 显示记录结果
         ;msgbox, % tmp_result
         ;debug -----------------------------------
-        _窗口列表清单:= arrayToStr(windowsTitle_array)
+        _窗口列表清单:= list_to_str(windowsTitle_array)
         show_msg("有效窗口[" . windowsTitle_array.MaxIndex() . "] 个, 清单已存入剪贴板`n`n" . _窗口列表清单)
         clipboard:= _窗口列表清单
         ;debug end -------------------------------

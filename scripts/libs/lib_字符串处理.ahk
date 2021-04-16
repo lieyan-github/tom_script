@@ -132,7 +132,7 @@ strFixDate(_dateStr)
     _fixDate := _dateStr
     if(RegExMatch(_dateStr, 正则表达式.模板("日期"), _date)>0)
     {
-        _fixDate := strFill(_date1, 4, "19") . "-" . strFill(_date2, 2, "0") . "-" . strFill(_date3, 2, "0")
+        _fixDate := str_fill(_date1, 4, "19") . "-" . str_fill(_date2, 2, "0") . "-" . str_fill(_date3, 2, "0")
     }
     return _fixDate
 }
@@ -154,79 +154,24 @@ strLimitLen(_string, _start, _length, _postfix:="")
 ; ----------------------------------------------------------
 ; 填充字符串(填充对象, 填充结果总长度, 填充字符)
 ; ----------------------------------------------------------
-strFill(_inFillTarget, _inTotalLen, _inFillChar:="0", _inFillLeft:="left")
+str_fill(p_FillTarget, p_TotalLen, p_FillChar:="0", p_FillLeft:="left")
 {
     _result         := ""
     _fillString     := ""
-    _totalLen       := abs(_inTotalLen)
-    _fillCharLen    := _totalLen - StrLen(_inFillTarget)
+    _totalLen       := abs(p_TotalLen)
+    _fillCharLen    := _totalLen - StrLen(p_FillTarget)
     ;--- 生成填充模版
     Loop %_fillCharLen% {
-        _fillString .= _inFillChar
+        _fillString .= p_FillChar
     }
     ;--- 对于填充字符大于一个时, 进行修正截取有效长度
     _fillString:= SubStr(_fillString, 1, _fillCharLen)
     ;--- 开始填充字符
-    if(_inFillLeft=="left")           ; 左侧填充, 否则右侧填充
-        _result := _fillString . _inFillTarget
+    if(p_FillLeft=="left")           ; 左侧填充, 否则右侧填充
+        _result := _fillString . p_FillTarget
     else
-        _result := _inFillTarget . _fillString
+        _result := p_FillTarget . _fillString
     return _result
-}
-
-; ----------------------------------------------------------
-; 加密/解密字符串 依赖lib_crypt.ahk
-; ----------------------------------------------------------
-加密字符串()
-{
-    result := ""
-    test_str := Trim(Clipboarder.get("copy"), "`n`r")
-    test_pwd := ""
-    if(获取用户密码输入(test_pwd
-        ,"请输入加密密码"
-        ,"请输入加密密码"
-        ,"^"""
-        ,"""$"
-        ,"\\$")=false)
-        return
-    ;----------------------------
-    hash := Crypt.Encrypt.StrEncrypt(test_str,test_pwd,3,3)
-    result := "; 加密结果`n"
-            . "; >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>`n"
-            . hash
-    ;----------------------------
-    ;加密后的数据存入剪贴板
-    Clipboarder.push(result)
-    show_msg("`n加密后的数据结果已存入剪贴板`n")
-}
-
-; ----------------------------------------------------------
-; 加密/解密字符串
-; ----------------------------------------------------------
-解密字符串()
-{
-    result := ""
-    test_str := Trim(Clipboarder.get("copy"), "`n`r")
-    test_pwd := ""
-    if(获取用户输入(test_pwd
-        ,"请输入解密密码"
-        ,"请输入解密密码"
-        ,
-        ,"hide"
-        ,"^"""
-        ,"""$"
-        ,"\\$")=false)
-        return
-    ;----------------------------
-    hash := test_str
-    decrypted_string := Crypt.Encrypt.StrDecrypt(hash,test_pwd,3,3)
-    result := "; 解密结果`n"
-            . "; >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>`n"
-            . decrypted_string
-    ;----------------------------
-    ;解密后的数据存入剪贴板
-    Clipboarder.push(result)
-    show_msg("`n解密后的数据结果已存入剪贴板`n")
 }
 
 ;产生指定长度的随机数字字符串

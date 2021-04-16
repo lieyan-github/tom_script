@@ -213,7 +213,7 @@ search_menu(_argSearchKey:="")
         If GetKeyState("Ctrl"){         
             ;[按住 Ctrl 显示searcher对象信息]
 
-            arrayPrint(_searchers[_searcherSelectIndex])
+            list_print(_searchers[_searcherSelectIndex])
             
             ; end
             Return
@@ -275,7 +275,7 @@ search_menu(_argSearchKey:="")
         If GetKeyState("Ctrl"){         
             ;[按住 Ctrl 显示searcher对象信息]
 
-            arrayPrint(_localSearcher)
+            list_print(_localSearcher)
             
             ; end
             Return

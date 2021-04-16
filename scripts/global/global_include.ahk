@@ -27,7 +27,7 @@
 #include scripts\packages\Timer.class.ahk
 #include scripts\packages\Color.class.ahk
 ; ----------------------------------------------------------
-#include scripts\libs\Array.ahk
+#include scripts\libs\list_dict.ahk
 #include scripts\libs\lib_正则表达式.ahk
 #include scripts\libs\lib_日志管理.ahk
 #include scripts\libs\lib_文件目录管理.ahk

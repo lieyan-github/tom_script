@@ -246,8 +246,8 @@ av_收集特征文件到目录_单目录(_in特征, _in收集目录, _in存储�
     if(_errorList.Length() > 0){
         msgbox, 处理过程中发生错误!
         show_debug(format("这些文件不存在:`n{1}`n`n"
-                    , arrayToStr(_errorList)))
-        ;arrayPrint(_errorList)
+                    , list_to_str(_errorList)))
+        ;list_print(_errorList)
     }
     else
         show_msg(format("批量检验文件是否存在 - 总数[{1}] `n`n验证路径完成, 全部存在ok.", _in文件路径列表.Length()))
@@ -300,7 +300,7 @@ av_收集特征文件到目录_单目录(_in特征, _in收集目录, _in存储�
 
     if(_errorList.Length() > 0){
         msgbox, 处理过程中发生错误!
-        arrayPrint(_errorList)
+        list_print(_errorList)
     }
 
     ; 验证移动结果
@@ -473,7 +473,7 @@ av_收集特征文件到目录_单目录(_in特征, _in收集目录, _in存储�
     else{
         show_text(Format("源文件备份完成! `n`n 源文件:`n{1} `n`n 备份文件:`n{2}"
                             , 备份源文件
-                            , arrayToStr(checkList)))
+                            , list_to_str(checkList)))
     }
     ; --end
     return result
@@ -515,7 +515,7 @@ f2自动重命名(a_type, a_regexMatch:="", a_regexReplace:=""){
     {
         _源文件路径列表.push(A_LoopField)
     }
-    if(isArray(a_regexMatch)){
+    if(is_list(a_regexMatch)){
         正则列表匹配_批量重命名文件或目录(_源文件路径列表, a_type, a_regexMatch, a_undoList)
     }
     else{
@@ -547,7 +547,7 @@ f2自动重命名(a_type, a_regexMatch:="", a_regexReplace:=""){
     批量检验文件是否存在(_新文件路径列表)
 
     ;debug
-    arrayPrint(批量对比路径字符串(a_源文件路径列表, _新文件路径列表))
+    list_print(批量对比路径字符串(a_源文件路径列表, _新文件路径列表))
 }
 
 ; ----------------------------------------------------------
@@ -562,20 +562,21 @@ f2自动重命名(a_type, a_regexMatch:="", a_regexReplace:=""){
     批量检验文件是否存在(_新文件路径列表)
 
     ;debug
-    arrayPrint(批量对比路径字符串(_in源文件路径列表, _新文件路径列表))
+    list_print(批量对比路径字符串(_in源文件路径列表, _新文件路径列表))
 }
 
 ; ----------------------------------------------------------
-; 自动重命名单文件或目录(_in源文件路径, _type:="regExp", _regexMatch, _regexReplace, _undoList)
+; 自动重命名单文件或目录(p_源文件路径, p_type:="regExp", p_para1, p_para2, _undoList)
 ; _undoList := [{"type": "操作类型", "data": [源文件的路径, 改名后的路径]}, .....]
 ; ----------------------------------------------------------
-自动重命名单文件或目录(_in源文件路径, _type, _regexMatch, _regexReplace, _undoList){
+自动重命名单文件或目录(p_源文件路径, p_type, p_para1, p_para2, p_undoList){
+    
     ; 输出结果
-    _oldFile        := Path.parse(_in源文件路径)
+    _oldFile        := Path.parse(p_源文件路径)
     _源文件路径      := _oldFile.path
     _源文件目录      := _oldFile.dir
-    _源文件名        := _oldFile.fileNoExt
-    _扩展名          := _oldFile.hasExt ? _oldFile.ext : ""
+    _源文件名        := _oldFile.file_no_ext
+    _扩展名          := _oldFile.has_ext ? _oldFile.ext : ""
 
     _新文件名        := ""
     _新文件路径      := _源文件路径       ; 如果最终新旧文件路径完全一致, 则不进行操作
@@ -583,90 +584,128 @@ f2自动重命名(a_type, a_regexMatch:="", a_regexReplace:=""){
     ; ----------------------------------------------------------
     ; 根据type类型, 制作新的文件名, 不含扩展名
     ; ----------------------------------------------------------
-    if(_type == "av") {
+    if(p_type == "av") {
+
         ; 如果当前文件名与剪贴板相同, 则进行特殊分析
         ; 分析是否是av作品名, 并进行相关格式化
         _新文件名 := Av.rename(_源文件名)
-    }
-    else if(_type == "regExp") {                             ;使用正则表达式替换新文件名;
-            ; 优先正则替换
-            _新文件名    := RegExReplace(_源文件名, _regexMatch, _regexReplace)
 
-            ; 然后进行特殊内容替换, 特殊内容以{xxx}标记
-            If InStr(_新文件名, "{clipboard}")
-                _新文件名 := StrReplace(_新文件名, "{clipboard}", Clipboard)
-            If InStr(_新文件名, "{id}")
-                _新文件名 := StrReplace(_新文件名, "{id}", strId())
     }
-    else if(_type == "function") {                          ; 使用函数替代新文件名
-        ; 使用方法
-        ; _regexMatch   为函数名字符串
-        ; _regexReplace 为函数参数数组
-        _funcObj := Func(_regexMatch)
+    else if(p_type == "regExp") {                             ;使用正则表达式替换新文件名;
+            
+        ; 优先正则替换
+        _新文件名    := RegExReplace(_源文件名, p_para1, p_para2)  
+
+    }
+    else if(p_type == "function") {                          ; 使用函数替代新文件名
         
-        if(_regexReplace == ""){
+        ; 使用方法
+        ; p_para1   为函数名字符串
+        ; p_para2 为函数参数数组
+        _funcObj := Func(p_para1)
+        
+        if(p_para2 == ""){
             _新文件名 := _funcObj.call(_源文件名)
         }
         else{
-            _新文件名 := _funcObj.call(_源文件名, _regexReplace)
+            _新文件名 := _funcObj.call(_源文件名, p_para2)
         }
+
     }
     else{
+
         ; 新旧文件名一致, 则不进行操作
         _新文件名 := _源文件名
+
+    }
+
+    ; ----------------------------------------------------------
+    ; 过滤并替换一些关键标识变量, 特殊内容以{xxx}标记
+    ; ----------------------------------------------------------
+    If InStr(_新文件名, "{clipboard}"){
+
+        _新文件名 := StrReplace(_新文件名, "{clipboard}", Clipboard)
+
+    }
+
+    If InStr(_新文件名, "{id}"){
+
+        _新文件名 := StrReplace(_新文件名, "{id}", strId())
+
     }
 
     ; ----------------------------------------------------------
     ; undo操作, 恢复修改前的内容, 查询undo列表, 根据列表恢复以前的文件名
     ; ----------------------------------------------------------
-    if(_type == "undo") {
+    if(p_type == "undo") {
+
         _undoindex := -1
-        if(_undoList.Length()<1){
+
+        if(p_undoList.Length()<1){
+
             show_msg("undo列表为空, 无法进行undo操作!")
+
         }
-        loop % _undoList.Length(){
-            if(_undoList[A_Index].type = "rename"){
-                if(_undoList[A_Index].data[2] = _in源文件路径){
-                    _源文件路径 := _undoList[A_Index].data[2]
-                    _新文件路径 := _undoList[A_Index].data[1]
+
+        loop % p_undoList.Length(){
+
+            if(p_undoList[A_Index].type = "rename"){
+
+                if(p_undoList[A_Index].data[2] = p_源文件路径){
+
+                    _源文件路径 := p_undoList[A_Index].data[2]
+                    _新文件路径 := p_undoList[A_Index].data[1]
                     _undoindex := A_Index
                     break
+
                 }
             }
         }
+
         ;如果找到恢复项, 则删除此项, pop操作
-        if(_undoindex>0)
-            _undoList.RemoveAt(_undoindex)
+        if(_undoindex>0){
+
+            p_undoList.RemoveAt(_undoindex)
+
+        }
     }
     else{
+        
         ; ----------------------------------------------------------
         ; 非undo正常操作, 检查并补充新文件名的扩展名, 组成完整路径
         ; ----------------------------------------------------------
         _新文件路径 := format("{1}\{2}", _源文件目录, _新文件名)
-        if(_oldFile.hasExt)
+
+        if(_oldFile.has_ext){
+
             _新文件路径 .= "." . _扩展名
+
+        }
     }
 
     ; 执行重命名文件或目录
     ; 新旧文件路径完全一致, 则不进行操作
     if(_新文件路径 != _源文件路径){
-        if(_oldFile.isDir)
+
+        if(_oldFile.is_dir){
             FileMoveDir, % _源文件路径, % _新文件路径 , R
-        else
+        }
+        else{
             FileMove, % _源文件路径, % _新文件路径
+        }            
 
         ; 为undo保存操作记录
         ; ----------------------------------------------------------
         ; 备份原文件名, 通过剪贴板管理恢复历史记录
-        ; _type=0 "undo"为恢复操作, 只有非恢复操作才有必要备份
+        ; p_type=0 "undo"为恢复操作, 只有非恢复操作才有必要备份
         ; ----------------------------------------------------------
-        if(_type != "undo"){
+        if(p_type != "undo"){
             _本次操作 := {}
             _本次操作.type := "rename"
             _本次操作.data  := []
             _本次操作.data.push(_源文件路径)
             _本次操作.data.push(_新文件路径)
-            _undoList.push(_本次操作)
+            p_undoList.push(_本次操作)
         }
     }
 
@@ -687,7 +726,7 @@ fileRename(_oldFilePath, _type:="regExp", _regexMatch:="", _regexReplace:=""){
     ; 准备数据, 分解数据
     _path               := Path.parse(_oldFilePath)
     _filePath           := _path.path
-    _fileName           := _path.fileNoExt
+    _fileName           := _path.file_no_ext
     _extFileName        := _path.ext
 
 
@@ -706,9 +745,9 @@ fileRename(_oldFilePath, _type:="regExp", _regexMatch:="", _regexReplace:=""){
     if(_type == "undo") {
         ; undo操作, 恢复修改前的内容;
         if(_extFileName == "")
-            _newFileName := Path.parse(Clipboarder.undoList.pop()).fileNoExt
+            _newFileName := Path.parse(Clipboarder.undoList.pop()).file_no_ext
         else
-            _newFileName := Path.parse(Clipboarder.undoList.pop()).fileNoExt . "." . _extFileName
+            _newFileName := Path.parse(Clipboarder.undoList.pop()).file_no_ext . "." . _extFileName
     }
     else if(_type == "av") {
         ; 如果当前文件名与剪贴板相同, 则进行特殊分析
@@ -720,7 +759,7 @@ fileRename(_oldFilePath, _type:="regExp", _regexMatch:="", _regexReplace:=""){
             _newFileName    := RegExReplace(_fileName, _regexMatch, _regexReplace)
             ; 然后进行特殊内容替换, 特殊内容以{xxx}标记
             If InStr(_newFileName, "{clipboard}")
-                _newFileName := StrReplace(_newFileName, "{clipboard}", _new_path_backup.fileNoExt)
+                _newFileName := StrReplace(_newFileName, "{clipboard}", _new_path_backup.file_no_ext)
             If InStr(_newFileName, "{id}")
                 _newFileName := StrReplace(_newFileName, "{id}", strId())
             ; 先进行特殊
@@ -795,7 +834,7 @@ showFileHash(_type:="md5"){
             _filePathList[A_Index] := "[MD5:***" . SubStr(_md5_result,-5,6) . "] " . " [SHA1:***" . SubStr(_sha1_result,-5,6) . "] " . get_fileName(_filePath)
         }
     }
-    _result := arrayToStr(_filePathList)
+    _result := list_to_str(_filePathList)
     ClipBoarder.push(_result)
     show_text(_result . "`n`n计算结果已存入剪贴板`n", "FileHash", 600, 400)
 }
@@ -1027,7 +1066,7 @@ getSelectedObjFullPathList(){
     ; 这句还是废话一下：windows 复制的时候，剪贴板保存的是“路径”。只要转换成字符串就可以粘贴出来了。
     Loop, parse, _clips, `n, `r
     {
-        arrayAppend(_filePathList, A_LoopField)
+        list_Append(_filePathList, A_LoopField)
     }
     return _filePathList
 }

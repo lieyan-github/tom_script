@@ -51,7 +51,7 @@
         {
             ;--- 为测试观察做记录对比
             _有效分割字段_计数器++
-            arrayAppend(_处理日志, "$" . _有效分割字段_计数器 . "=" . 分割字段)
+            list_Append(_处理日志, "$" . _有效分割字段_计数器 . "=" . 分割字段)
             ;--- 把当前分割字段, 转化成正则表达式
             if(RegExMatch(分割字段, _日期正则表达式)>0)
                 分割字段组[A_Index]:= RegExReplace(分割字段, ".*?" . _日期正则表达式 . ".*", "(.*?" . _日期正则表达式 . ".*?)")
@@ -66,7 +66,7 @@
         else
             _returnRegExStr .= "\s" . 分割字段组[A_Index]
     }
-    _returnRegExStr := "[分割字段测试]`n" . arrayToStr(_处理日志) . "`n" . _returnRegExStr
+    _returnRegExStr := "[分割字段测试]`n" . list_to_str(_处理日志) . "`n" . _returnRegExStr
     return _returnRegExStr
 }
 

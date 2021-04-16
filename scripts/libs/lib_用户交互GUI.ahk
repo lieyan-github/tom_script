@@ -8,7 +8,7 @@
 ;
 ; ==========================================================
 
-; ListVars调试界面显示
+; ListVars 调试界面显示
 show_debug(_text, _w:=800, _h:=600){
     ; 控制台显示
     _text_out := StrReplace(_text, "`n", "`r`n") ; for display purposes only
@@ -18,6 +18,24 @@ show_debug(_text, _w:=800, _h:=600){
     ControlSetText Edit1, %_text_out%`r`n
     WinWaitClose
 }
+
+
+; [显示inputbox] show_input(ByRef _userinput, _Title, _Prompt, _Default:="", _HIDE:="")     返回值: 正常输入true,  用户取消false
+show_input(ByRef _userinput, _Title, _Prompt, _Default:="", _HIDE:="", _Width:="", _Height:="", __X:="", _Y:="", _Font:="", _Timeout:=""){
+    
+    _userinput := ""
+    
+    InputBox, _userinput, % _Title, % _Prompt, % _HIDE, % _Width, % _Height, % __X, % _Y, % _Font, % _Timeout, % _Default
+    if ErrorLevel
+    {
+        show_msg("[操作结束]`n用户取消 -- input输入操作!")
+        return false
+    }
+    Else{
+        Return True
+    }    
+}
+
 
 ; [GUI]show_text(_text)
 show_text(_text, _title:="显示文本", _w:=800, _h:=600){
@@ -42,6 +60,7 @@ show_text(_text, _title:="显示文本", _w:=800, _h:=600){
     return
 }
 
+
 ; [GUI]show_text(_text)
 show_textToRightDown(_text, _title:="显示文本在右下角", _w:=330, _h:=220){
     Myhwnd := show_text(_text, _title, _w, _h)
@@ -51,24 +70,21 @@ show_textToRightDown(_text, _title:="显示文本在右下角", _w:=330, _h:=220
     winmove, ahk_id %Myhwnd%, , % _x, % _y
 }
 
+
 ; 提示按键无操作
 _nop_(){
-    ; 未定义的窗体, 提示该窗体未定义ctrl+shift+r操作内容
-    WinGetClass, _winclass, A
-    WinGetTitle, _winTitle, A
-    MouseGetPos, , , _WhichWindow, _WhichControl
-    ControlGetText, _control_text, %_WhichControl%, ahk_id %_WhichWindow%
     show_debug(format("`n快捷键[ {1} ]在当前窗口无操作; `n`n"
-                    . "a. 添加 ctrl + win + 中键. `n"
-                    . "b. 删除 shift+ win + 中键.`n`n"
-                    . "-----------------------------------------`n"
-                    . "WinInfo`n"
-                    . "-----------------------------------------`n"
-                    . "{3}`n"
-                        , A_ThisHotkey
-                        , "a. 添加到白名单 ctrl+win+中键 `nb. 删除从白名单 shift+win+中键"
-                        , arrayToStr(获取窗口信息())))
+                . "a. 添加 ctrl + win + insert. `n"
+                . "b. 删除 ctrl + win + delete.`n`n"
+                . "-----------------------------------------`n"
+                . "WinInfo`n"
+                . "-----------------------------------------`n"
+                . "{3}`n"
+                    , A_ThisHotkey
+                    , "a. 添加到白名单 ctrl+win+中键 `nb. 删除从白名单 shift+win+中键"
+                    , list_to_str(获取窗口信息())))
 }
+
 
 ; ----------------------------------------------------------
 ; [客户界面常用功能] 操作确认
@@ -86,6 +102,7 @@ _nop_(){
     }
     return _confirm
 }
+
 
 ; ----------------------------------------------------------
 ; [客户界面常用功能]  用户修改变量
@@ -106,6 +123,7 @@ _nop_(){
     return true
 }
 
+
 ; ----------------------------------------------------------
 ; [客户界面常用功能]  用户修改变量
 ; _RegExReplace: 对输入的内容进行格式化处理,以便使用
@@ -125,36 +143,81 @@ _nop_(){
     return true
 }
 
+
 ; ----------------------------------------------------------
 ; [客户界面常用功能]  获取用户输入
 ; _RegExReplace: 对输入的内容进行格式化处理,以便使用
 ; ----------------------------------------------------------
 获取用户输入(ByRef _userinput, _title, _text, _default:="", _hide:="", _RegExReplaces*)
 {
-    _confirm:= true
-    重新等待用户输入:
-    InputBox, _userinput, % _title, % _text, % _hide, , , , , , , % _default
-    if ErrorLevel
-    {
-        show_msg("[操作结束]`n用户取消了当前操作!")
-        _confirm:= false
-        return _confirm
-    }
-    if _userinput =
-    {
-        show_msg("[输入错误]`n用户输入内容空白, 请重新输入.")
-        goto 重新等待用户输入
+    while(True){
+        
+        if(! show_input(_userinput, _title, _text, _default, _hide)){
+            return false    ; 用户取消操作
+        }
+
+        if(trim(_userinput) = ""){
+            show_msg("[输入错误]`n用户输入内容空白, 请重新输入.")
+            Continue
+        }
+        Else{
+            Break           ; 用户输入非空内容, 跳出进入下一步
+        }
+        
     }
 
     ;对输入的内容进行格式化处理,以便使用
     for index, _RegExReplace in _RegExReplaces
         _userinput := RegExReplace(_userinput, _RegExReplace)
 
-    return _confirm
+    return true
 }
+
+
+获取用户输入并二次确认(ByRef _userinput, _title, _text, _hide:="hide", _RegExReplaces*){
+    
+    _userinput_confirm := ""
+
+    while(true){
+
+        ;开始进行输入操作
+        if(获取用户输入(_userinput
+                , _title
+                , _text
+                , ""
+                , _hide
+                , _RegExReplaces*)=false){
+            return False                            ; 用户取消操作, 退出
+        }
+
+        ;再次输入,进行二次确认操作
+        if(获取用户输入(_userinput_confirm
+                , "[确认输入]--" . _title
+                , "[确认输入]--" . _text
+                , ""
+                , _hide
+                , _RegExReplaces*)=false){
+            return False                            ; 用户取消操作, 退出
+        }
+
+        ; 检测两次输入是否一致
+        if(_userinput != _userinput_confirm){
+            msgbox, 两次输入内容不同, 需重新输入!
+            Continue
+        }
+        Else{
+            Break                                   ; 两次输入一致, 则跳出到下一步
+        }
+
+    }    
+    ; end
+    Return true
+}
+
 
 ; 扩展功能: 修改ini配置变量, 并在修改完成后, 重新加载变量;
 用户修改ini变量(ByRef _userVar, _userVarTitle, _file, _Section, _Key){
+    
     ; 从输入框获取修改后的新变量值, 用户输入为空则退出
     if(获取用户输入(_OutputVar
         , "编辑【" . _userVarTitle . "】"
@@ -173,51 +236,17 @@ _nop_(){
     return true
 }
 
+
 ; ----------------------------------------------------------
 ; [客户界面常用功能]  获取用户密码输入
 ; _RegExReplace: 对输入的内容进行格式化处理,以便使用
 ; ----------------------------------------------------------
-获取用户密码输入(ByRef _userinput, _title, _text, _RegExReplaces*)
-{
-    _confirm:= true
-    _userinput := ""
-    _userinput_confirm := ""
+获取用户密码输入(ByRef _userinput, _title, _text, _RegExReplaces*){
 
-    重新等待用户输入密码:
-    ;开始进行输入操作
-    if(获取用户输入(_userinput
-        , _title
-        , _text
-        , ""
-        , "hide"
-        , _RegExReplaces)=false)
-    {
-        _confirm:= false
-        return _confirm
-    }
-    ;再次输入,进行确认操作
-    if(获取用户输入(_userinput_confirm
-        , "[确认输入]--" . _title
-        , "[确认输入]--" . _text
-        , ""
-        , "hide"
-        , _RegExReplaces)=false)
-    {
-        _confirm:= false
-        return _confirm
-    }
-    if(_userinput != _userinput_confirm)
-    {
-        msgbox, 两次输入内容不同, 需重新输入!
-        goto 重新等待用户输入密码
-    }
+    return 获取用户输入并二次确认(_userinput, _title, _text, "hide", _RegExReplaces*)
 
-    ;对输入的内容进行格式化处理,以便使用
-    for index, _RegExReplace in _RegExReplaces
-        _userinput := RegExReplace(_userinput, _RegExReplace)
-
-    return _confirm
 }
+
 
 ; ----------------------------------------------------------
 ; 显示: 显示Splash图片窗口

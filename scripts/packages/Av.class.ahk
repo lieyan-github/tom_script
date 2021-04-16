@@ -86,7 +86,7 @@ class Av {
 
         if(! _isHelp){
             ; 关注的几个关键点(颜值, 是否美丰乳罩杯, 是否美臀, 性格是否活泼, 其他特点或技能演技, 是否诱惑, 是否精品女优)
-            ; _return := "脸漂亮｜乳f｜美臀｜丰满｜熟女 80后｜演技｜技能｜特点｜极品诱惑｜精品女优"
+            ; _return := "长相漂亮｜乳f｜美臀｜丰满｜熟女 80后｜演技｜技能｜特点｜极品诱惑｜精品女优"
             Loop % _tags_av.Length() {
                 _return .= _tags_av[A_Index].item . _间隔符
             }
@@ -229,7 +229,7 @@ class Av {
                                                 , Av.模板("评级")
                                                 , "$1"
                                                 , _生日
-                                                , 模板_tags_create("脸" . Av.get_tags默认值("av女优", "长相"), _罩杯)
+                                                , 模板_tags_create("长相" . Av.get_tags默认值("av女优", "长相"), _罩杯)
                                                 , Av.模板("日期")
                                                 , "$2")
                     _result := 重命名.do()
@@ -648,29 +648,29 @@ class AvGirlInfo extends AvInfo {
             _out := Format("{1} {2} {3} {4} 地区({5}) tags({6}) 备注({7})"
                             , this.info["类型"]
                             , strN("★", this.info["评级"])
-                            , arrayJoin(this.info["名字"], "_")
+                            , list_join(this.info["名字"], "_")
                             , this.info["生日"]
                             , this.info["地区"]
-                            , arrayJoin(this.info["tags"], " ")
+                            , list_join(this.info["tags"], " ")
                             , this.info["备注"])
         else
             ; 标准info格式化
             _out := Format("{1} {2} {3} {4} tags({5})"
                             , this.info["类型"]
                             , strN("★", this.info["评级"])
-                            , arrayJoin(this.info["名字"], "_")
+                            , list_join(this.info["名字"], "_")
                             , this.info["生日"]
-                            , arrayJoin(this.info["tags"], " "))
+                            , list_join(this.info["tags"], " "))
         return _out
     }
 
     toCsvStr(){
         _str := Format("{1},{2},{3},{4},{5}"
-                        , arrayJoin(this.info["名字"], "_")
+                        , list_join(this.info["名字"], "_")
                         , this.info["评级"]
                         , this.info["生日"]
                         , this.info["bra"]
-                        , arrayJoin(this.info["tags"], 符号.avtags间隔符))
+                        , list_join(this.info["tags"], 符号.avtags间隔符))
         return _str
     }
 
@@ -804,8 +804,8 @@ class Av作品日本有码Info extends AvInfo {
                             , strN("★", this.info["评级"])
                             , this.info["编号"]
                             , this.info["标题"]
-                            , arrayJoin(this.info["演员"], " ")
-                            , arrayJoin(this.info["tags"], " ")
+                            , list_join(this.info["演员"], " ")
+                            , list_join(this.info["tags"], " ")
                             , this.info["地区"]
                             , this.info["是否无码"]
                             , this.info["导演"]
@@ -820,8 +820,8 @@ class Av作品日本有码Info extends AvInfo {
                             , strN("★", this.info["评级"])
                             , this.info["编号"]
                             , this.info["标题"]
-                            , arrayJoin(this.info["演员"], " ")
-                            , arrayJoin(this.info["tags"], " "))
+                            , list_join(this.info["演员"], " ")
+                            , list_join(this.info["tags"], " "))
         return _out
     }
 
@@ -829,8 +829,8 @@ class Av作品日本有码Info extends AvInfo {
         _str := Format("{1},{2},{3},{4}"
                         , this.info["编号"]
                         , this.info["评级"]
-                        , arrayJoin(this.info["演员"], " ")
-                        , arrayJoin(this.info["tags"], 符号.avtags间隔符))
+                        , list_join(this.info["演员"], " ")
+                        , list_join(this.info["tags"], 符号.avtags间隔符))
         return _str
     }
 
@@ -1021,8 +1021,8 @@ class Av作品日本无码Info extends AvInfo {
                             , strN("★", this.info["评级"])
                             , this.info["编号"]
                             , this.info["标题"]
-                            , arrayJoin(this.info["演员"], " ")
-                            , arrayJoin(this.info["tags"], " ")
+                            , list_join(this.info["演员"], " ")
+                            , list_join(this.info["tags"], " ")
                             , this.info["地区"]
                             , this.info["是否无码"]
                             , this.info["导演"]
@@ -1037,8 +1037,8 @@ class Av作品日本无码Info extends AvInfo {
                             , strN("★", this.info["评级"])
                             , this.info["编号"]
                             , this.info["标题"]
-                            , arrayJoin(this.info["演员"], " ")
-                            , arrayJoin(this.info["tags"], " "))
+                            , list_join(this.info["演员"], " ")
+                            , list_join(this.info["tags"], " "))
         return _out
     }
 
@@ -1046,8 +1046,8 @@ class Av作品日本无码Info extends AvInfo {
         _str := Format("{1},{2},{3},{4}"
                         , this.info["编号"]
                         , this.info["评级"]
-                        , arrayJoin(this.info["演员"], " ")
-                        , arrayJoin(this.info["tags"], 符号.avtags间隔符))
+                        , list_join(this.info["演员"], " ")
+                        , list_join(this.info["tags"], 符号.avtags间隔符))
         return _str
     }
 
@@ -1238,9 +1238,9 @@ class Av作品欧美无码Info extends AvInfo {
                             , this.info["类型"]
                             , strN("★", this.info["评级"])
                             , this.info["制作商"]
-                            , arrayJoin(this.info["演员"], ", ")
+                            , list_join(this.info["演员"], ", ")
                             , this.info["标题"]
-                            , arrayJoin(this.info["tags"], " ")
+                            , list_join(this.info["tags"], " ")
                             , this.info["地区"]
                             , this.info["是否无码"])
         else
@@ -1250,9 +1250,9 @@ class Av作品欧美无码Info extends AvInfo {
                             , this.info["类型"]
                             , strN("★", this.info["评级"])
                             , this.info["制作商"]
-                            , arrayJoin(this.info["演员"], ", ")
+                            , list_join(this.info["演员"], ", ")
                             , this.info["标题"]
-                            , arrayJoin(this.info["tags"], " "))
+                            , list_join(this.info["tags"], " "))
         return _out
     }
 
@@ -1437,7 +1437,7 @@ class AvInfoAnalysis{
         _result := ""
         _tags := SubStr(_tagsStr, InStr(_tagsStr, "(")+1, -1)
         _tags := StrReplace(_tags, "_", 符号.avtags间隔符)
-        _tags := StrReplace(_tags, "美颜", "脸" . Av.get_tags默认值("av女优", "长相"))
+        _tags := StrReplace(_tags, "美颜", "长相" . Av.get_tags默认值("av女优", "长相"))
         _result := "tags(" . _tags . ")"
         ;替换源字符串中的tags内容
         _result := StrReplace(_avStr, _tagsStr, _result)
@@ -1470,7 +1470,7 @@ av查询_作品(_in查询av编号){
                         , "av作品"
                         , Config.upath("db_av作品")
                         , "编辑格式:`n av编号(key), 评级(0烂片-3精品), 演员(可空 空格间隔), 标签(可空｜间隔),登记时间"
-                        , "{1},评级(0-3),演员(可空 空格间隔),待看 高画质 中字 无码｜影片亮点｜诱惑," . strDate()
+                        , "{1},2,演员,高画质 中字 无码｜影片亮点｜诱惑," . strDate()
                         , "分析_av查询_作品_输入内容"
                         , "检查_av查询_作品_行关键字")
 }
@@ -1501,7 +1501,7 @@ av查询_女优(_in查询av女优名){
                         , "av女优"
                         , Config.upath("db_av女优")
                         , "编辑格式:`n 女优名(key), 评分(0烂-3精品), 生日(可空), 罩杯(a-l), 标签(可空 空格间隔),登记时间"
-                        , "{1},评级(0-3),1900-00-00,罩杯(a-l),待看 长相 乳 臀 身材 演技 阴毛 肛｜女优亮点｜诱惑｜是否精品女优," . strDate()
+                        , "{1},2,,乳a-l,待看 长相好看 乳a-l 美臀 身材 演技 阴毛浓密 肛," . strDate()
                         , "分析_av查询_女优_输入内容"
                         , "检查_av查询_女优_行关键字")
 }
@@ -1543,7 +1543,7 @@ av_csv查询(_in查询关键字, _in查询类型, _in查询文件, _in编辑格�
     ; 添加一个对查询关键字的过滤处理
     ; 过滤一 如果是一个文件路径, 则取出文件名, 不含扩展名
     if(FileExist(_查询关键字)){
-        _查询关键字 := (Path.parse(_查询关键字)).fileNoExt
+        _查询关键字 := (Path.parse(_查询关键字)).file_no_ext
     }
 
     ; 过滤二 如果是一个文件名

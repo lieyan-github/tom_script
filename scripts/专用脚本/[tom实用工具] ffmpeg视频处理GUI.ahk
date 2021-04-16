@@ -9,7 +9,9 @@
 ;1. 主程序ffmpeg视频处理gui()
 ;2. 功能, 按时间段剪切, 修改视频分辨率
 
-#include scripts\libs\Array.ahk
+
+#include scripts\libs\lib_字符串处理.ahk
+#include scripts\libs\list_dict.ahk
 #include scripts\packages\Json.class.ahk
 
 ; ----------------------------------------------------------
@@ -53,15 +55,29 @@ ffmpeg视频处理gui(){
     ; ----------------------------------------------------------
     static 源文件路径, 剪切时间列表str, 输出文件名, 输出目录, 剪辑后缀
 
-    _剪切任务_文件名前缀 := "剪切任务"
-    _剪切任务_文件扩展名 := "json"
+    _剪切任务_文件名前缀  := "剪切任务"
+    _剪切任务_文件扩展名  := "json"
     _剪切任务_文件路径   := ""
     _设置json          := {}
+    _默认输出目录名     := "#视频剪辑结果"
+    _默认输出目录       := "d:\" . "#视频剪辑结果"
     
     ; 获取视频文件路径, 通过复制获得
     send ^c
     sleep 200
+
+    ; 打开默认输出目录
+    if(! FileExist(_默认输出目录)){
+        FileCreateDir, %_默认输出目录%
+        Sleep, 100
+    }
+    Run, %_默认输出目录%
+    sleep, 200
+    WinWait, , % _默认输出目录名, 5
+    WinMove, , % _默认输出目录名, 160, 0, 640, 480
+    sleep, 200
     
+    ; 开始处理前面鼠标选中的文件
     if FileExist(Clipboard){
 
         源文件路径     := Clipboard
@@ -70,7 +86,7 @@ ffmpeg视频处理gui(){
         _扩展名       := _源文件obj.扩展名
         _当前目录名    := _源文件obj.当前目录名
         _当前目录路径  := _源文件obj.目录路径
-        输出目录      := A_Desktop
+        输出目录      := _默认输出目录
 
         if(_扩展名 = "json"){
             ; 选中配置文件的操作, 恢复配置, 并打开视频源文件目录
@@ -103,15 +119,19 @@ ffmpeg视频处理gui(){
             else{
                 ; 如果存在源文件路径
                 ; 则打开源文件的目录
-                Run, % (分析文件路径(_设置json["源文件路径"])).目录路径
+                _tmpobj_源文件 := 分析文件路径(_设置json["源文件路径"])
+                Run, % _tmpobj_源文件.目录路径
+                sleep, 200
+                WinWait, , % _tmpobj_源文件.当前目录名, 5
+                WinMove, , % _tmpobj_源文件.当前目录名, 840, 0, 640, 480
+                sleep, 200
             }
-
             
 
             ; 恢复设置
             剪切时间列表str  := 时间列表转字符串(_设置json.剪切时间列表)
             输出文件名      := _设置json.输出文件名
-            输出目录        := _设置json.输出目录 != "" ? _设置json.输出目录 : A_Desktop
+            输出目录        := _设置json.输出目录 != "" ? _设置json.输出目录 : _默认输出目录
             源文件路径      := _设置json["源文件路径"]
 
         }
@@ -138,14 +158,10 @@ ffmpeg视频处理gui(){
                 ; 恢复设置
                 剪切时间列表str  := 时间列表转字符串(_设置json.剪切时间列表)
                 输出文件名      := _设置json.输出文件名
-                输出目录        := _设置json.输出目录 != "" ? _设置json.输出目录 : A_Desktop
+                输出目录        := _设置json.输出目录 != "" ? _设置json.输出目录 : _默认输出目录
             }
 
-        }
-
-
-
-        
+        }        
 
     }
 
@@ -172,7 +188,7 @@ ffmpeg视频处理gui(){
         Gui Add, Text, x30 y159 w80 h23 +0x200, 输出文件名
         Gui Add, Edit, x121 y160 w350 h19 v输出文件名, %输出文件名%
         Gui Add, Text, x30 y187 w80 h23 +0x200, 输出目录
-        Gui Add, Edit, x121 y188 w350 h19 +ReadOnly v输出目录, %输出目录%
+        Gui Add, Edit, x121 y188 w350 h19 v输出目录, %输出目录%
         ; GroupBox Options
         Gui Add, GroupBox, x19 y235 w461 h85, Options
         Gui Add, Text, x30 y256 w80 h23 +0x200, 剪辑后缀

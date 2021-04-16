@@ -939,3 +939,60 @@ class CryptFuncs
       return
     }
 }
+
+
+; tom的自定义内容
+; ----------------------------------------------------------
+; 加密/解密字符串 依赖lib_crypt.ahk
+; ----------------------------------------------------------
+加密字符串()
+{
+    result := ""
+    test_str := Trim(Clipboarder.get("copy"), "`n`r")
+    test_pwd := ""
+    if(获取用户密码输入(test_pwd
+        ,"请输入加密密码"
+        ,"请输入加密密码"
+        ,"^"""
+        ,"""$"
+        ,"\\$")=false)
+        return
+    ;----------------------------
+    hash := Crypt.Encrypt.StrEncrypt(test_str,test_pwd,3,3)
+    result := "; 加密结果`n"
+            . "; >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>`n"
+            . hash
+    ;----------------------------
+    ;加密后的数据存入剪贴板
+    Clipboarder.push(result)
+    show_msg("`n加密后的数据结果已存入剪贴板`n")
+}
+
+; ----------------------------------------------------------
+; 加密/解密字符串
+; ----------------------------------------------------------
+解密字符串()
+{
+    result := ""
+    test_str := Trim(Clipboarder.get("copy"), "`n`r")
+    test_pwd := ""
+    if(获取用户输入(test_pwd
+        ,"请输入解密密码"
+        ,"请输入解密密码"
+        ,
+        ,"hide"
+        ,"^"""
+        ,"""$"
+        ,"\\$")=false)
+        return
+    ;----------------------------
+    hash := test_str
+    decrypted_string := Crypt.Encrypt.StrDecrypt(hash,test_pwd,3,3)
+    result := "; 解密结果`n"
+            . "; >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>`n"
+            . decrypted_string
+    ;----------------------------
+    ;解密后的数据存入剪贴板
+    Clipboarder.push(result)
+    show_msg("`n解密后的数据结果已存入剪贴板`n")
+}

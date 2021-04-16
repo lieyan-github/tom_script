@@ -3,11 +3,11 @@
 ;
 ; 文档作者: tom
 ;
-; 修改时间: 2019-06-30 20:21:24
+; 修改时间: 2021-03-30 21:00:52
 ; ==========================================================
 ; 使用说明:
 ; 0. 单元测试初始化:     test_init()
-; 1. 加入单元测试:       test_add(_测试描述, _测试表达式)
+; 1. 加入单元测试:       test_add(_测试描述, _实际结果, _期望结果, _比较类型:="==") 默认比较类型是"==", 区分大小写
 ; 2. 运行单元测试:       test_run()
 ; 3. 显示批量测试结果
 
@@ -18,16 +18,81 @@ test_init(){
     Test.me().init()
 }
 
-test_add(_测试描述, _测试表达式){
-    Test.me().add(_测试描述, _测试表达式)
+; test_对比测试(ByRef _对比测试结果, _实际结果, _期望结果, _比较类型:="==") 返回是否识别比较类型
+test_对比测试(ByRef _对比测试结果, _实际结果, _期望结果, _比较类型:="=="){
+    
+    _对比测试结果   := False
+
+
+    if(_比较类型 = "=="){
+        _对比测试结果 := _实际结果 == _期望结果
+        Return True
+    }
+
+    if(_比较类型 = "="){
+        _对比测试结果 := _实际结果 = _期望结果
+        Return True
+    }
+
+    ; 正则匹配
+    if(_比较类型 = "~="){
+        _对比测试结果 := _实际结果 ~= _期望结果
+        Return True
+    }    
+
+    if(_比较类型 = ">"){
+        _对比测试结果 := _实际结果 > _期望结果
+        Return True
+    }
+
+    if(_比较类型 = ">="){
+        _对比测试结果 := _实际结果 >= _期望结果
+        Return True
+    }
+
+    if(_比较类型 = "<"){
+        _对比测试结果 := _实际结果 < _期望结果
+        Return True
+    }
+
+    if(_比较类型 = "<="){
+        _对比测试结果 := _实际结果 <= _期望结果
+        Return True
+    }
+
+    if(_比较类型 = "!="){
+        _对比测试结果 := _实际结果 != _期望结果
+        Return True
+    }
+
+    ; end 不能识别比较类型, 返回false
+    Return False
+}
+
+; test_add(_测试描述, _实际结果, _期望结果, _比较类型:="==") 默认比较类型是"==", 区分大小写
+test_add(_测试描述, _实际结果, _期望结果, _比较类型:="=="){
+
+    _对比测试结果   := False
+
+    ; 如果可识别比较类型, 则记录比较结果
+    if(test_对比测试(_对比测试结果, _实际结果, _期望结果, _比较类型)){
+
+        Test.me().add(_对比测试结果, _测试描述, _实际结果, _期望结果, _比较类型)
+        
+    }
+    else{
+        MsgBox, 未识别的比较类型, `n`ntest_add(_测试描述, _实际结果, _期望结果, _比较类型:="==") #84行
+    }
+    
 }
 
 test_run(){
     Test.me().run()
 }
-; 与test_add一样
-assert(_测试描述, _测试表达式){
-    Test.me().add(_测试表达式, _测试描述)
+
+; 同test_add一样 ; test_add(_测试描述, _实际结果, _期望结果, _比较类型:="==") 默认比较类型是"==", 区分大小写
+assert(测试描述, _实际结果, _期望结果, _比较类型:="=="){
+    test_add(测试描述, _实际结果, _期望结果, _比较类型)
 }
 ; ----------------------------------------------------------
 
@@ -74,11 +139,11 @@ class Test {
     }
 
     ; 记录测试结果
-    add(_测试表达式结果, _测试描述){
+    add(_测试表达式结果, _测试描述, _实际结果, _期望结果, _比较类型){
         if(_测试表达式结果)
-            arrayPush(this.validList, _测试描述)
+            list_push(this.validList, [_测试描述, _实际结果, _期望结果, _比较类型])
         else
-            arrayPush(this.errorList, _测试描述)
+            list_push(this.errorList, [_测试描述, _实际结果, _期望结果, _比较类型])
     }
 
     ; public string toStr()
@@ -89,20 +154,35 @@ class Test {
         _str.= "; ==========================================================`n"
         _str.= "; error list -- [" . this.errorList.MaxIndex() . "]`n"
         _str.= "; ==========================================================`n"
-        Loop % this.errorList.MaxIndex()
-            _str .= A_Index . ". " this.errorList[A_Index] . "`n"
-        _str.= "`n`n`n"
-        _str.= "; valid list -- [" . this.validList.MaxIndex() . "]`n"
-        _str.= "; ==========================================================`n"
-        Loop % this.validList.MaxIndex()
-            _str .= A_Index . ". " this.validList[A_Index] . "`n"
+        
+        Loop % this.errorList.MaxIndex(){            
+
+            _str .= Format("{1}. {2} `n【比较类型】{3} `n【实际结果】{4} `n【正确结果】{5}`n`n`n"
+                        , A_Index
+                        , this.errorList[A_Index][1]
+                        , this.errorList[A_Index][4]
+                        , this.errorList[A_Index][2]
+                        , this.errorList[A_Index][3])
+
+        }
+
+        _str .= "`n`n`n"
+        _str .= "; valid list -- [" . this.validList.MaxIndex() . "]`n"
+        
+        _str .= "; ==========================================================`n"
+        
+        Loop % this.validList.MaxIndex() {
+
+            _str .= A_Index . ". " . this.validList[A_Index][1] . "`n"
+
+        }
         return _str
     }
 
     ; public void clear()
     clear(){
-        arrayClear(this.validList)
-        arrayClear(this.errorList)
+        list_clear(this.validList)
+        list_clear(this.errorList)
     }
 
     ; public void show()

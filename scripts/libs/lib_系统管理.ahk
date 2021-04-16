@@ -207,21 +207,21 @@ tom手动批量启动常用工具()
             {
                 提示信息 .= "**路径错误  (" . 程序名 . ": " . 进程名 . ") ."
             }
-            arrayAppend(_处理日志, 提示信息)
+            list_Append(_处理日志, 提示信息)
             ; 操作处理结果提示信息
             ; show_msg(提示信息)
             sleep %_程序启动间隔时间%
         }
         else
         {
-            arrayAppend(_处理日志, 程序名 . " | 进程ok")
+            list_Append(_处理日志, 程序名 . " | 进程ok")
             ;存在指定进程, 则直接下一个
             sleep %_程序启动间隔时间%
             continue
         }
     }
     sleep 500
-    _showMsg:= arrayToStr(_处理日志)
+    _showMsg:= list_to_str(_处理日志)
     ; 写入剪贴板 debug专用
     ; ----------------------
     ;clipboard:= _showMsg
@@ -264,18 +264,18 @@ tom手动批量启动常用工具()
         NewPID = %ErrorLevel%  ; 由于 ErrorLevel 会经常发生改变, 所以要立即保存这个值.
         if NewPID = 0
         {
-            arrayAppend(_处理日志, "不存在ok (" . SubStr(进程名, 1, 5) . "..) .")
+            list_Append(_处理日志, "不存在ok (" . SubStr(进程名, 1, 5) . "..) .")
             continue
         }
         else
         {
             runwait TASKKILL /F /IM %进程名% /T, , Hide
             sleep 100
-            arrayAppend(_处理日志, "关闭ok (" . SubStr(进程名, 1, 5) . "..) .")
+            list_Append(_处理日志, "关闭ok (" . SubStr(进程名, 1, 5) . "..) .")
         }
     }
     sleep 500
-    _showMsg:= arrayToStr(_处理日志)
+    _showMsg:= list_to_str(_处理日志)
     ; 写入剪贴板 debug专用
     ; ----------------------
     ;clipboard:= _showMsg

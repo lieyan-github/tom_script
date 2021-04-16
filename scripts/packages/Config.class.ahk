@@ -101,12 +101,12 @@ class Log{
     }
 
     print(){
-        arrayPrint(Log.list)
+        list_print(Log.list)
         Log.clear()
     }
 
     clear(){
-        arrayClear(Log.list)
+        list_clear(Log.list)
     }
 }
 
@@ -118,11 +118,11 @@ class Debug{
     }
 
     print(){
-        arrayPrint(Debug.list)
+        list_print(Debug.list)
         Debug.clear()
     }
 
     clear(){
-        arrayClear(Debug.list)
+        list_clear(Debug.list)
     }
 }

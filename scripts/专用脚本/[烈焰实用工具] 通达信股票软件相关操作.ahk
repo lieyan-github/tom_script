@@ -15,9 +15,10 @@
     ; 加入到版块
     Capslock & a::
     ^insert::
-        加入到版块(){
-            send ^z
-        }
+        标记当前股票()
+        sleep 300
+        加入到自选股()
+    Return
     
     ; ----------------------------------------------------------
     ; 放大缩小键保持与MT4统一
@@ -37,17 +38,8 @@
     ; ----------------------------------------------------------
     ; 备注相关内容
     ; ----------------------------------------------------------
-    ^q::
-        send ^q
-        sleep 200
-        send {home}
-        FormatTime, CurrentDateTime,, yyyy-MM-dd HH:mm:ss  ;看起来将是 9/1/2005 3:53 这样
-        _Clipboard_tmp = Clipboard
-        Clipboard = [%CurrentDateTime%]`n 
-        sleep 150
-        send ^v
-        Sleep 100
-        Clipboard = _Clipboard_tmp
+    $^q::
+        标记当前股票()
     return
     
     ; ----------------------------------------------------------
@@ -59,6 +51,27 @@
     ;自动筛选股票()
     ^#!printscreen::自动筛选股票()
 #IfWinActive
+
+加入到自选股(){
+    send ^z
+    sleep 400
+    send {Enter}
+}
+
+标记当前股票(){
+    send ^q
+    sleep 200
+    send {home}
+    FormatTime, CurrentDateTime,, yyyy-MM-dd HH:mm:ss  ;看起来将是 2021-04-01 03:19:54
+    write(format("[{1}]`n", CurrentDateTime))
+    sleep 100
+    send {tab}
+    sleep 100
+    FormatTime, CurrentDate,, yyyy-MM-dd  ;看起来将是 2021-04-01
+    write(format("{1}", CurrentDate))
+    sleep 100
+    send {Enter}
+}
 
 
 ; ==========================================================

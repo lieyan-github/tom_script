@@ -20,7 +20,7 @@
     {
         if(_备份次数-1 > 0)
         {
-            arrayPushFirst(_日志列表
+            list_push_first(_日志列表
                 , 写日志(读日志(_区域名, _项目名 . (_备份次数-1))
                     , _区域名
                     , _项目名 . _备份次数
@@ -29,7 +29,7 @@
         }
         else
         {
-            arrayPushFirst(_日志列表
+            list_push_first(_日志列表
                 , 写日志(读日志(_区域名, _项目名)
                     , _区域名
                     , _项目名 . _备份次数
@@ -37,12 +37,12 @@
             _备份次数--
         }
     }
-    arrayPushFirst(_日志列表
+    list_push_first(_日志列表
         , 写日志(Sys.now()
             , _区域名
             , _项目名
             , false))
-    _msg:= arrayToStr(_日志列表)
+    _msg:= list_to_str(_日志列表)
     if(_isShowMsg)
         show_msg(_msg . " `n--写入完成", "写入日志")
     return _msg
